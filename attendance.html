@@ -1,0 +1,1022 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="mobile-web-app-capable" content="yes">
+<title>出席管理 — Athletic Club</title>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@300;400;500;700;900&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #0d0f1a;
+    --surface: #161929;
+    --surface2: #1e2235;
+    --border: #2a2f45;
+    --accent: #4fffb0;
+    --accent2: #7b6fff;
+    --warn: #ff6b6b;
+    --text: #e8eaf6;
+    --text2: #8892b0;
+    --text3: #4a5380;
+    --radius: 16px;
+    --radius-sm: 10px;
+    --safe-top: env(safe-area-inset-top, 0px);
+    --safe-bottom: env(safe-area-inset-bottom, 0px);
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+
+  body {
+    font-family: 'Noto Sans JP', sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    min-height: 100dvh;
+    overflow-x: hidden;
+  }
+
+  /* ── HEADER ── */
+  .app-header {
+    position: sticky;
+    top: 0;
+    z-index: 100;
+    background: rgba(13,15,26,0.92);
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    border-bottom: 1px solid var(--border);
+    padding: calc(var(--safe-top) + 12px) 20px 12px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+  }
+  .app-title {
+    font-size: 1.05rem;
+    font-weight: 700;
+    letter-spacing: 0.05em;
+    color: var(--accent);
+  }
+  .app-title span { color: var(--text2); font-weight: 300; }
+  .header-link {
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    color: var(--text2);
+    padding: 6px 14px;
+    border-radius: 20px;
+    font-size: 0.78rem;
+    font-weight: 500;
+    text-decoration: none;
+    transition: all 0.2s;
+  }
+  .header-link:hover { color: var(--accent); border-color: var(--accent); }
+
+  /* ── TABS ── */
+  .tab-bar {
+    display: flex;
+    background: var(--surface);
+    border-bottom: 1px solid var(--border);
+    overflow-x: auto;
+    scrollbar-width: none;
+    -webkit-overflow-scrolling: touch;
+  }
+  .tab-bar::-webkit-scrollbar { display: none; }
+  .tab-btn {
+    flex: 1;
+    min-width: 80px;
+    padding: 12px 10px;
+    background: none;
+    border: none;
+    color: var(--text3);
+    font-family: inherit;
+    font-size: 0.78rem;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.2s;
+    white-space: nowrap;
+    position: relative;
+  }
+  .tab-btn.active { color: var(--accent); }
+  .tab-btn.active::after {
+    content: '';
+    position: absolute;
+    bottom: 0; left: 20%; right: 20%;
+    height: 2px;
+    background: var(--accent);
+    border-radius: 2px 2px 0 0;
+  }
+
+  /* ── MAIN CONTENT ── */
+  .main { padding: 20px; max-width: 640px; margin: 0 auto; }
+  .tab-panel { display: none; }
+  .tab-panel.active { display: block; }
+
+  /* ── NFC SCANNER PANEL ── */
+  .nfc-zone {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 28px 20px;
+    text-align: center;
+    margin-bottom: 20px;
+    position: relative;
+    overflow: hidden;
+  }
+  .nfc-zone::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: radial-gradient(ellipse at 50% 0%, rgba(79,255,176,0.06) 0%, transparent 70%);
+    pointer-events: none;
+  }
+  .nfc-ring {
+    width: 110px;
+    height: 110px;
+    margin: 0 auto 16px;
+    position: relative;
+  }
+  .nfc-ring-outer {
+    width: 110px;
+    height: 110px;
+    border-radius: 50%;
+    border: 2px solid rgba(79,255,176,0.2);
+    position: absolute;
+    animation: pulse-ring 2s ease-in-out infinite;
+  }
+  .nfc-ring-inner {
+    width: 80px;
+    height: 80px;
+    border-radius: 50%;
+    border: 2px solid rgba(79,255,176,0.4);
+    position: absolute;
+    top: 15px; left: 15px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: var(--surface2);
+  }
+  .nfc-icon { font-size: 2rem; }
+  @keyframes pulse-ring {
+    0%, 100% { transform: scale(1); opacity: 0.6; }
+    50% { transform: scale(1.1); opacity: 1; }
+  }
+  .nfc-zone.scanning .nfc-ring-outer { animation: spin 1s linear infinite; border-color: var(--accent); }
+  .nfc-zone.success .nfc-ring-outer { border-color: var(--accent); animation: none; }
+  .nfc-zone.success .nfc-ring-inner { border-color: var(--accent); background: rgba(79,255,176,0.1); }
+  .nfc-zone.error .nfc-ring-outer { border-color: var(--warn); animation: none; }
+  @keyframes spin { to { transform: rotate(360deg); } }
+
+  .nfc-label {
+    font-size: 0.85rem;
+    color: var(--text2);
+    margin-bottom: 8px;
+  }
+  .nfc-status {
+    font-size: 1rem;
+    font-weight: 700;
+    color: var(--text);
+    min-height: 24px;
+  }
+  .nfc-status.ok { color: var(--accent); }
+  .nfc-status.err { color: var(--warn); }
+
+  /* ── SEARCH ── */
+  .search-wrap {
+    position: relative;
+    margin-bottom: 20px;
+  }
+  .search-icon {
+    position: absolute;
+    left: 14px; top: 50%;
+    transform: translateY(-50%);
+    font-size: 1rem;
+    color: var(--text3);
+    pointer-events: none;
+  }
+  .search-input {
+    width: 100%;
+    padding: 14px 14px 14px 42px;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-sm);
+    color: var(--text);
+    font-family: inherit;
+    font-size: 1rem;
+    outline: none;
+    transition: border-color 0.2s;
+  }
+  .search-input:focus { border-color: var(--accent2); }
+  .search-input::placeholder { color: var(--text3); }
+  .search-results {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-sm);
+    overflow: hidden;
+    margin-top: 8px;
+    display: none;
+  }
+  .search-results.show { display: block; }
+  .search-result-item {
+    padding: 12px 16px;
+    cursor: pointer;
+    transition: background 0.15s;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    border-bottom: 1px solid var(--border);
+  }
+  .search-result-item:last-child { border-bottom: none; }
+  .search-result-item:hover, .search-result-item:active { background: var(--surface2); }
+  .result-avatar {
+    width: 38px; height: 38px;
+    border-radius: 50%;
+    background: var(--accent2);
+    display: flex; align-items: center; justify-content: center;
+    font-size: 1rem; font-weight: 700; color: #fff;
+    flex-shrink: 0;
+  }
+  .result-name { font-weight: 600; font-size: 0.95rem; }
+  .result-meta { font-size: 0.78rem; color: var(--text2); margin-top: 2px; }
+
+  /* ── MEMBER CARD ── */
+  .member-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 20px;
+    margin-bottom: 16px;
+    display: none;
+    animation: slide-up 0.3s ease;
+  }
+  .member-card.show { display: block; }
+  @keyframes slide-up {
+    from { opacity: 0; transform: translateY(16px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+  .member-header {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    margin-bottom: 16px;
+  }
+  .member-avatar {
+    width: 56px; height: 56px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, var(--accent2), var(--accent));
+    display: flex; align-items: center; justify-content: center;
+    font-size: 1.5rem; font-weight: 900; color: #0d0f1a;
+    flex-shrink: 0;
+  }
+  .member-name { font-size: 1.2rem; font-weight: 700; }
+  .member-furigana { font-size: 0.78rem; color: var(--text2); margin-bottom: 4px; }
+  .member-badges { display: flex; gap: 6px; flex-wrap: wrap; margin-top: 6px; }
+  .badge {
+    padding: 3px 10px;
+    border-radius: 20px;
+    font-size: 0.7rem;
+    font-weight: 600;
+    letter-spacing: 0.03em;
+  }
+  .badge-course { background: rgba(123,111,255,0.2); color: var(--accent2); border: 1px solid rgba(123,111,255,0.3); }
+  .badge-paid { background: rgba(79,255,176,0.15); color: var(--accent); border: 1px solid rgba(79,255,176,0.3); }
+  .badge-unpaid { background: rgba(255,107,107,0.15); color: var(--warn); border: 1px solid rgba(255,107,107,0.3); }
+  .badge-warn { background: rgba(255,184,0,0.15); color: #ffb800; border: 1px solid rgba(255,184,0,0.3); }
+
+  /* payment months strip */
+  .payment-strip {
+    display: grid;
+    grid-template-columns: repeat(6, 1fr);
+    gap: 4px;
+    margin-bottom: 16px;
+  }
+  .month-cell {
+    aspect-ratio: 1;
+    border-radius: 6px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    font-size: 0.6rem;
+    font-weight: 600;
+    gap: 2px;
+  }
+  .month-cell.paid { background: rgba(79,255,176,0.15); color: var(--accent); }
+  .month-cell.unpaid { background: var(--surface2); color: var(--text3); }
+  .month-cell.current { outline: 2px solid var(--accent); outline-offset: 1px; }
+  .month-num { font-size: 0.75rem; font-weight: 700; font-family: 'DM Mono', monospace; }
+
+  /* class selector */
+  .class-select-label {
+    font-size: 0.78rem;
+    color: var(--text2);
+    margin-bottom: 8px;
+    font-weight: 500;
+  }
+  .class-pills {
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
+    margin-bottom: 16px;
+  }
+  .class-pill {
+    padding: 8px 16px;
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: 20px;
+    color: var(--text2);
+    font-family: inherit;
+    font-size: 0.85rem;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.15s;
+  }
+  .class-pill.active {
+    background: rgba(123,111,255,0.2);
+    border-color: var(--accent2);
+    color: var(--accent2);
+  }
+
+  /* confirm button */
+  .confirm-btn {
+    width: 100%;
+    padding: 16px;
+    background: var(--accent);
+    color: #0d0f1a;
+    border: none;
+    border-radius: var(--radius-sm);
+    font-family: inherit;
+    font-size: 1rem;
+    font-weight: 800;
+    cursor: pointer;
+    letter-spacing: 0.05em;
+    transition: all 0.2s;
+    position: relative;
+    overflow: hidden;
+  }
+  .confirm-btn:active { transform: scale(0.98); }
+  .confirm-btn:hover { background: #6affd0; }
+  .confirm-btn:disabled { background: var(--text3); color: var(--surface); cursor: not-allowed; }
+
+  /* ── TODAY LIST ── */
+  .today-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 16px;
+  }
+  .today-title { font-size: 1rem; font-weight: 700; }
+  .today-count {
+    background: var(--accent);
+    color: #0d0f1a;
+    border-radius: 20px;
+    padding: 3px 12px;
+    font-size: 0.8rem;
+    font-weight: 800;
+    font-family: 'DM Mono', monospace;
+  }
+  .attendance-list { display: flex; flex-direction: column; gap: 8px; }
+  .attendance-item {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-sm);
+    padding: 12px 16px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    animation: slide-up 0.2s ease;
+  }
+  .att-time {
+    font-family: 'DM Mono', monospace;
+    font-size: 0.8rem;
+    color: var(--accent);
+    min-width: 42px;
+  }
+  .att-name { flex: 1; font-weight: 600; font-size: 0.9rem; }
+  .att-class {
+    font-size: 0.72rem;
+    color: var(--text2);
+    padding: 3px 8px;
+    background: var(--surface2);
+    border-radius: 10px;
+  }
+  .att-undo {
+    background: none;
+    border: none;
+    color: var(--text3);
+    cursor: pointer;
+    font-size: 1rem;
+    padding: 4px;
+    transition: color 0.15s;
+  }
+  .att-undo:hover { color: var(--warn); }
+
+  /* ── MEMBER REGISTER ── */
+  .form-section { margin-bottom: 20px; }
+  .form-label {
+    font-size: 0.78rem;
+    font-weight: 600;
+    color: var(--text2);
+    margin-bottom: 6px;
+    display: block;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+  }
+  .form-input, .form-select {
+    width: 100%;
+    padding: 13px 14px;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-sm);
+    color: var(--text);
+    font-family: inherit;
+    font-size: 0.95rem;
+    outline: none;
+    transition: border-color 0.2s;
+    appearance: none;
+    -webkit-appearance: none;
+  }
+  .form-input:focus, .form-select:focus { border-color: var(--accent2); }
+  .form-select { background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' fill='none'%3E%3Cpath d='M1 1l5 5 5-5' stroke='%238892b0' stroke-width='2' stroke-linecap='round'/%3E%3C/svg%3E"); background-repeat: no-repeat; background-position: right 14px center; padding-right: 36px; }
+  .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+
+  /* ── NFC GUIDE ── */
+  .guide-step {
+    display: flex;
+    gap: 16px;
+    margin-bottom: 20px;
+    padding: 16px;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-sm);
+  }
+  .step-num {
+    width: 32px; height: 32px;
+    border-radius: 50%;
+    background: var(--accent2);
+    color: #fff;
+    display: flex; align-items: center; justify-content: center;
+    font-weight: 800;
+    font-size: 0.85rem;
+    flex-shrink: 0;
+  }
+  .step-content h4 { font-size: 0.9rem; font-weight: 700; margin-bottom: 4px; }
+  .step-content p { font-size: 0.82rem; color: var(--text2); line-height: 1.55; }
+  .step-content code {
+    font-family: 'DM Mono', monospace;
+    background: var(--surface2);
+    padding: 2px 6px;
+    border-radius: 4px;
+    font-size: 0.78rem;
+    color: var(--accent);
+  }
+  .guide-note {
+    background: rgba(123,111,255,0.1);
+    border: 1px solid rgba(123,111,255,0.3);
+    border-radius: var(--radius-sm);
+    padding: 14px 16px;
+    font-size: 0.82rem;
+    color: var(--text2);
+    line-height: 1.6;
+    margin-bottom: 20px;
+  }
+
+  /* ── SUCCESS TOAST ── */
+  .toast {
+    position: fixed;
+    bottom: calc(var(--safe-bottom) + 24px);
+    left: 50%; transform: translateX(-50%) translateY(100px);
+    background: var(--accent);
+    color: #0d0f1a;
+    padding: 12px 24px;
+    border-radius: 30px;
+    font-weight: 700;
+    font-size: 0.9rem;
+    z-index: 999;
+    transition: transform 0.35s cubic-bezier(0.34, 1.56, 0.64, 1);
+    white-space: nowrap;
+    box-shadow: 0 8px 32px rgba(79,255,176,0.4);
+  }
+  .toast.show { transform: translateX(-50%) translateY(0); }
+
+  /* ── SECTION TITLE ── */
+  .section-title {
+    font-size: 0.72rem;
+    font-weight: 700;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--text3);
+    margin-bottom: 12px;
+    padding-bottom: 8px;
+    border-bottom: 1px solid var(--border);
+  }
+
+  /* ── EMPTY STATE ── */
+  .empty-state {
+    text-align: center;
+    padding: 48px 20px;
+    color: var(--text3);
+  }
+  .empty-state .empty-icon { font-size: 3rem; margin-bottom: 12px; }
+  .empty-state p { font-size: 0.85rem; line-height: 1.6; }
+
+  /* ── DESKTOP LAYOUT ── */
+  @media (min-width: 768px) {
+    .app-header { padding: 16px 32px; }
+    .main { padding: 28px 32px; max-width: 900px; }
+    .tab-btn { min-width: 120px; font-size: 0.85rem; }
+
+    /* desktop: 2-column for scan tab */
+    .scan-layout {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 24px;
+      align-items: start;
+    }
+    .scan-left, .scan-right { min-width: 0; }
+
+    .payment-strip {
+      grid-template-columns: repeat(12, 1fr);
+    }
+
+    .form-row-3 {
+      grid-template-columns: 1fr 1fr 1fr;
+    }
+  }
+
+  @media (min-width: 1024px) {
+    .main { max-width: 1100px; }
+  }
+
+  /* ── STAT BOXES ── */
+  .stats-row {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 8px;
+    margin-bottom: 16px;
+  }
+  .stat-box {
+    background: var(--surface2);
+    border-radius: var(--radius-sm);
+    padding: 10px;
+    text-align: center;
+  }
+  .stat-val {
+    font-family: 'DM Mono', monospace;
+    font-size: 1.1rem;
+    font-weight: 700;
+    color: var(--accent);
+  }
+  .stat-lbl { font-size: 0.65rem; color: var(--text3); margin-top: 2px; }
+</style>
+</head>
+<body>
+
+<header class="app-header">
+  <div class="app-title">⚡ 出席管理 <span>Athletic Club</span></div>
+  <a href="accounting.html" class="header-link">💴 会計 →</a>
+</header>
+
+<div class="tab-bar">
+  <button class="tab-btn active" onclick="switchTab('scan')">🪪 出席登録</button>
+  <button class="tab-btn" onclick="switchTab('today')">📋 本日</button>
+  <button class="tab-btn" onclick="switchTab('register')">➕ 会員登録</button>
+  <button class="tab-btn" onclick="switchTab('guide')">📡 NFC設定</button>
+</div>
+
+<div class="main">
+
+  <!-- ── TAB: SCAN ── -->
+  <div id="tab-scan" class="tab-panel active">
+    <div class="scan-layout">
+      <div class="scan-left">
+        <!-- NFC zone -->
+        <div class="nfc-zone" id="nfcZone">
+          <div class="nfc-ring">
+            <div class="nfc-ring-outer"></div>
+            <div class="nfc-ring-inner">
+              <span class="nfc-icon">📶</span>
+            </div>
+          </div>
+          <div class="nfc-label">NFCカードをかざしてください</div>
+          <div class="nfc-status" id="nfcStatus">待機中...</div>
+        </div>
+
+        <!-- デモボタン (実際のNFCテスト用) -->
+        <div style="display:flex; gap:8px; flex-wrap:wrap; margin-bottom:20px;">
+          <button onclick="simulateScan('NFC001')" style="flex:1; min-width:80px; padding:9px; background:var(--surface2); border:1px solid var(--border); border-radius:8px; color:var(--text2); font-family:inherit; font-size:0.78rem; cursor:pointer;">🧪 田中</button>
+          <button onclick="simulateScan('NFC002')" style="flex:1; min-width:80px; padding:9px; background:var(--surface2); border:1px solid var(--border); border-radius:8px; color:var(--text2); font-family:inherit; font-size:0.78rem; cursor:pointer;">🧪 鈴木</button>
+          <button onclick="simulateScan('NFC003')" style="flex:1; min-width:80px; padding:9px; background:var(--surface2); border:1px solid var(--border); border-radius:8px; color:var(--text2); font-family:inherit; font-size:0.78rem; cursor:pointer;">🧪 山田</button>
+          <button onclick="simulateScan('NFC999')" style="flex:1; min-width:80px; padding:9px; background:var(--surface2); border:1px solid var(--border); border-radius:8px; color:var(--text2); font-family:inherit; font-size:0.78rem; cursor:pointer;">🧪 未登録</button>
+        </div>
+
+        <!-- 名前検索 -->
+        <div class="section-title">名前で検索</div>
+        <div class="search-wrap">
+          <span class="search-icon">🔍</span>
+          <input class="search-input" id="searchInput" type="text" placeholder="名前・ふりがなで検索..." autocomplete="off" oninput="onSearch(this.value)">
+          <div class="search-results" id="searchResults"></div>
+        </div>
+      </div>
+
+      <div class="scan-right">
+        <!-- Member card -->
+        <div class="member-card" id="memberCard">
+          <div class="member-header">
+            <div class="member-avatar" id="memberAvatar">?</div>
+            <div>
+              <div class="member-furigana" id="memberFurigana">—</div>
+              <div class="member-name" id="memberName">—</div>
+              <div class="member-badges" id="memberBadges"></div>
+            </div>
+          </div>
+
+          <div class="stats-row">
+            <div class="stat-box">
+              <div class="stat-val" id="statTotal">—</div>
+              <div class="stat-lbl">累計月謝</div>
+            </div>
+            <div class="stat-box">
+              <div class="stat-val" id="statMonths">—</div>
+              <div class="stat-lbl">支払済月数</div>
+            </div>
+            <div class="stat-box">
+              <div class="stat-val" id="statLast">—</div>
+              <div class="stat-lbl">最終支払</div>
+            </div>
+          </div>
+
+          <div class="section-title" style="font-size:0.65rem;">直近6ヶ月の支払い状況</div>
+          <div class="payment-strip" id="paymentStrip"></div>
+
+          <div class="class-select-label">クラスを選択</div>
+          <div class="class-pills">
+            <button class="class-pill active" onclick="selectClass(this,'通常')">通常</button>
+            <button class="class-pill" onclick="selectClass(this,'特別')">特別クラス</button>
+            <button class="class-pill" onclick="selectClass(this,'補講')">補講</button>
+            <button class="class-pill" onclick="selectClass(this,'体験')">体験</button>
+          </div>
+
+          <button class="confirm-btn" id="confirmBtn" onclick="confirmAttendance()">✓ 出席を登録する</button>
+        </div>
+
+        <div id="noMemberState" style="display:none;">
+          <div class="empty-state">
+            <div class="empty-icon">🪪</div>
+            <p>NFCカードをかざすか<br>名前で検索してください</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── TAB: TODAY ── -->
+  <div id="tab-today" class="tab-panel">
+    <div class="today-header">
+      <div class="today-title" id="todayDate">—</div>
+      <div class="today-count" id="todayCount">0名</div>
+    </div>
+    <div class="attendance-list" id="attendanceList">
+      <div class="empty-state">
+        <div class="empty-icon">📋</div>
+        <p>まだ出席者がいません</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── TAB: REGISTER ── -->
+  <div id="tab-register" class="tab-panel">
+    <div class="section-title">新規会員登録</div>
+    <div class="form-section">
+      <label class="form-label">氏名</label>
+      <input class="form-input" id="regName" type="text" placeholder="田中 太郎">
+    </div>
+    <div class="form-section">
+      <label class="form-label">ふりがな</label>
+      <input class="form-input" id="regFurigana" type="text" placeholder="たなか たろう">
+    </div>
+    <div class="form-section form-row">
+      <div>
+        <label class="form-label">NFCカードID</label>
+        <input class="form-input" id="regNfc" type="text" placeholder="NFC007">
+      </div>
+      <div>
+        <label class="form-label">コース</label>
+        <select class="form-select" id="regCourse">
+          <option>基礎コース</option>
+          <option>中級コース</option>
+          <option>上級コース</option>
+          <option>プライベート</option>
+        </select>
+      </div>
+    </div>
+    <div class="form-section">
+      <label class="form-label">電話番号</label>
+      <input class="form-input" id="regPhone" type="tel" placeholder="090-0000-0000">
+    </div>
+    <div class="form-section">
+      <label class="form-label">メールアドレス</label>
+      <input class="form-input" id="regEmail" type="email" placeholder="tanaka@example.com">
+    </div>
+    <div class="form-section">
+      <label class="form-label">入会日</label>
+      <input class="form-input" id="regJoin" type="date">
+    </div>
+    <button class="confirm-btn" onclick="registerMember()" style="margin-top:8px;">✓ 会員を登録する</button>
+  </div>
+
+  <!-- ── TAB: GUIDE ── -->
+  <div id="tab-guide" class="tab-panel">
+    <div class="section-title">NFC設定ガイド</div>
+    <div class="guide-note">
+      💡 iPhoneはNFCカードにURLを書き込むことで自動的にブラウザを開きます。Web NFC APIは不要です。Chrome（Android）はNFCカードを直接読み取ることもできます。
+    </div>
+
+    <div class="guide-step">
+      <div class="step-num">1</div>
+      <div class="step-content">
+        <h4>NFCタグを用意する</h4>
+        <p>NTAG213/215/216タグを購入（Amazonで10枚¥500〜）。金属面に貼る場合はon-metalタグを使用してください。</p>
+      </div>
+    </div>
+
+    <div class="guide-step">
+      <div class="step-num">2</div>
+      <div class="step-content">
+        <h4>URLを書き込む（NFC Toolsアプリ）</h4>
+        <p>App Store / Play Storeで「NFC Tools」をインストール。<br>
+        「Write」→「Add a record」→「URL/URI」を選択し、以下の形式で入力：<br><br>
+        <code>https://あなたのサイト.com/attendance.html?member=NFC001</code><br><br>
+        各カードごとにNFC001、NFC002…と変更してください。</p>
+      </div>
+    </div>
+
+    <div class="guide-step">
+      <div class="step-num">3</div>
+      <div class="step-content">
+        <h4>iPhoneでの動作確認</h4>
+        <p>iPhone XS以降はカード上部（NFC部）をかざすだけで自動読み取り。Safariまたは設定中のブラウザが起動し、会員情報が表示されます。</p>
+      </div>
+    </div>
+
+    <div class="guide-step">
+      <div class="step-num">4</div>
+      <div class="step-content">
+        <h4>Shortcutsで自動化（オプション）</h4>
+        <p>「ショートカット」アプリ →「オートメーション」→「個人用オートメーション」→「NFC」でタグをスキャン。アクション「URLを開く」でURLを指定すると、バナー確認なしで即起動できます。</p>
+      </div>
+    </div>
+
+    <div class="guide-step">
+      <div class="step-num">5</div>
+      <div class="step-content">
+        <h4>Google Apps Scriptにデプロイ</h4>
+        <p>Code.gsをGASにデプロイしてWebアプリURLを取得。attendance.htmlの<code>GAS_URL</code>定数に設定してください。</p>
+      </div>
+    </div>
+
+    <div class="guide-step">
+      <div class="step-num">6</div>
+      <div class="step-content">
+        <h4>ホーム画面に追加</h4>
+        <p>Chrome: メニュー → 「ホーム画面に追加」<br>Safari: 共有 → 「ホーム画面に追加」<br>ネイティブアプリのようにフルスクリーンで使用できます。</p>
+      </div>
+    </div>
+  </div>
+
+</div><!-- /main -->
+
+<div class="toast" id="toast"></div>
+
+<script>
+// ── CONFIG ──
+const GAS_URL = 'https://script.google.com/macros/s/AKfycbw6LH05sO1n0TVTkoFkjalfslIGVbQA7Ofc6pK2WB9tsqBFixMPAoDAnmg4MJw45QAZPQ/exec
+';
+
+// ── DEMO DATA ──
+const MEMBERS = [
+  { id:'NFC001', name:'田中 太郎', furigana:'たなか たろう', course:'中級コース', fee:5000, paidMonths:['2026/01','2026/02','2025/11','2025/12'], assocFee:true, insurance:true },
+  { id:'NFC002', name:'鈴木 花子', furigana:'すずき はなこ', course:'基礎コース', fee:4000, paidMonths:['2026/01','2026/02','2026/03','2025/10','2025/11','2025/12'], assocFee:true, insurance:false },
+  { id:'NFC003', name:'山田 健太', furigana:'やまだ けんた',  course:'上級コース', fee:7000, paidMonths:['2025/12','2026/01'], assocFee:false, insurance:true },
+  { id:'NFC004', name:'佐藤 めぐみ', furigana:'さとう めぐみ', course:'基礎コース', fee:4000, paidMonths:['2026/01','2026/02'], assocFee:true, insurance:true },
+  { id:'NFC005', name:'伊藤 はるか', furigana:'いとう はるか', course:'プライベート', fee:12000, paidMonths:['2026/02','2026/03'], assocFee:true, insurance:true },
+  { id:'NFC006', name:'渡辺 こうた', furigana:'わたなべ こうた', course:'中級コース', fee:5000, paidMonths:[], assocFee:false, insurance:false },
+];
+
+let todayAttendance = [];
+let selectedMember = null;
+let selectedClass = '通常';
+
+// ── URL PARAM: NFC trigger ──
+function checkUrlParam() {
+  const params = new URLSearchParams(window.location.search);
+  const memberId = params.get('member') || params.get('id');
+  if (memberId) {
+    history.replaceState({}, '', window.location.pathname);
+    setTimeout(() => simulateScan(memberId), 400);
+  }
+}
+
+function simulateScan(id) {
+  const zone = document.getElementById('nfcZone');
+  const status = document.getElementById('nfcStatus');
+  zone.className = 'nfc-zone scanning';
+  status.textContent = 'スキャン中...';
+  status.className = 'nfc-status';
+  setTimeout(() => {
+    const member = MEMBERS.find(m => m.id === id);
+    if (member) {
+      zone.className = 'nfc-zone success';
+      status.textContent = '✓ 認識しました';
+      status.className = 'nfc-status ok';
+      showMember(member);
+      if (navigator.vibrate) navigator.vibrate([50, 30, 50]);
+    } else {
+      zone.className = 'nfc-zone error';
+      status.textContent = '✗ 未登録のカードです';
+      status.className = 'nfc-status err';
+    }
+    setTimeout(() => {
+      zone.className = 'nfc-zone';
+      status.textContent = '待機中...';
+      status.className = 'nfc-status';
+    }, 3000);
+  }, 900);
+}
+
+function showMember(member) {
+  selectedMember = member;
+  document.getElementById('memberAvatar').textContent = member.name[0];
+  document.getElementById('memberFurigana').textContent = member.furigana;
+  document.getElementById('memberName').textContent = member.name;
+
+  // badges
+  const now = new Date();
+  const thisMonth = `${now.getFullYear()}/${String(now.getMonth()+1).padStart(2,'0')}`;
+  const isPaidThisMonth = member.paidMonths.includes(thisMonth);
+  const badges = document.getElementById('memberBadges');
+  badges.innerHTML = `
+    <span class="badge badge-course">${member.course}</span>
+    <span class="badge ${isPaidThisMonth ? 'badge-paid' : 'badge-unpaid'}">${isPaidThisMonth ? '✓ 今月支払済' : '⚠ 今月未払い'}</span>
+    ${!member.assocFee ? '<span class="badge badge-warn">協会費未払</span>' : ''}
+    ${!member.insurance ? '<span class="badge badge-warn">保険未払</span>' : ''}
+  `;
+
+  // stats
+  const totalPaid = member.paidMonths.length * member.fee;
+  document.getElementById('statTotal').textContent = `¥${totalPaid.toLocaleString()}`;
+  document.getElementById('statMonths').textContent = member.paidMonths.length + 'ヶ月';
+  const sorted = [...member.paidMonths].sort();
+  document.getElementById('statLast').textContent = sorted.length ? sorted[sorted.length-1].slice(5) + '月' : '—';
+
+  // payment strip (last 6 months)
+  const strip = document.getElementById('paymentStrip');
+  strip.innerHTML = '';
+  for (let i = 5; i >= 0; i--) {
+    const d = new Date(now.getFullYear(), now.getMonth() - i, 1);
+    const key = `${d.getFullYear()}/${String(d.getMonth()+1).padStart(2,'0')}`;
+    const paid = member.paidMonths.includes(key);
+    const isCurrent = key === thisMonth;
+    strip.innerHTML += `
+      <div class="month-cell ${paid ? 'paid' : 'unpaid'} ${isCurrent ? 'current' : ''}">
+        <span class="month-num">${d.getMonth()+1}</span>
+        <span>${paid ? '✓' : '✗'}</span>
+      </div>
+    `;
+  }
+
+  document.getElementById('memberCard').classList.add('show');
+  document.getElementById('noMemberState').style.display = 'none';
+
+  // scroll to card on mobile
+  if (window.innerWidth < 768) {
+    setTimeout(() => document.getElementById('memberCard').scrollIntoView({ behavior:'smooth', block:'nearest' }), 100);
+  }
+}
+
+function selectClass(btn, cls) {
+  document.querySelectorAll('.class-pill').forEach(p => p.classList.remove('active'));
+  btn.classList.add('active');
+  selectedClass = cls;
+}
+
+function confirmAttendance() {
+  if (!selectedMember) return;
+  const now = new Date();
+  const time = `${String(now.getHours()).padStart(2,'0')}:${String(now.getMinutes()).padStart(2,'0')}`;
+  todayAttendance.unshift({ member: selectedMember, class: selectedClass, time });
+  renderTodayList();
+  showToast(`✓ ${selectedMember.name} さんの出席を登録しました`);
+
+  // Reset
+  document.getElementById('memberCard').classList.remove('show');
+  document.getElementById('noMemberState').style.display = '';
+  document.getElementById('searchInput').value = '';
+  document.getElementById('searchResults').classList.remove('show');
+  selectedMember = null;
+
+  // GAS push (non-blocking)
+  sendToGAS({ action:'attendance', memberId: selectedMember?.id, memberName: selectedMember?.name, class: selectedClass, time });
+}
+
+function sendToGAS(data) {
+  if (!GAS_URL.includes('YOUR_SCRIPT_ID')) {
+    fetch(GAS_URL, { method:'POST', body:JSON.stringify(data) }).catch(()=>{});
+  }
+}
+
+// ── SEARCH ──
+function onSearch(q) {
+  const container = document.getElementById('searchResults');
+  if (!q.trim()) { container.classList.remove('show'); return; }
+  const results = MEMBERS.filter(m =>
+    m.name.includes(q) || m.furigana.includes(q) || m.id.toLowerCase().includes(q.toLowerCase())
+  );
+  if (!results.length) { container.classList.remove('show'); return; }
+  container.innerHTML = results.map(m => `
+    <div class="search-result-item" onclick="selectFromSearch('${m.id}')">
+      <div class="result-avatar">${m.name[0]}</div>
+      <div>
+        <div class="result-name">${m.name}</div>
+        <div class="result-meta">${m.furigana} · ${m.course}</div>
+      </div>
+    </div>
+  `).join('');
+  container.classList.add('show');
+}
+
+function selectFromSearch(id) {
+  const member = MEMBERS.find(m => m.id === id);
+  if (member) {
+    showMember(member);
+    document.getElementById('searchResults').classList.remove('show');
+    document.getElementById('searchInput').value = member.name;
+  }
+}
+
+// ── TODAY ──
+function renderTodayList() {
+  const now = new Date();
+  document.getElementById('todayDate').textContent = `${now.getFullYear()}年${now.getMonth()+1}月${now.getDate()}日 (${['日','月','火','水','木','金','土'][now.getDay()]})`;
+  document.getElementById('todayCount').textContent = todayAttendance.length + '名';
+  const list = document.getElementById('attendanceList');
+  if (!todayAttendance.length) {
+    list.innerHTML = '<div class="empty-state"><div class="empty-icon">📋</div><p>まだ出席者がいません</p></div>';
+    return;
+  }
+  list.innerHTML = todayAttendance.map((a, i) => `
+    <div class="attendance-item" id="att-${i}">
+      <span class="att-time">${a.time}</span>
+      <div class="member-avatar" style="width:34px;height:34px;font-size:1rem;">${a.member.name[0]}</div>
+      <span class="att-name">${a.member.name}</span>
+      <span class="att-class">${a.class}</span>
+      <button class="att-undo" onclick="undoAttendance(${i})" title="取消">✕</button>
+    </div>
+  `).join('');
+}
+
+function undoAttendance(i) {
+  todayAttendance.splice(i, 1);
+  renderTodayList();
+  showToast('取消しました');
+}
+
+// ── REGISTER ──
+function registerMember() {
+  const name = document.getElementById('regName').value.trim();
+  if (!name) { showToast('⚠ 氏名を入力してください', true); return; }
+  showToast(`✓ ${name} さんを登録しました`);
+  ['regName','regFurigana','regNfc','regPhone','regEmail'].forEach(id => document.getElementById(id).value = '');
+}
+
+// ── TABS ──
+function switchTab(name) {
+  document.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('active'));
+  document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+  document.getElementById('tab-'+name).classList.add('active');
+  event.currentTarget.classList.add('active');
+  if (name === 'today') renderTodayList();
+}
+
+// ── TOAST ──
+function showToast(msg, err=false) {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.style.background = err ? 'var(--warn)' : 'var(--accent)';
+  t.style.color = err ? '#fff' : '#0d0f1a';
+  t.classList.add('show');
+  setTimeout(() => t.classList.remove('show'), 3000);
+}
+
+// ── INIT ──
+document.getElementById('regJoin').valueAsDate = new Date();
+renderTodayList();
+checkUrlParam();
+
+// Close search on outside click
+document.addEventListener('click', e => {
+  if (!e.target.closest('.search-wrap')) {
+    document.getElementById('searchResults').classList.remove('show');
+  }
+});
+</script>
+</body>
+</html>
