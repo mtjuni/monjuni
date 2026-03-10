@@ -600,14 +600,6 @@
           <div class="nfc-status" id="nfcStatus">待機中...</div>
         </div>
 
-        <!-- デモボタン (実際のNFCテスト用) -->
-        <div style="display:flex; gap:8px; flex-wrap:wrap; margin-bottom:20px;">
-          <button onclick="simulateScan('NFC001')" style="flex:1; min-width:80px; padding:9px; background:var(--surface2); border:1px solid var(--border); border-radius:8px; color:var(--text2); font-family:inherit; font-size:0.78rem; cursor:pointer;">🧪 田中</button>
-          <button onclick="simulateScan('NFC002')" style="flex:1; min-width:80px; padding:9px; background:var(--surface2); border:1px solid var(--border); border-radius:8px; color:var(--text2); font-family:inherit; font-size:0.78rem; cursor:pointer;">🧪 鈴木</button>
-          <button onclick="simulateScan('NFC003')" style="flex:1; min-width:80px; padding:9px; background:var(--surface2); border:1px solid var(--border); border-radius:8px; color:var(--text2); font-family:inherit; font-size:0.78rem; cursor:pointer;">🧪 山田</button>
-          <button onclick="simulateScan('NFC999')" style="flex:1; min-width:80px; padding:9px; background:var(--surface2); border:1px solid var(--border); border-radius:8px; color:var(--text2); font-family:inherit; font-size:0.78rem; cursor:pointer;">🧪 未登録</button>
-        </div>
-
         <!-- 名前検索 -->
         <div class="section-title">名前で検索</div>
         <div class="search-wrap">
@@ -789,16 +781,30 @@
 <script>
 // ── CONFIG ──
 const GAS_URL = 'https://script.google.com/macros/s/AKfycbyVH4yXtC0PsG4gwbWITAnsMFUdwvMSij2hNsZ9z4bfRTRS0RxHzqvZZeaN3AVIEOte/exec';
+// Google Forms → スプレッドシート連携: GASのgetMembersエンドポイントで自動取得
+// スプレッドシートのID設定はCode.gsのSS_IDで行う
 
-// ── DEMO DATA ──
-const MEMBERS = [
-  { id:'NFC001', name:'田中 太郎', furigana:'たなか たろう', course:'中級コース', fee:5000, paidMonths:['2026/01','2026/02','2025/11','2025/12'], assocFee:true, insurance:true },
-  { id:'NFC002', name:'鈴木 花子', furigana:'すずき はなこ', course:'基礎コース', fee:4000, paidMonths:['2026/01','2026/02','2026/03','2025/10','2025/11','2025/12'], assocFee:true, insurance:false },
-  { id:'NFC003', name:'山田 健太', furigana:'やまだ けんた',  course:'上級コース', fee:7000, paidMonths:['2025/12','2026/01'], assocFee:false, insurance:true },
-  { id:'NFC004', name:'佐藤 めぐみ', furigana:'さとう めぐみ', course:'基礎コース', fee:4000, paidMonths:['2026/01','2026/02'], assocFee:true, insurance:true },
-  { id:'NFC005', name:'伊藤 はるか', furigana:'いとう はるか', course:'プライベート', fee:12000, paidMonths:['2026/02','2026/03'], assocFee:true, insurance:true },
-  { id:'NFC006', name:'渡辺 こうた', furigana:'わたなべ こうた', course:'中級コース', fee:5000, paidMonths:[], assocFee:false, insurance:false },
+// ── 生徒データ（GASから取得、未接続時はデモデータ）──
+let MEMBERS = [
+  { id:'NFC001', name:'田中 太郎', furigana:'たなか たろう', course:'月2回コース', fee:2400, paidMonths:['2026/01','2026/02','2025/11','2025/12'], assocFee:true, insurance:true },
+  { id:'NFC002', name:'鈴木 花子', furigana:'すずき はなこ', course:'月1回コース', fee:1500, paidMonths:['2026/01','2026/02','2026/03','2025/10','2025/11','2025/12'], assocFee:true, insurance:true },
+  { id:'NFC003', name:'山田 健太', furigana:'やまだ けんた', course:'月2回コース', fee:2400, paidMonths:['2025/12','2026/01'], assocFee:false, insurance:true },
+  { id:'NFC004', name:'佐藤 めぐみ', furigana:'さとう めぐみ', course:'月1回コース', fee:1500, paidMonths:['2026/01','2026/02'], assocFee:true, insurance:true },
+  { id:'NFC005', name:'伊藤 はるか', furigana:'いとう はるか', course:'月2回コース', fee:2400, paidMonths:['2026/02','2026/03'], assocFee:true, insurance:true },
+  { id:'NFC006', name:'渡辺 こうた', furigana:'わたなべ こうた', course:'月2回コース', fee:2400, paidMonths:[], assocFee:false, insurance:false },
 ];
+
+// GASから生徒リストを取得（起動時）
+async function loadMembersFromGAS() {
+  try {
+    const res = await fetch(GAS_URL + '?action=getMembers');
+    const data = await res.json();
+    if (data && data.members && data.members.length > 0) {
+      MEMBERS = data.members;
+      showToast(`✓ 生徒リスト ${MEMBERS.length}名 を読み込みました`);
+    }
+  } catch(e) { /* デモデータで動作 */ }
+}
 
 let todayAttendance = [];
 let selectedMember = null;
@@ -1009,6 +1015,7 @@ function showToast(msg, err=false) {
 document.getElementById('regJoin').valueAsDate = new Date();
 renderTodayList();
 checkUrlParam();
+loadMembersFromGAS(); // Googleスプレッドシートから生徒リスト取得
 
 // Close search on outside click
 document.addEventListener('click', e => {

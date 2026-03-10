@@ -1,0 +1,721 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="mobile-web-app-capable" content="yes">
+<title>コーチ出席管理 — Athletic Club</title>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@300;400;500;700;900&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #0a0d1a;
+    --surface: #12172a;
+    --surface2: #1a2038;
+    --border: #252d48;
+    --orange: #ff9f43;
+    --blue: #48dbfb;
+    --green: #1dd1a1;
+    --purple: #a29bfe;
+    --warn: #ff6b6b;
+    --text: #e8eaf6;
+    --text2: #8892b0;
+    --text3: #404870;
+    --radius: 16px;
+    --radius-sm: 10px;
+    --safe-top: env(safe-area-inset-top, 0px);
+    --safe-bottom: env(safe-area-inset-bottom, 0px);
+  }
+
+  * { margin:0; padding:0; box-sizing:border-box; -webkit-tap-highlight-color:transparent; }
+
+  body {
+    font-family:'Noto Sans JP', sans-serif;
+    background:var(--bg);
+    color:var(--text);
+    min-height:100dvh;
+    overflow-x:hidden;
+  }
+
+  /* ── HEADER ── */
+  .app-header {
+    position:sticky; top:0; z-index:100;
+    background:rgba(10,13,26,0.93);
+    backdrop-filter:blur(20px);
+    -webkit-backdrop-filter:blur(20px);
+    border-bottom:1px solid var(--border);
+    padding:calc(var(--safe-top) + 12px) 20px 12px;
+    display:flex; align-items:center; justify-content:space-between;
+  }
+  .app-title { font-size:1.05rem; font-weight:700; letter-spacing:0.05em; color:var(--orange); }
+  .app-title span { color:var(--text2); font-weight:300; }
+  .header-link {
+    background:var(--surface2); border:1px solid var(--border);
+    color:var(--text2); padding:6px 14px; border-radius:20px;
+    font-size:0.78rem; font-weight:500; text-decoration:none; transition:all 0.2s;
+  }
+  .header-link:hover { color:var(--orange); border-color:var(--orange); }
+
+  /* ── TABS ── */
+  .tab-bar {
+    display:flex; background:var(--surface); border-bottom:1px solid var(--border);
+    overflow-x:auto; scrollbar-width:none; -webkit-overflow-scrolling:touch;
+  }
+  .tab-bar::-webkit-scrollbar { display:none; }
+  .tab-btn {
+    flex:1; min-width:90px; padding:12px 10px;
+    background:none; border:none; color:var(--text3);
+    font-family:inherit; font-size:0.78rem; font-weight:500; cursor:pointer;
+    transition:all 0.2s; white-space:nowrap; position:relative;
+  }
+  .tab-btn.active { color:var(--orange); }
+  .tab-btn.active::after {
+    content:''; position:absolute; bottom:0; left:20%; right:20%;
+    height:2px; background:var(--orange); border-radius:2px 2px 0 0;
+  }
+
+  .main { padding:20px; max-width:680px; margin:0 auto; }
+  .tab-panel { display:none; }
+  .tab-panel.active { display:block; }
+
+  .section-title {
+    font-size:0.7rem; font-weight:700; letter-spacing:0.1em; text-transform:uppercase;
+    color:var(--text3); margin-bottom:12px; padding-bottom:8px; border-bottom:1px solid var(--border);
+  }
+
+  /* ── NFC ZONE ── */
+  .nfc-zone {
+    width:140px; height:140px; border-radius:50%; margin:0 auto 16px;
+    display:flex; flex-direction:column; align-items:center; justify-content:center; gap:6px;
+    border:2px solid var(--border); background:var(--surface2); cursor:pointer;
+    transition:all 0.3s; position:relative;
+  }
+  .nfc-zone::before {
+    content:''; position:absolute; inset:-8px; border-radius:50%;
+    border:1px solid var(--border); opacity:0.4; animation:pulse-ring 2.5s ease-in-out infinite;
+  }
+  @keyframes pulse-ring { 0%,100% { transform:scale(1); opacity:0.4; } 50% { transform:scale(1.06); opacity:0.15; } }
+  .nfc-zone.scanning { border-color:var(--orange); animation:spin-border 0.8s linear infinite; }
+  .nfc-zone.success { border-color:var(--green); background:rgba(29,209,161,0.08); }
+  .nfc-zone.error { border-color:var(--warn); background:rgba(255,107,107,0.08); }
+  @keyframes spin-border { to { transform:rotate(360deg); } }
+  .nfc-icon { font-size:2.8rem; }
+  .nfc-label { font-size:0.7rem; color:var(--text3); }
+  .nfc-status { font-size:0.78rem; color:var(--text2); text-align:center; margin-bottom:16px; min-height:20px; }
+  .nfc-status.ok { color:var(--green); }
+  .nfc-status.err { color:var(--warn); }
+
+  /* ── SEARCH ── */
+  .search-wrap { position:relative; margin-bottom:20px; }
+  .search-icon { position:absolute; left:14px; top:50%; transform:translateY(-50%); color:var(--text3); pointer-events:none; }
+  .search-input {
+    width:100%; padding:13px 13px 13px 40px;
+    background:var(--surface2); border:1px solid var(--border); border-radius:var(--radius-sm);
+    color:var(--text); font-family:inherit; font-size:0.95rem; outline:none; transition:border-color 0.2s;
+  }
+  .search-input:focus { border-color:var(--orange); }
+  .search-input::placeholder { color:var(--text3); }
+  .search-results {
+    position:absolute; left:0; right:0; top:100%; margin-top:4px;
+    background:var(--surface); border:1px solid var(--border); border-radius:var(--radius-sm);
+    z-index:50; display:none; overflow:hidden; max-height:300px; overflow-y:auto;
+    box-shadow:0 8px 24px rgba(0,0,0,0.4);
+  }
+  .search-results.show { display:block; }
+  .search-result-item {
+    padding:11px 14px; cursor:pointer; transition:background 0.15s;
+    display:flex; align-items:center; gap:10px; border-bottom:1px solid var(--border);
+  }
+  .search-result-item:last-child { border-bottom:none; }
+  .search-result-item:hover { background:var(--surface2); }
+  .result-avatar {
+    width:36px; height:36px; border-radius:50%; background:var(--orange);
+    display:flex; align-items:center; justify-content:center;
+    font-weight:700; color:#0a0d1a; font-size:0.95rem; flex-shrink:0;
+  }
+  .result-name { font-weight:600; font-size:0.9rem; }
+  .result-meta { font-size:0.75rem; color:var(--text2); margin-top:1px; }
+
+  /* ── COACH CARD ── */
+  .coach-card {
+    background:var(--surface); border:1px solid var(--border); border-radius:var(--radius);
+    padding:20px; margin-bottom:16px; display:none;
+  }
+  .coach-card.show { display:block; }
+  .coach-header { display:flex; align-items:center; gap:14px; margin-bottom:20px; }
+  .coach-avatar {
+    width:56px; height:56px; border-radius:50%;
+    background:linear-gradient(135deg, var(--orange), var(--purple));
+    display:flex; align-items:center; justify-content:center;
+    font-size:1.5rem; font-weight:900; color:#0a0d1a; flex-shrink:0;
+  }
+  .coach-name { font-size:1.1rem; font-weight:700; }
+  .coach-sub { font-size:0.78rem; color:var(--text2); margin-top:2px; }
+
+  /* ── TIME SLOT SELECTOR ── */
+  .timeslot-label {
+    font-size:0.75rem; font-weight:700; letter-spacing:0.06em; text-transform:uppercase;
+    color:var(--text2); margin-bottom:12px; display:block;
+  }
+  .timeslot-grid { display:grid; grid-template-columns:repeat(2,1fr); gap:10px; margin-bottom:20px; }
+  .timeslot-btn {
+    padding:16px 12px; background:var(--surface2); border:2px solid var(--border);
+    border-radius:var(--radius-sm); color:var(--text2); font-family:inherit;
+    cursor:pointer; transition:all 0.2s; text-align:center; position:relative;
+  }
+  .timeslot-btn:hover { border-color:var(--orange); color:var(--text); }
+  .timeslot-btn.active {
+    background:rgba(255,159,67,0.12); border-color:var(--orange); color:var(--orange);
+  }
+  .timeslot-btn.active.paid-slot { background:rgba(29,209,161,0.1); border-color:var(--green); color:var(--green); }
+  .slot-fraction { font-size:1.4rem; font-weight:900; font-family:'DM Mono',monospace; display:block; margin-bottom:4px; }
+  .slot-desc { font-size:0.72rem; line-height:1.4; }
+  .slot-reward {
+    display:inline-block; margin-top:6px; padding:2px 8px;
+    border-radius:8px; font-size:0.65rem; font-weight:700;
+  }
+  .slot-reward.yes { background:rgba(29,209,161,0.2); color:var(--green); }
+  .slot-reward.no { background:rgba(64,72,112,0.4); color:var(--text3); }
+
+  /* ── CONFIRM BTN ── */
+  .confirm-btn {
+    width:100%; padding:15px; background:var(--orange); color:#0a0d1a;
+    border:none; border-radius:var(--radius-sm); font-family:inherit;
+    font-size:1rem; font-weight:800; cursor:pointer; letter-spacing:0.04em;
+    transition:all 0.2s; margin-top:4px;
+  }
+  .confirm-btn:active { transform:scale(0.98); }
+  .confirm-btn:hover { background:#ffb347; }
+  .confirm-btn:disabled { background:var(--text3); color:var(--surface); cursor:not-allowed; }
+
+  /* ── TODAY LIST ── */
+  .today-header {
+    display:flex; align-items:center; justify-content:space-between;
+    padding:14px 0; margin-bottom:12px; border-bottom:1px solid var(--border);
+  }
+  .today-title { font-size:0.9rem; font-weight:700; }
+  .today-count {
+    background:rgba(255,159,67,0.15); color:var(--orange);
+    border:1px solid rgba(255,159,67,0.3); border-radius:20px;
+    padding:3px 12px; font-size:0.78rem; font-weight:700;
+    font-family:'DM Mono',monospace;
+  }
+
+  .attendance-item {
+    display:flex; align-items:center; gap:12px; padding:12px 14px;
+    background:var(--surface); border:1px solid var(--border); border-radius:var(--radius-sm);
+    margin-bottom:8px; transition:all 0.2s;
+  }
+  .att-time { font-family:'DM Mono',monospace; font-size:0.8rem; color:var(--text3); width:42px; flex-shrink:0; }
+  .att-avatar {
+    width:34px; height:34px; border-radius:50%; flex-shrink:0;
+    background:linear-gradient(135deg,var(--orange),var(--purple));
+    display:flex; align-items:center; justify-content:center;
+    font-weight:700; color:#0a0d1a; font-size:0.9rem;
+  }
+  .att-name { flex:1; font-weight:600; font-size:0.88rem; }
+  .att-slot {
+    padding:3px 10px; border-radius:10px; font-size:0.72rem; font-weight:700;
+    font-family:'DM Mono',monospace;
+  }
+  .att-slot.paid { background:rgba(29,209,161,0.15); color:var(--green); border:1px solid rgba(29,209,161,0.3); }
+  .att-slot.nopay { background:rgba(64,72,112,0.4); color:var(--text3); border:1px solid var(--border); }
+  .att-undo {
+    background:none; border:none; color:var(--text3); cursor:pointer;
+    font-size:1rem; padding:4px; border-radius:6px; transition:color 0.2s;
+  }
+  .att-undo:hover { color:var(--warn); }
+
+  /* ── HISTORY TAB ── */
+  .history-table { width:100%; border-collapse:collapse; font-size:0.82rem; }
+  .history-table th {
+    text-align:left; padding:8px 10px; font-size:0.68rem; font-weight:700;
+    text-transform:uppercase; letter-spacing:0.06em; color:var(--text3);
+    border-bottom:1px solid var(--border); background:var(--surface2);
+  }
+  .history-table td { padding:10px; border-bottom:1px solid var(--border); }
+  .history-table tr:last-child td { border-bottom:none; }
+  .history-table tr:hover td { background:var(--surface2); }
+  .ht-slot { font-family:'DM Mono',monospace; font-size:0.8rem; }
+  .ht-paid { color:var(--green); font-weight:700; }
+  .ht-nopay { color:var(--text3); }
+
+  /* ── COACH REGISTER ── */
+  .form-card { background:var(--surface); border:1px solid var(--border); border-radius:var(--radius); padding:18px; margin-bottom:16px; }
+  .form-section { margin-bottom:14px; }
+  .form-label { font-size:0.75rem; font-weight:600; letter-spacing:0.06em; text-transform:uppercase; color:var(--text2); display:block; margin-bottom:6px; }
+  .form-input, .form-select {
+    width:100%; padding:12px 13px; background:var(--surface2); border:1px solid var(--border);
+    border-radius:var(--radius-sm); color:var(--text); font-family:inherit; font-size:0.95rem;
+    outline:none; transition:border-color 0.2s; appearance:none; -webkit-appearance:none;
+  }
+  .form-input:focus, .form-select:focus { border-color:var(--orange); }
+  .form-row { display:grid; grid-template-columns:1fr 1fr; gap:10px; }
+
+  /* ── EMPTY STATE ── */
+  .empty-state { text-align:center; padding:40px 20px; color:var(--text3); }
+  .empty-icon { font-size:3rem; margin-bottom:12px; }
+  .empty-state p { font-size:0.85rem; line-height:1.7; }
+
+  /* ── TOAST ── */
+  .toast {
+    position:fixed; bottom:calc(var(--safe-bottom) + 24px); left:50%; transform:translateX(-50%) translateY(20px);
+    background:var(--orange); color:#0a0d1a; padding:11px 20px; border-radius:20px;
+    font-size:0.85rem; font-weight:700; opacity:0; transition:all 0.3s; z-index:999;
+    white-space:nowrap; pointer-events:none; box-shadow:0 8px 24px rgba(255,159,67,0.35);
+  }
+  .toast.show { opacity:1; transform:translateX(-50%) translateY(0); }
+
+  /* ── DESKTOP ── */
+  @media (min-width:768px) {
+    .app-header { padding:16px 32px; }
+    .main { padding:28px 32px; max-width:1000px; }
+    .scan-layout { display:grid; grid-template-columns:1fr 1fr; gap:24px; align-items:start; }
+    .timeslot-grid { grid-template-columns:repeat(4,1fr); }
+  }
+</style>
+</head>
+<body>
+
+<header class="app-header">
+  <div class="app-title">🏅 コーチ出席 <span>Athletic Club</span></div>
+  <a href="attendance.html" class="header-link">⚡ 生徒出席 →</a>
+</header>
+
+<div class="tab-bar">
+  <button class="tab-btn active" onclick="switchTab('scan',this)">📡 チェックイン</button>
+  <button class="tab-btn" onclick="switchTab('today',this)">📋 本日</button>
+  <button class="tab-btn" onclick="switchTab('history',this)">📊 履歴</button>
+  <button class="tab-btn" onclick="switchTab('register',this)">➕ コーチ登録</button>
+</div>
+
+<div class="main">
+
+  <!-- ── TAB: SCAN ── -->
+  <div id="tab-scan" class="tab-panel active">
+    <div class="scan-layout">
+      <div class="scan-left">
+        <!-- NFC Zone -->
+        <div style="text-align:center; margin-bottom:20px;">
+          <div class="nfc-zone" id="nfcZone">
+            <div class="nfc-icon">🏅</div>
+            <div class="nfc-label">NFCタッチ</div>
+          </div>
+          <div class="nfc-status" id="nfcStatus">コーチカードをかざしてください</div>
+        </div>
+
+        <!-- 名前検索 -->
+        <div class="section-title">コーチ名で検索</div>
+        <div class="search-wrap">
+          <span class="search-icon">🔍</span>
+          <input class="search-input" id="searchInput" type="text"
+            placeholder="名前で検索..." autocomplete="off" oninput="onSearch(this.value)">
+          <div class="search-results" id="searchResults"></div>
+        </div>
+      </div>
+
+      <div class="scan-right">
+        <!-- Coach Card -->
+        <div class="coach-card" id="coachCard">
+          <div class="coach-header">
+            <div class="coach-avatar" id="coachAvatar">?</div>
+            <div>
+              <div id="coachFurigana" style="font-size:0.75rem;color:var(--text2);">—</div>
+              <div class="coach-name" id="coachName">—</div>
+              <div class="coach-sub" id="coachSub">—</div>
+            </div>
+          </div>
+
+          <!-- Time Slot Selection -->
+          <span class="timeslot-label">参加時間帯を選択</span>
+          <div class="timeslot-grid">
+            <button class="timeslot-btn" id="slot-full" onclick="selectSlot('full')">
+              <span class="slot-fraction">全体</span>
+              <span class="slot-desc">最初から参加<br>（全時間）</span>
+              <span class="slot-reward yes">✓ 報酬あり</span>
+            </button>
+            <button class="timeslot-btn" id="slot-1-3" onclick="selectSlot('1/3')">
+              <span class="slot-fraction">1/3〜</span>
+              <span class="slot-desc">1/3の時点から<br>参加</span>
+              <span class="slot-reward yes">✓ 報酬あり</span>
+            </button>
+            <button class="timeslot-btn" id="slot-2-3" onclick="selectSlot('2/3')">
+              <span class="slot-fraction">2/3〜</span>
+              <span class="slot-desc">2/3の時点から<br>参加</span>
+              <span class="slot-reward no">— 報酬なし</span>
+            </button>
+            <button class="timeslot-btn" id="slot-3-3" onclick="selectSlot('3/3')">
+              <span class="slot-fraction">3/3〜</span>
+              <span class="slot-desc">最後の1/3から<br>参加</span>
+              <span class="slot-reward no">— 報酬なし</span>
+            </button>
+          </div>
+
+          <button class="confirm-btn" id="confirmBtn" onclick="confirmAttendance()" disabled>
+            参加時間帯を選択してください
+          </button>
+        </div>
+
+        <div id="noCoachState">
+          <div class="empty-state">
+            <div class="empty-icon">🏅</div>
+            <p>NFCカードをかざすか<br>名前で検索してください</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── TAB: TODAY ── -->
+  <div id="tab-today" class="tab-panel">
+    <div class="today-header">
+      <div class="today-title" id="todayDate">—</div>
+      <div class="today-count" id="todayCount">0名</div>
+    </div>
+    <div id="todayList">
+      <div class="empty-state">
+        <div class="empty-icon">📋</div>
+        <p>まだチェックインがありません</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── TAB: HISTORY ── -->
+  <div id="tab-history" class="tab-panel">
+    <div class="section-title">出席履歴</div>
+    <div style="margin-bottom:12px;">
+      <input class="form-input" id="historyFilter" type="text"
+        placeholder="名前・日付で絞り込み..." oninput="renderHistory(this.value)"
+        style="background:var(--surface2);border:1px solid var(--border);border-radius:var(--radius-sm);color:var(--text);padding:11px 14px;width:100%;outline:none;">
+    </div>
+    <div style="background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);overflow:hidden;">
+      <table class="history-table">
+        <thead>
+          <tr>
+            <th>日付</th>
+            <th>コーチ名</th>
+            <th>参加時間帯</th>
+            <th>報酬対象</th>
+          </tr>
+        </thead>
+        <tbody id="historyTbody"></tbody>
+      </table>
+    </div>
+    <div style="padding:12px 14px;display:flex;justify-content:space-between;font-size:0.78rem;color:var(--text2);border-top:1px solid var(--border);">
+      <span id="historyCount">0件</span>
+      <span>報酬対象: <strong id="historyPaidCount" style="color:var(--green);">0件</strong></span>
+    </div>
+  </div>
+
+  <!-- ── TAB: REGISTER ── -->
+  <div id="tab-register" class="tab-panel">
+    <div class="section-title">コーチ登録</div>
+    <div class="form-card">
+      <div class="form-section">
+        <label class="form-label">氏名</label>
+        <input class="form-input" id="regName" type="text" placeholder="山本 太郎">
+      </div>
+      <div class="form-section">
+        <label class="form-label">ふりがな</label>
+        <input class="form-input" id="regFurigana" type="text" placeholder="やまもと たろう">
+      </div>
+      <div class="form-section form-row">
+        <div>
+          <label class="form-label">NFCカードID</label>
+          <input class="form-input" id="regNfc" type="text" placeholder="COACH001">
+        </div>
+        <div>
+          <label class="form-label">専門種目</label>
+          <input class="form-input" id="regSpec" type="text" placeholder="体操・武道 など">
+        </div>
+      </div>
+      <div class="form-section">
+        <label class="form-label">連絡先</label>
+        <input class="form-input" id="regPhone" type="tel" placeholder="090-0000-0000">
+      </div>
+      <button class="confirm-btn" onclick="registerCoach()" style="margin-top:4px;">✓ コーチを登録する</button>
+    </div>
+
+    <div class="section-title" style="margin-top:20px;">登録済みコーチ一覧</div>
+    <div id="coachListDisplay"></div>
+  </div>
+
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+// ── CONFIG ──
+const GAS_URL = 'https://script.google.com/macros/s/AKfycbyVH4yXtC0PsG4gwbWITAnsMFUdwvMSij2hNsZ9z4bfRTRS0RxHzqvZZeaN3AVIEOte/exec';
+
+// ── SLOT DEFINITIONS ──
+// 報酬対象: 全体 と 1/3〜 のみ
+const SLOT_REWARD = { 'full': true, '1/3': true, '2/3': false, '3/3': false };
+const SLOT_LABEL = { 'full': '全体（最初から）', '1/3': '1/3〜', '2/3': '2/3〜', '3/3': '3/3〜' };
+
+// ── COACH DATA ──
+let COACHES = [
+  { id:'COACH001', name:'山本 花子', furigana:'やまもと はなこ', specialty:'体操', phone:'090-0001-0001' },
+  { id:'COACH002', name:'佐々木 健', furigana:'ささき けん', specialty:'武道', phone:'090-0002-0002' },
+  { id:'COACH003', name:'中村 あいこ', furigana:'なかむら あいこ', specialty:'バレエ', phone:'090-0003-0003' },
+];
+
+let todayAttendance = [];
+let selectedCoach = null;
+let selectedSlot = null;
+
+// ── URL PARAM: NFC trigger ──
+function checkUrlParam() {
+  const params = new URLSearchParams(window.location.search);
+  const coachId = params.get('coach') || params.get('id');
+  if (coachId) {
+    history.replaceState({}, '', window.location.pathname);
+    setTimeout(() => simulateScan(coachId), 400);
+  }
+}
+
+function simulateScan(id) {
+  const zone = document.getElementById('nfcZone');
+  const status = document.getElementById('nfcStatus');
+  zone.className = 'nfc-zone scanning';
+  status.textContent = 'スキャン中...';
+  status.className = 'nfc-status';
+  setTimeout(() => {
+    const coach = COACHES.find(c => c.id === id);
+    if (coach) {
+      zone.className = 'nfc-zone success';
+      status.textContent = '✓ 認識しました';
+      status.className = 'nfc-status ok';
+      showCoach(coach);
+      if (navigator.vibrate) navigator.vibrate([50, 30, 50]);
+    } else {
+      zone.className = 'nfc-zone error';
+      status.textContent = '✗ 未登録のカードです';
+      status.className = 'nfc-status err';
+    }
+    setTimeout(() => {
+      zone.className = 'nfc-zone';
+      status.textContent = 'コーチカードをかざしてください';
+      status.className = 'nfc-status';
+    }, 3000);
+  }, 800);
+}
+
+function showCoach(coach) {
+  selectedCoach = coach;
+  selectedSlot = null;
+  document.getElementById('coachAvatar').textContent = coach.name[0];
+  document.getElementById('coachFurigana').textContent = coach.furigana;
+  document.getElementById('coachName').textContent = coach.name;
+  document.getElementById('coachSub').textContent = coach.specialty || '—';
+  document.getElementById('coachCard').classList.add('show');
+  document.getElementById('noCoachState').style.display = 'none';
+
+  // Reset slot buttons
+  document.querySelectorAll('.timeslot-btn').forEach(b => b.classList.remove('active'));
+  const btn = document.getElementById('confirmBtn');
+  btn.disabled = true;
+  btn.textContent = '参加時間帯を選択してください';
+
+  if (window.innerWidth < 768) {
+    setTimeout(() => document.getElementById('coachCard').scrollIntoView({ behavior:'smooth', block:'nearest' }), 100);
+  }
+}
+
+// ── SLOT SELECT ──
+function selectSlot(slot) {
+  selectedSlot = slot;
+  document.querySelectorAll('.timeslot-btn').forEach(b => b.classList.remove('active'));
+  const btn = document.getElementById('slot-' + (slot === 'full' ? 'full' : slot.replace('/','-')));
+  if (btn) {
+    btn.classList.add('active');
+    if (SLOT_REWARD[slot]) btn.classList.add('paid-slot');
+  }
+  const confirm = document.getElementById('confirmBtn');
+  confirm.disabled = false;
+  const rewardText = SLOT_REWARD[slot] ? '（報酬対象✓）' : '（報酬なし）';
+  confirm.textContent = `✓ ${SLOT_LABEL[slot]} で出席登録 ${rewardText}`;
+}
+
+// ── CONFIRM ──
+function confirmAttendance() {
+  if (!selectedCoach || !selectedSlot) return;
+  const now = new Date();
+  const time = `${String(now.getHours()).padStart(2,'0')}:${String(now.getMinutes()).padStart(2,'0')}`;
+  const dateKey = `${now.getFullYear()}/${String(now.getMonth()+1).padStart(2,'0')}/${String(now.getDate()).padStart(2,'0')}`;
+  const entry = {
+    coach: selectedCoach,
+    slot: selectedSlot,
+    slotLabel: SLOT_LABEL[selectedSlot],
+    reward: SLOT_REWARD[selectedSlot],
+    time,
+    date: dateKey
+  };
+  todayAttendance.unshift(entry);
+  renderTodayList();
+  showToast(`✓ ${selectedCoach.name}さん（${SLOT_LABEL[selectedSlot]}）を登録しました`);
+
+  // GAS送信
+  sendToGAS({ action:'coachAttendance', coachId: selectedCoach.id, coachName: selectedCoach.name, slot: selectedSlot, reward: SLOT_REWARD[selectedSlot], time, date: dateKey });
+
+  // Reset
+  document.getElementById('coachCard').classList.remove('show');
+  document.getElementById('noCoachState').style.display = '';
+  document.getElementById('searchInput').value = '';
+  document.getElementById('searchResults').classList.remove('show');
+  selectedCoach = null;
+  selectedSlot = null;
+}
+
+function sendToGAS(data) {
+  fetch(GAS_URL, { method:'POST', body:JSON.stringify(data) }).catch(()=>{});
+}
+
+// ── SEARCH ──
+function onSearch(q) {
+  const c = document.getElementById('searchResults');
+  if (!q.trim()) { c.classList.remove('show'); return; }
+  const r = COACHES.filter(m => m.name.includes(q) || m.furigana.includes(q));
+  if (!r.length) { c.classList.remove('show'); return; }
+  c.innerHTML = r.map(m => `
+    <div class="search-result-item" onclick="selectFromSearch('${m.id}')">
+      <div class="result-avatar">${m.name[0]}</div>
+      <div>
+        <div class="result-name">${m.name}</div>
+        <div class="result-meta">${m.furigana} · ${m.specialty || '—'}</div>
+      </div>
+    </div>`).join('');
+  c.classList.add('show');
+}
+
+function selectFromSearch(id) {
+  const coach = COACHES.find(c => c.id === id);
+  if (coach) {
+    showCoach(coach);
+    document.getElementById('searchResults').classList.remove('show');
+    document.getElementById('searchInput').value = coach.name;
+  }
+}
+
+// ── TODAY LIST ──
+function renderTodayList() {
+  const now = new Date();
+  document.getElementById('todayDate').textContent =
+    `${now.getFullYear()}年${now.getMonth()+1}月${now.getDate()}日 (${['日','月','火','水','木','金','土'][now.getDay()]})`;
+  document.getElementById('todayCount').textContent = todayAttendance.length + '名';
+  const list = document.getElementById('todayList');
+  if (!todayAttendance.length) {
+    list.innerHTML = '<div class="empty-state"><div class="empty-icon">📋</div><p>まだチェックインがありません</p></div>';
+    return;
+  }
+  list.innerHTML = todayAttendance.map((a, i) => `
+    <div class="attendance-item">
+      <span class="att-time">${a.time}</span>
+      <div class="att-avatar">${a.coach.name[0]}</div>
+      <span class="att-name">${a.coach.name}</span>
+      <span class="att-slot ${a.reward ? 'paid' : 'nopay'}">${a.slotLabel}</span>
+      <button class="att-undo" onclick="undoAttendance(${i})" title="取消">✕</button>
+    </div>`).join('');
+}
+
+function undoAttendance(i) {
+  todayAttendance.splice(i, 1);
+  renderTodayList();
+  showToast('取消しました');
+}
+
+// ── HISTORY ──
+// デモ用の履歴データ
+let HISTORY = [
+  { date:'2026/03/08', coach: COACHES[0], slot:'full', slotLabel:'全体（最初から）', reward:true },
+  { date:'2026/03/08', coach: COACHES[1], slot:'1/3', slotLabel:'1/3〜', reward:true },
+  { date:'2026/03/01', coach: COACHES[0], slot:'2/3', slotLabel:'2/3〜', reward:false },
+  { date:'2026/02/22', coach: COACHES[2], slot:'full', slotLabel:'全体（最初から）', reward:true },
+  { date:'2026/02/22', coach: COACHES[1], slot:'3/3', slotLabel:'3/3〜', reward:false },
+];
+
+function renderHistory(filter='') {
+  const q = (filter || '').toLowerCase();
+  const data = [...HISTORY, ...todayAttendance.map(a => ({ ...a, coach: a.coach }))];
+  const filtered = q ? data.filter(r =>
+    r.coach.name.includes(q) || r.date.includes(q) || r.slotLabel.includes(q)
+  ) : data;
+
+  const tbody = document.getElementById('historyTbody');
+  tbody.innerHTML = filtered.length ? filtered.map(r => `
+    <tr>
+      <td style="font-family:'DM Mono',monospace;font-size:0.8rem;">${r.date}</td>
+      <td style="font-weight:600;">${r.coach.name}</td>
+      <td class="ht-slot">${r.slotLabel}</td>
+      <td class="${r.reward ? 'ht-paid' : 'ht-nopay'}">${r.reward ? '✓ 対象' : '—'}</td>
+    </tr>`).join('') :
+    '<tr><td colspan="4" style="text-align:center;color:var(--text3);padding:20px;">該当なし</td></tr>';
+
+  document.getElementById('historyCount').textContent = filtered.length + '件';
+  document.getElementById('historyPaidCount').textContent = filtered.filter(r => r.reward).length + '件';
+}
+
+// ── REGISTER ──
+function registerCoach() {
+  const name = document.getElementById('regName').value.trim();
+  const furigana = document.getElementById('regFurigana').value.trim();
+  const nfc = document.getElementById('regNfc').value.trim();
+  const spec = document.getElementById('regSpec').value.trim();
+  const phone = document.getElementById('regPhone').value.trim();
+  if (!name) { showToast('⚠ 氏名を入力してください', true); return; }
+  if (!nfc) { showToast('⚠ NFCカードIDを入力してください', true); return; }
+  if (COACHES.find(c => c.id === nfc)) { showToast('⚠ そのNFCカードIDは既に使用されています', true); return; }
+
+  const newCoach = { id: nfc, name, furigana, specialty: spec, phone };
+  COACHES.push(newCoach);
+  showToast(`✓ ${name} さんをコーチ登録しました`);
+  ['regName','regFurigana','regNfc','regSpec','regPhone'].forEach(id => document.getElementById(id).value = '');
+  renderCoachList();
+}
+
+function renderCoachList() {
+  const el = document.getElementById('coachListDisplay');
+  el.innerHTML = COACHES.map(c => `
+    <div style="background:var(--surface);border:1px solid var(--border);border-radius:var(--radius-sm);padding:12px 14px;margin-bottom:8px;display:flex;align-items:center;gap:12px;">
+      <div style="width:36px;height:36px;border-radius:50%;background:linear-gradient(135deg,var(--orange),var(--purple));display:flex;align-items:center;justify-content:center;font-weight:700;color:#0a0d1a;font-size:0.9rem;flex-shrink:0;">${c.name[0]}</div>
+      <div style="flex:1;">
+        <div style="font-weight:600;font-size:0.9rem;">${c.name}</div>
+        <div style="font-size:0.72rem;color:var(--text2);">${c.furigana} · ${c.specialty||'—'} · <span style="font-family:'DM Mono',monospace;">${c.id}</span></div>
+      </div>
+    </div>`).join('');
+}
+
+// ── TABS ──
+function switchTab(name, btn) {
+  document.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('active'));
+  document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+  document.getElementById('tab-' + name).classList.add('active');
+  btn.classList.add('active');
+  if (name === 'today') renderTodayList();
+  if (name === 'history') renderHistory();
+  if (name === 'register') renderCoachList();
+}
+
+// ── TOAST ──
+function showToast(msg, err=false) {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.style.background = err ? 'var(--warn)' : 'var(--orange)';
+  t.style.color = err ? '#fff' : '#0a0d1a';
+  t.classList.add('show');
+  setTimeout(() => t.classList.remove('show'), 3000);
+}
+
+// ── INIT ──
+renderTodayList();
+checkUrlParam();
+
+document.addEventListener('click', e => {
+  if (!e.target.closest('.search-wrap')) {
+    document.getElementById('searchResults').classList.remove('show');
+  }
+});
+</script>
+</body>
+</html>
