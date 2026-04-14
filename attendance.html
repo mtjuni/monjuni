@@ -509,6 +509,154 @@
     border-bottom: 1px solid var(--border);
   }
 
+  /* ── MEMBER LIST PANEL ── */
+  .list-toggle-btn {
+    width:100%; padding:11px; margin-top:10px;
+    background:var(--surface2); border:1px dashed var(--border);
+    border-radius:var(--radius-sm); color:var(--text2);
+    font-family:inherit; font-size:0.85rem; font-weight:600;
+    cursor:pointer; transition:all 0.2s; text-align:center;
+  }
+  .list-toggle-btn:hover, .list-toggle-btn.open {
+    border-color:var(--accent); color:var(--accent);
+  }
+  .member-list-panel {
+    margin-top:12px; background:var(--surface);
+    border:1px solid var(--border); border-radius:var(--radius);
+    overflow:hidden;
+  }
+  .list-filters {
+    display:grid; grid-template-columns:1fr auto; gap:8px;
+    padding:12px; border-bottom:1px solid var(--border);
+  }
+  .list-filter-input {
+    padding:9px 12px; background:var(--surface2);
+    border:1px solid var(--border); border-radius:var(--radius-sm);
+    color:var(--text); font-family:inherit; font-size:0.88rem; outline:none;
+    transition:border-color 0.2s;
+  }
+  .list-filter-input:focus { border-color:var(--accent); }
+  .list-filter-select {
+    padding:9px 10px; background:var(--surface2);
+    border:1px solid var(--border); border-radius:var(--radius-sm);
+    color:var(--text); font-family:inherit; font-size:0.85rem; outline:none;
+    appearance:none; -webkit-appearance:none; cursor:pointer; min-width:90px;
+  }
+  .list-filter-select:focus { border-color:var(--accent); }
+  .list-count {
+    padding:6px 14px; font-size:0.72rem; color:var(--text3);
+    border-bottom:1px solid var(--border); font-family:'DM Mono',monospace;
+  }
+  .member-list-body { max-height:360px; overflow-y:auto; }
+  .member-list-row {
+    display:grid; grid-template-columns:auto 1fr auto;
+    align-items:center; gap:10px; padding:10px 14px;
+    border-bottom:1px solid var(--border); cursor:pointer; transition:background 0.15s;
+  }
+  .member-list-row:last-child { border-bottom:none; }
+  .member-list-row:hover { background:var(--surface2); }
+  .list-avatar {
+    width:32px; height:32px; border-radius:50%;
+    background:linear-gradient(135deg,var(--accent2),var(--accent));
+    display:flex; align-items:center; justify-content:center;
+    font-weight:700; color:#0d0f1a; font-size:0.85rem; flex-shrink:0;
+  }
+  .list-info .list-name { font-size:0.88rem; font-weight:600; }
+  .list-info .list-sub { font-size:0.72rem; color:var(--text2); margin-top:1px; }
+  .list-nfc {
+    font-family:'DM Mono',monospace; font-size:0.7rem;
+    color:var(--text3); text-align:right;
+  }
+  .list-nfc.has-nfc { color:var(--accent); }
+  .list-nfc.no-nfc { color:var(--warn); }
+
+  /* ── 五十音グリッド ── */
+  .aiueo-grid {
+    display:flex; flex-wrap:wrap; gap:5px; margin-bottom:8px;
+  }
+  .aiueo-btn {
+    width:36px; height:36px; background:var(--surface2); border:1px solid var(--border);
+    border-radius:8px; color:var(--text2); font-family:inherit; font-size:0.82rem;
+    font-weight:700; cursor:pointer; transition:all 0.15s; display:flex;
+    align-items:center; justify-content:center;
+  }
+  .aiueo-btn:hover { border-color:var(--accent); color:var(--accent); }
+  .aiueo-btn.active { background:rgba(79,255,176,0.15); border-color:var(--accent); color:var(--accent); }
+  .aiueo-btn.empty { opacity:0.3; cursor:default; }
+  .aiueo-results {
+    background:var(--surface); border:1px solid var(--border); border-radius:var(--radius-sm);
+    margin-bottom:10px; overflow:hidden;
+  }
+  .aiueo-results-header {
+    display:flex; justify-content:space-between; align-items:center;
+    padding:8px 12px; border-bottom:1px solid var(--border);
+    font-size:0.8rem; font-weight:700; color:var(--accent);
+  }
+  .aiueo-item {
+    display:flex; align-items:center; gap:10px; padding:9px 12px;
+    border-bottom:1px solid var(--border); cursor:pointer; transition:background 0.15s;
+  }
+  .aiueo-item:last-child { border-bottom:none; }
+  .aiueo-item:hover { background:var(--surface2); }
+  .aiueo-avatar {
+    width:30px; height:30px; border-radius:50%; background:var(--accent2);
+    display:flex; align-items:center; justify-content:center;
+    font-weight:700; color:#fff; font-size:0.8rem; flex-shrink:0;
+  }
+  .aiueo-name { font-size:0.88rem; font-weight:600; flex:1; }
+  .aiueo-sub { font-size:0.72rem; color:var(--text2); }
+
+  /* ── STATS TAB ── */
+  .stats-summary-grid {
+    display:grid; grid-template-columns:1fr 1fr; gap:10px; margin-bottom:16px;
+  }
+  .stats-sum-card {
+    background:var(--surface); border:1px solid var(--border); border-radius:var(--radius);
+    padding:14px; position:relative; overflow:hidden;
+  }
+  .stats-sum-card::before {
+    content:''; position:absolute; top:0; left:0; right:0; height:3px;
+  }
+  .stats-sum-card.green::before { background:var(--accent); }
+  .stats-sum-card.blue::before { background:var(--accent2); }
+  .stats-sum-card.gold::before { background:#ffd166; }
+  .stats-sum-card.red::before { background:var(--warn); }
+  .stats-sum-val { font-family:'DM Mono',monospace; font-size:1.5rem; font-weight:700; margin-bottom:2px; }
+  .stats-sum-val.green { color:var(--accent); }
+  .stats-sum-val.blue { color:var(--accent2); }
+  .stats-sum-val.gold { color:#ffd166; }
+  .stats-sum-val.red { color:var(--warn); }
+  .stats-sum-lbl { font-size:0.72rem; color:var(--text2); }
+
+  .stats-chart-card {
+    background:var(--surface); border:1px solid var(--border); border-radius:var(--radius);
+    padding:16px; margin-bottom:4px;
+  }
+  .stats-chart-title { font-size:0.78rem; color:var(--text2); font-weight:600; margin-bottom:14px; }
+  .stats-bars { display:flex; gap:6px; align-items:flex-end; height:100px; }
+  .stats-bar-col { flex:1; display:flex; flex-direction:column; align-items:center; gap:4px; }
+  .stats-bar { width:100%; border-radius:4px 4px 0 0; background:var(--accent); opacity:0.8; min-height:4px; transition:opacity 0.2s; }
+  .stats-bar:hover { opacity:1; }
+  .stats-bar.current { background:var(--accent2); opacity:1; }
+  .stats-bar-lbl { font-size:0.6rem; color:var(--text3); font-family:'DM Mono',monospace; }
+  .stats-bar-val { font-size:0.6rem; color:var(--accent); font-family:'DM Mono',monospace; }
+
+  .stats-table { width:100%; border-collapse:collapse; font-size:0.82rem; }
+  .stats-table th {
+    text-align:left; padding:8px 12px; font-size:0.68rem; font-weight:700;
+    text-transform:uppercase; letter-spacing:0.06em; color:var(--text3);
+    border-bottom:1px solid var(--border); background:var(--surface2);
+  }
+  .stats-table td { padding:9px 12px; border-bottom:1px solid var(--border); }
+  .stats-table tr:last-child td { border-bottom:none; }
+  .stats-table tr:hover td { background:var(--surface2); }
+  .attend-badge {
+    display:inline-block; padding:2px 8px; border-radius:8px;
+    font-size:0.72rem; font-weight:700;
+  }
+  .attend-badge.good { background:rgba(79,255,176,0.15); color:var(--accent); }
+  .attend-badge.none { background:rgba(64,72,112,0.3); color:var(--text3); }
+
   /* ── EMPTY STATE ── */
   .empty-state {
     text-align: center;
@@ -566,6 +714,50 @@
     color: var(--accent);
   }
   .stat-lbl { font-size: 0.65rem; color: var(--text3); margin-top: 2px; }
+
+  .ml-sort-btn {
+    padding: 6px 14px;
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: 20px;
+    color: var(--text2);
+    font-family: inherit;
+    font-size: 0.78rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.15s;
+  }
+  .ml-sort-btn.active {
+    background: rgba(79,255,176,0.12);
+    border-color: var(--accent);
+    color: var(--accent);
+  }
+  .ml-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-sm);
+    padding: 12px 14px;
+    margin-bottom: 8px;
+    display: grid;
+    grid-template-columns: 1fr auto;
+    align-items: center;
+    gap: 8px;
+    transition: border-color 0.2s;
+  }
+  .ml-card:hover { border-color: var(--accent); }
+  .ml-name { font-weight: 700; font-size: 0.92rem; }
+  .ml-furi { font-size: 0.72rem; color: var(--text3); margin-bottom: 3px; }
+  .ml-badges { display: flex; gap: 5px; flex-wrap: wrap; margin-top: 4px; }
+  .ml-badge {
+    font-size: 0.68rem; padding: 2px 8px; border-radius: 8px;
+    font-weight: 600; letter-spacing: 0.03em;
+  }
+  .ml-badge-grade { background: rgba(123,111,255,0.18); color: var(--accent2); border: 1px solid rgba(123,111,255,0.3); }
+  .ml-badge-gender { background: rgba(79,255,176,0.12); color: var(--accent); border: 1px solid rgba(79,255,176,0.25); }
+  .ml-badge-nfc { background: rgba(79,255,176,0.12); color: var(--accent); border: 1px solid rgba(79,255,176,0.25); }
+  .ml-badge-nonfc { background: rgba(255,107,107,0.12); color: var(--warn); border: 1px solid rgba(255,107,107,0.25); }
+  .ml-nfc-id { font-family: 'DM Mono', monospace; font-size: 0.72rem; color: var(--text3); margin-top: 3px; }
+
 </style>
 </head>
 <body>
@@ -578,6 +770,8 @@
 <div class="tab-bar">
   <button class="tab-btn active" onclick="switchTab('scan')">🪪 出席登録</button>
   <button class="tab-btn" onclick="switchTab('today')">📋 本日</button>
+  <button class="tab-btn" onclick="switchTab('stats')">📊 統計</button>
+  <button class="tab-btn" onclick="switchTab('members')">👥 メンバー</button>
   <button class="tab-btn" onclick="switchTab('register')">➕ 会員登録</button>
   <button class="tab-btn" onclick="switchTab('guide')">📡 NFC設定</button>
 </div>
@@ -606,6 +800,35 @@
           <span class="search-icon">🔍</span>
           <input class="search-input" id="searchInput" type="text" placeholder="名前・ふりがなで検索..." autocomplete="off" oninput="onSearch(this.value)">
           <div class="search-results" id="searchResults"></div>
+        </div>
+
+        <!-- 五十音インデックス -->
+        <div class="section-title" style="margin-top:14px;">五十音で検索</div>
+        <div class="aiueo-grid" id="aiueoGrid"></div>
+        <div class="aiueo-results" id="aiueoResults" style="display:none;">
+          <div class="aiueo-results-header">
+            <span id="aiueoLabel">—</span>
+            <button onclick="clearAiueo()" style="background:none;border:none;color:var(--text3);cursor:pointer;font-size:0.8rem;">✕ 閉じる</button>
+          </div>
+          <div id="aiueoList"></div>
+        </div>
+
+        <!-- リスト表示ボタン -->
+        <button class="list-toggle-btn" id="listToggleBtn" onclick="toggleMemberList()">
+          📋 生徒リストを表示
+        </button>
+
+        <!-- 生徒リストパネル -->
+        <div class="member-list-panel" id="memberListPanel" style="display:none;">
+          <div class="list-filters">
+            <input class="list-filter-input" id="filterFurigana" type="text"
+              placeholder="よみがなで絞り込み..." oninput="renderMlTab()">
+            <select class="list-filter-select" id="filterGrade" onchange="renderMlTab()">
+              <option value="">全学年</option>
+            </select>
+          </div>
+          <div class="list-count" id="listCount">—</div>
+          <div class="member-list-body" id="memberListBody"></div>
         </div>
       </div>
 
@@ -772,6 +995,87 @@
         <p>Chrome: メニュー → 「ホーム画面に追加」<br>Safari: 共有 → 「ホーム画面に追加」<br>ネイティブアプリのようにフルスクリーンで使用できます。</p>
       </div>
     </div>
+  </div>
+
+  <!-- ── TAB: STATS ── -->
+  <div id="tab-stats" class="tab-panel">
+    <div class="section-title">月別出席統計</div>
+
+    <!-- Month picker -->
+    <div style="display:flex;gap:8px;align-items:center;margin-bottom:16px;">
+      <button onclick="shiftStatsMonth(-1)" style="padding:8px 14px;background:var(--surface2);border:1px solid var(--border);border-radius:8px;color:var(--text2);cursor:pointer;font-size:1rem;">‹</button>
+      <div id="statsMonthLabel" style="flex:1;text-align:center;font-weight:700;font-size:0.95rem;"></div>
+      <button onclick="shiftStatsMonth(1)" style="padding:8px 14px;background:var(--surface2);border:1px solid var(--border);border-radius:8px;color:var(--text2);cursor:pointer;font-size:1rem;">›</button>
+    </div>
+
+    <!-- Summary cards -->
+    <div class="stats-summary-grid" id="statsSummaryGrid"></div>
+
+    <!-- Bar chart -->
+    <div class="stats-chart-card">
+      <div class="stats-chart-title">過去6ヶ月の出席人数推移</div>
+      <div class="stats-bars" id="statsBars"></div>
+    </div>
+
+    <!-- Per-member table -->
+    <div class="section-title" style="margin-top:20px;">今月の生徒別出席回数</div>
+    <div style="background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);overflow:hidden;">
+      <table class="stats-table">
+        <thead>
+          <tr><th>氏名</th><th>よみがな</th><th>出席回数</th><th>状況</th></tr>
+        </thead>
+        <tbody id="statsMemberTbody"></tbody>
+      </table>
+    </div>
+  </div>
+
+
+  <!-- ── TAB: MEMBERS ── -->
+  <div id="tab-members" class="tab-panel">
+    <div class="section-title">登録メンバー一覧</div>
+
+    <!-- Sort / Filter controls -->
+    <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:14px;align-items:center;">
+      <input type="text" id="mlSearch" placeholder="名前・よみがなで検索..."
+        oninput="renderMlTab()"
+        style="flex:1;min-width:160px;padding:9px 12px;background:var(--surface2);border:1px solid var(--border);
+          border-radius:10px;color:var(--text);font-family:inherit;font-size:0.85rem;outline:none;">
+    </div>
+    <div style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:14px;">
+      <select id="mlGrade" onchange="renderMlTab()"
+        style="padding:7px 12px;background:var(--surface2);border:1px solid var(--border);border-radius:8px;
+          color:var(--text);font-family:inherit;font-size:0.82rem;outline:none;cursor:pointer;">
+        <option value="">全学年</option>
+      </select>
+      <select id="mlGender" onchange="renderMlTab()"
+        style="padding:7px 12px;background:var(--surface2);border:1px solid var(--border);border-radius:8px;
+          color:var(--text);font-family:inherit;font-size:0.82rem;outline:none;cursor:pointer;">
+        <option value="">性別（全て）</option>
+        <option value="男">男</option>
+        <option value="女">女</option>
+      </select>
+      <select id="mlNfc" onchange="renderMlTab()"
+        style="padding:7px 12px;background:var(--surface2);border:1px solid var(--border);border-radius:8px;
+          color:var(--text);font-family:inherit;font-size:0.82rem;outline:none;cursor:pointer;">
+        <option value="">NFC（全て）</option>
+        <option value="registered">登録済み</option>
+        <option value="none">未登録</option>
+      </select>
+    </div>
+    <!-- Sort buttons -->
+    <div style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:14px;align-items:center;">
+      <span style="font-size:0.72rem;color:var(--text3);letter-spacing:0.06em;text-transform:uppercase;font-weight:700;">ソート:</span>
+      <button id="sort-furigana" class="ml-sort-btn active" onclick="setMlSort('furigana')">五十音順</button>
+      <button id="sort-grade" class="ml-sort-btn" onclick="setMlSort('grade')">学年順</button>
+      <button id="sort-gender" class="ml-sort-btn" onclick="setMlSort('gender')">性別順</button>
+      <button id="sort-name" class="ml-sort-btn" onclick="setMlSort('name')">氏名順</button>
+    </div>
+
+    <!-- Count -->
+    <div id="mlCount" style="font-size:0.78rem;color:var(--text3);margin-bottom:10px;"></div>
+
+    <!-- Member cards -->
+    <div id="mlCards"></div>
   </div>
 
 </div><!-- /main -->
@@ -995,6 +1299,10 @@ function registerMember() {
 // ── TABS ──
 function switchTab(name) {
   document.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('active'));
+  if (name === 'members') {
+    populateMlGradeFilter();
+    renderMlTab();
+  }
   document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
   document.getElementById('tab-'+name).classList.add('active');
   event.currentTarget.classList.add('active');
@@ -1011,11 +1319,282 @@ function showToast(msg, err=false) {
   setTimeout(() => t.classList.remove('show'), 3000);
 }
 
+// ── MEMBER LIST ──
+let listOpen = false;
+
+function toggleMemberList() {
+  listOpen = !listOpen;
+  const panel = document.getElementById('memberListPanel');
+  const btn = document.getElementById('listToggleBtn');
+  panel.style.display = listOpen ? '' : 'none';
+  btn.textContent = listOpen ? '📋 リストを閉じる' : '📋 生徒リストを表示';
+  btn.classList.toggle('open', listOpen);
+  if (listOpen) {
+    buildGradeFilter();
+    renderMemberList();
+  }
+}
+
+function buildGradeFilter() {
+  const sel = document.getElementById('filterGrade');
+  const grades = [...new Set(MEMBERS.map(m => m.grade).filter(Boolean))].sort();
+  sel.innerHTML = '<option value="">全学年</option>' +
+    grades.map(g => `<option value="${g}">${g}</option>`).join('');
+}
+
+function renderMemberList() {
+  const furiganaQ = document.getElementById('filterFurigana').value.trim();
+  const gradeQ = document.getElementById('filterGrade').value;
+
+  let filtered = MEMBERS;
+  if (furiganaQ) filtered = filtered.filter(m =>
+    (m.furigana || '').includes(furiganaQ) || (m.name || '').includes(furiganaQ)
+  );
+  if (gradeQ) filtered = filtered.filter(m => m.grade === gradeQ);
+
+  // よみがな順でソート
+  filtered = [...filtered].sort((a, b) =>
+    (a.furigana || '').localeCompare(b.furigana || '', 'ja')
+  );
+
+  document.getElementById('listCount').textContent =
+    `${filtered.length}名 / 全${MEMBERS.length}名`;
+
+  const body = document.getElementById('memberListBody');
+  if (!filtered.length) {
+    body.innerHTML = '<div style="text-align:center;padding:24px;color:var(--text3);font-size:0.85rem;">該当なし</div>';
+    return;
+  }
+
+  body.innerHTML = filtered.map(m => {
+    const hasNfc = m.nfcId && m.nfcId.trim();
+    return `
+      <div class="member-list-row" onclick="selectFromList('${m.id}')">
+        <div class="list-avatar">${(m.name||'?')[0]}</div>
+        <div class="list-info">
+          <div class="list-name">${m.name || '—'}</div>
+          <div class="list-sub">${m.furigana || '—'} · ${m.grade || '—'} · ${m.course || '未設定'}</div>
+        </div>
+        <div class="list-nfc ${hasNfc ? 'has-nfc' : 'no-nfc'}">
+          ${hasNfc ? m.nfcId : 'NFC未登録'}
+        </div>
+      </div>`;
+  }).join('');
+}
+
+function selectFromList(id) {
+  const member = MEMBERS.find(m => m.id === id);
+  if (member) {
+    showMember(member);
+    listOpen = false;
+    document.getElementById('memberListPanel').style.display = 'none';
+    document.getElementById('listToggleBtn').textContent = '📋 生徒リストを表示';
+    document.getElementById('listToggleBtn').classList.remove('open');
+  }
+}
+
+// ── 五十音インデックス ──
+const AIUEO_ROWS = [
+  { label:'あ行', chars:['あ','い','う','え','お'] },
+  { label:'か行', chars:['か','き','く','け','こ'] },
+  { label:'さ行', chars:['さ','し','す','せ','そ'] },
+  { label:'た行', chars:['た','ち','つ','て','と'] },
+  { label:'な行', chars:['な','に','ぬ','ね','の'] },
+  { label:'は行', chars:['は','ひ','ふ','へ','ほ'] },
+  { label:'ま行', chars:['ま','み','む','め','も'] },
+  { label:'や行', chars:['や','ゆ','よ'] },
+  { label:'ら行', chars:['ら','り','る','れ','ろ'] },
+  { label:'わ行', chars:['わ','を','ん'] },
+];
+
+// 濁音・半濁音を清音に変換
+function toSeion(ch) {
+  const map = {'が':'か','ぎ':'き','ぐ':'く','げ':'け','ご':'こ','ざ':'さ','じ':'し','ず':'す','ぜ':'せ','ぞ':'そ','だ':'た','ぢ':'ち','づ':'つ','で':'て','ど':'と','ば':'は','び':'ひ','ぶ':'ふ','べ':'へ','ぼ':'ほ','ぱ':'は','ぴ':'ひ','ぷ':'ふ','ぺ':'へ','ぽ':'ほ'};
+  return map[ch] || ch;
+}
+
+let activeAiueo = null;
+
+function buildAiueoGrid() {
+  const grid = document.getElementById('aiueoGrid');
+  if (!grid) return;
+  // どの文字に該当する生徒がいるか調べる
+  const usedChars = new Set(MEMBERS.map(m => toSeion((m.furigana||'')[0])));
+  let html = '';
+  AIUEO_ROWS.forEach(row => {
+    row.chars.forEach(ch => {
+      const has = usedChars.has(ch);
+      html += `<button class="aiueo-btn${has ? '' : ' empty'}"
+        onclick="${has ? `selectAiueo('${ch}')` : ''}">${ch}</button>`;
+    });
+    html += '<div style="width:100%;height:0;"></div>'; // 行区切り（flex wrap）
+  });
+  grid.innerHTML = html;
+}
+
+function selectAiueo(ch) {
+  activeAiueo = ch;
+  document.querySelectorAll('.aiueo-btn').forEach(b => b.classList.remove('active'));
+  document.querySelectorAll('.aiueo-btn').forEach(b => { if(b.textContent===ch) b.classList.add('active'); });
+
+  const matched = MEMBERS.filter(m => toSeion((m.furigana||'')[0]) === ch)
+    .sort((a,b) => (a.furigana||'').localeCompare(b.furigana||'','ja'));
+
+  const res = document.getElementById('aiueoResults');
+  const list = document.getElementById('aiueoList');
+  document.getElementById('aiueoLabel').textContent = `「${ch}」— ${matched.length}名`;
+  res.style.display = '';
+
+  list.innerHTML = matched.map(m => `
+    <div class="aiueo-item" onclick="selectFromAiueo('${m.id}')">
+      <div class="aiueo-avatar">${(m.name||'?')[0]}</div>
+      <div style="flex:1;">
+        <div class="aiueo-name">${m.name||'—'}</div>
+        <div class="aiueo-sub">${m.furigana||'—'} · ${m.grade||'—'} · ${m.course||'未設定'}</div>
+      </div>
+      <div style="font-family:'DM Mono',monospace;font-size:0.7rem;color:${m.nfcId?'var(--accent)':'var(--warn)'};">
+        ${m.nfcId||'NFC未登録'}
+      </div>
+    </div>`).join('');
+}
+
+function selectFromAiueo(id) {
+  const member = MEMBERS.find(m => m.id === id);
+  if (member) {
+    showMember(member);
+    clearAiueo();
+  }
+}
+
+function clearAiueo() {
+  activeAiueo = null;
+  document.getElementById('aiueoResults').style.display = 'none';
+  document.querySelectorAll('.aiueo-btn').forEach(b => b.classList.remove('active'));
+}
+
+// ── STATS ──
+let statsMonthOffset = 0; // 0 = 今月
+
+function getStatsMonth(offset) {
+  const now = new Date();
+  const d = new Date(now.getFullYear(), now.getMonth() + offset, 1);
+  return { year: d.getFullYear(), month: d.getMonth() + 1, key: `${d.getFullYear()}/${String(d.getMonth()+1).padStart(2,'0')}` };
+}
+
+function shiftStatsMonth(delta) {
+  statsMonthOffset += delta;
+  if (statsMonthOffset > 0) statsMonthOffset = 0; // 未来は見ない
+  renderStats();
+}
+
+function renderStats() {
+  const { year, month, key } = getStatsMonth(statsMonthOffset);
+  document.getElementById('statsMonthLabel').textContent = `${year}年 ${month}月`;
+
+  // 今月の出席データ（todayAttendance + デモ履歴）
+  const allAttendance = getAttendanceHistory();
+  const thisMonthAtt = allAttendance.filter(a => a.dateKey && a.dateKey.startsWith(key));
+  const uniqueToday = new Set(thisMonthAtt.map(a => a.memberId || a.memberName));
+  const totalSessions = new Set(thisMonthAtt.map(a => a.date)).size || 1;
+  const attRate = MEMBERS.length > 0 ? Math.round(uniqueToday.size / MEMBERS.length * 100) : 0;
+
+  // Summary cards
+  document.getElementById('statsSummaryGrid').innerHTML = `
+    <div class="stats-sum-card green">
+      <div class="stats-sum-val green">${thisMonthAtt.length}</div>
+      <div class="stats-sum-lbl">今月の出席件数</div>
+    </div>
+    <div class="stats-sum-card blue">
+      <div class="stats-sum-val blue">${uniqueToday.size}名</div>
+      <div class="stats-sum-lbl">出席ユニーク人数</div>
+    </div>
+    <div class="stats-sum-card gold">
+      <div class="stats-sum-val gold">${attRate}%</div>
+      <div class="stats-sum-lbl">出席率（全生徒比）</div>
+    </div>
+    <div class="stats-sum-card red">
+      <div class="stats-sum-val red">${MEMBERS.length - uniqueToday.size}名</div>
+      <div class="stats-sum-lbl">今月未出席</div>
+    </div>`;
+
+  // Bar chart (過去6ヶ月)
+  const monthData = [];
+  for (let i = 5; i >= 0; i--) {
+    const { key: k, month: mo } = getStatsMonth(statsMonthOffset - i);
+    const cnt = allAttendance.filter(a => a.dateKey && a.dateKey.startsWith(k)).length;
+    monthData.push({ label: mo + '月', cnt, isCurrent: i === 0 });
+  }
+  const maxCnt = Math.max(...monthData.map(d => d.cnt), 1);
+  document.getElementById('statsBars').innerHTML = monthData.map(d => `
+    <div class="stats-bar-col">
+      <div class="stats-bar-val">${d.cnt || ''}</div>
+      <div class="stats-bar ${d.isCurrent ? 'current' : ''}" style="height:${Math.max(4, d.cnt/maxCnt*80)}px;"></div>
+      <div class="stats-bar-lbl">${d.label}</div>
+    </div>`).join('');
+
+  // Per-member table
+  const memberCounts = {};
+  thisMonthAtt.forEach(a => {
+    const k2 = a.memberId || a.memberName;
+    memberCounts[k2] = (memberCounts[k2] || 0) + 1;
+  });
+  const sorted = [...MEMBERS].sort((a, b) =>
+    (memberCounts[a.id] || 0) < (memberCounts[b.id] || 0) ? 1 : -1
+  );
+  document.getElementById('statsMemberTbody').innerHTML = sorted.map(m => {
+    const cnt = memberCounts[m.id] || memberCounts[m.name] || 0;
+    return `<tr>
+      <td style="font-weight:600;">${m.name}</td>
+      <td style="color:var(--text2);font-size:0.78rem;">${m.furigana||'—'}</td>
+      <td style="font-family:'DM Mono',monospace;font-weight:700;">${cnt}回</td>
+      <td><span class="attend-badge ${cnt>0?'good':'none'}">${cnt>0?'出席あり':'未出席'}</span></td>
+    </tr>`;
+  }).join('') || '<tr><td colspan="4" style="text-align:center;color:var(--text3);padding:16px;">データなし</td></tr>';
+}
+
+// 出席履歴を統合（今日のセッション + デモデータ）
+function getAttendanceHistory() {
+  const now = new Date();
+  const todayKey = `${now.getFullYear()}/${String(now.getMonth()+1).padStart(2,'0')}`;
+  // todayAttendanceをattendance履歴形式に変換
+  return todayAttendance.map(a => ({
+    memberId: a.member?.id || '',
+    memberName: a.member?.name || '',
+    dateKey: todayKey + '/' + String(now.getDate()).padStart(2,'0'),
+    date: todayKey
+  }));
+}
+
+// ── TABS ──
+function switchTab(name) {
+  document.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('active'));
+  if (name === 'members') {
+    populateMlGradeFilter();
+    renderMlTab();
+  }
+  document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+  document.getElementById('tab-'+name).classList.add('active');
+  event.currentTarget.classList.add('active');
+  if (name === 'today') renderTodayList();
+  if (name === 'stats') renderStats();
+}
+
+// ── TOAST ──
+function showToast(msg, err=false) {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.style.background = err ? 'var(--warn)' : 'var(--accent)';
+  t.style.color = err ? '#fff' : '#0d0f1a';
+  t.classList.add('show');
+  setTimeout(() => t.classList.remove('show'), 3000);
+}
+
 // ── INIT ──
 document.getElementById('regJoin').valueAsDate = new Date();
 renderTodayList();
 checkUrlParam();
-loadMembersFromGAS(); // Googleスプレッドシートから生徒リスト取得
+loadMembersFromGAS().then(() => buildAiueoGrid());
+buildAiueoGrid();
 
 // Close search on outside click
 document.addEventListener('click', e => {
@@ -1023,6 +1602,95 @@ document.addEventListener('click', e => {
     document.getElementById('searchResults').classList.remove('show');
   }
 });
+
+// ── MEMBER LIST TAB ──
+let mlSortKey = 'furigana';
+
+function setMlSort(key) {
+  mlSortKey = key;
+  document.querySelectorAll('.ml-sort-btn').forEach(b => b.classList.remove('active'));
+  const btn = document.getElementById('sort-' + key);
+  if (btn) btn.classList.add('active');
+  renderMlTab();
+}
+
+function renderMlTab() {
+  const q = (document.getElementById('mlSearch')?.value || '').toLowerCase();
+  const gradeF = document.getElementById('mlGrade')?.value || '';
+  const genderF = document.getElementById('mlGender')?.value || '';
+  const nfcF = document.getElementById('mlNfc')?.value || '';
+
+  let list = [...(MEMBERS)];
+
+  // Filters
+  if (q) list = list.filter(m =>
+    (m.name || '').includes(q) || (m.furigana || '').toLowerCase().includes(q)
+  );
+  if (gradeF) list = list.filter(m => (m.grade || '') === gradeF);
+  if (genderF) list = list.filter(m => (m.gender || '') === genderF);
+  if (nfcF === 'registered') list = list.filter(m => m.nfcId);
+  if (nfcF === 'none') list = list.filter(m => !m.nfcId);
+
+  // Sort
+  list.sort((a, b) => {
+    if (mlSortKey === 'furigana') return (a.furigana || '').localeCompare(b.furigana || '', 'ja');
+    if (mlSortKey === 'grade') {
+      const ga = mlGradeNum(a.grade), gb = mlGradeNum(b.grade);
+      return ga !== gb ? ga - gb : (a.furigana || '').localeCompare(b.furigana || '', 'ja');
+    }
+    if (mlSortKey === 'gender') {
+      const cmp = (a.gender || '').localeCompare(b.gender || '', 'ja');
+      return cmp !== 0 ? cmp : (a.furigana || '').localeCompare(b.furigana || '', 'ja');
+    }
+    if (mlSortKey === 'name') return (a.name || '').localeCompare(b.name || '', 'ja');
+    return 0;
+  });
+
+  const countEl = document.getElementById('mlCount');
+  if (countEl) countEl.textContent = `${list.length}名 / 総登録 ${(MEMBERS).length}名`;
+
+  const container = document.getElementById('mlCards');
+  if (!container) return;
+
+  if (!list.length) {
+    container.innerHTML = '<div style="text-align:center;padding:32px;color:var(--text3);">該当するメンバーがいません</div>';
+    return;
+  }
+
+  container.innerHTML = list.map(m => {
+    const hasNfc = !!m.nfcId;
+    const genderLabel = m.gender || '';
+    return `<div class="ml-card">
+      <div>
+        <div class="ml-furi">${m.furigana || '—'}</div>
+        <div class="ml-name">${m.name || '—'}</div>
+        <div class="ml-badges">
+          ${m.grade ? `<span class="ml-badge ml-badge-grade">${m.grade}</span>` : ''}
+          ${genderLabel ? `<span class="ml-badge ml-badge-gender">${genderLabel}</span>` : ''}
+          ${hasNfc
+            ? `<span class="ml-badge ml-badge-nfc">📡 NFC登録済</span>`
+            : `<span class="ml-badge ml-badge-nonfc">NFC未登録</span>`}
+        </div>
+        ${hasNfc ? `<div class="ml-nfc-id">${m.nfcId}</div>` : ''}
+      </div>
+    </div>`;
+  }).join('');
+}
+
+function mlGradeNum(grade) {
+  if (!grade) return 99;
+  const m = grade.match(/\d+/);
+  return m ? parseInt(m[0]) : 99;
+}
+
+function populateMlGradeFilter() {
+  const sel = document.getElementById('mlGrade');
+  if (!sel) return;
+  const src = MEMBERS;
+  const grades = [...new Set(src.map(m => m.grade).filter(Boolean))].sort((a, b) => gradeNum(a) - gradeNum(b));
+  sel.innerHTML = '<option value="">全学年</option>' + grades.map(g => `<option value="${g}">${g}</option>`).join('');
+}
+
 </script>
 </body>
 </html>
