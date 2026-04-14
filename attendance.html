@@ -1110,8 +1110,8 @@
           <select id="editGender"
             style="width:100%;padding:10px 12px;background:#1e2235;border:1px solid #2a2f45;border-radius:10px;color:#e8eaf6;font-family:inherit;font-size:0.9rem;outline:none;appearance:none;cursor:pointer;">
             <option value="">未設定</option>
-            <option value="男">男</option>
-            <option value="女">女</option>
+            <option value="男子">男子</option>
+            <option value="女子">女子</option>
           </select>
         </div>
         <div>
@@ -1689,7 +1689,7 @@ function renderMlTab() {
 
   // Filters
   if (q) list = list.filter(m =>
-    (m.name || '').includes(q) || (m.furigana || '').toLowerCase().includes(q)
+    (m.name || '').includes(q) || (m.furigana || '').includes(q)
   );
   if (gradeF) list = list.filter(m => (m.grade || '') === gradeF);
   if (genderF) list = list.filter(m => (m.gender || '') === genderF);
@@ -1722,10 +1722,14 @@ function renderMlTab() {
     return;
   }
 
+  // Store members in a map for safe lookup by rowIndex
+  window._mlMemberMap = {};
+  list.forEach(m => { window._mlMemberMap[m.rowIndex] = m; });
+
   container.innerHTML = list.map(m => {
     const hasNfc = !!m.nfcId;
     const genderLabel = m.gender || '';
-    return `<div class="ml-card" onclick="openEditModal(${JSON.stringify(m).replace(/"/g,'&quot;')})">
+    return `<div class="ml-card" onclick="openEditByRow(${m.rowIndex})">
       <div style="flex:1;">
         <div class="ml-furi">${m.furigana || '—'}</div>
         <div class="ml-name">${m.name || '—'}</div>
@@ -1746,6 +1750,7 @@ function renderMlTab() {
 
 function mlGradeNum(grade) {
   if (!grade) return 99;
+  if (grade.includes('中学')) return 20;
   const m = grade.match(/\d+/);
   return m ? parseInt(m[0]) : 99;
 }
@@ -1761,6 +1766,12 @@ function populateMlGradeFilter() {
 
 // ── MEMBER EDIT / ADD ──
 let editingMember = null;
+
+function openEditByRow(rowIndex) {
+  const m = window._mlMemberMap && window._mlMemberMap[rowIndex];
+  if (!m) return;
+  openEditModal(m);
+}
 
 function openEditModal(m) {
   editingMember = m;
