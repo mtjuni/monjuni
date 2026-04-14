@@ -1070,6 +1070,7 @@
       <span style="font-size:0.72rem;color:var(--text3);letter-spacing:0.06em;text-transform:uppercase;font-weight:700;">ソート:</span>
       <button id="sort-furigana" class="ml-sort-btn active" onclick="setMlSort('furigana')">五十音順</button>
       <button id="sort-grade" class="ml-sort-btn" onclick="setMlSort('grade')">学年順</button>
+      <button id="sort-age" class="ml-sort-btn" onclick="setMlSort('age')">年齢順</button>
       <button id="sort-gender" class="ml-sort-btn" onclick="setMlSort('gender')">性別順</button>
       <button id="sort-name" class="ml-sort-btn" onclick="setMlSort('name')">氏名順</button>
     </div>
@@ -1706,6 +1707,10 @@ function renderMlTab() {
     if (mlSortKey === 'gender') {
       const cmp = (a.gender || '').localeCompare(b.gender || '', 'ja');
       return cmp !== 0 ? cmp : (a.furigana || '').localeCompare(b.furigana || '', 'ja');
+    }
+    if (mlSortKey === 'age') {
+      const aa = parseInt(a.age) || 99, ab = parseInt(b.age) || 99;
+      return aa !== ab ? aa - ab : (a.furigana || '').localeCompare(b.furigana || '', 'ja');
     }
     if (mlSortKey === 'name') return (a.name || '').localeCompare(b.name || '', 'ja');
     return 0;
