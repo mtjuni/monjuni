@@ -1032,7 +1032,10 @@
 
   <!-- ── TAB: MEMBERS ── -->
   <div id="tab-members" class="tab-panel">
-    <div class="section-title">登録メンバー一覧</div>
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;">
+      <div class="section-title" style="margin:0;border:none;padding:0;">登録メンバー一覧</div>
+      <button onclick="openAddModal()" style="padding:8px 16px;background:var(--accent);color:#0d0f1a;border:none;border-radius:10px;font-family:inherit;font-size:0.82rem;font-weight:700;cursor:pointer;">＋ 新規追加</button>
+    </div>
 
     <!-- Sort / Filter controls -->
     <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:14px;align-items:center;">
@@ -1079,6 +1082,68 @@
   </div>
 
 </div><!-- /main -->
+
+
+<!-- ── EDIT MEMBER MODAL ── -->
+<div id="editMemberModal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.88);z-index:300;overflow-y:auto;padding:20px;align-items:flex-start;justify-content:center;">
+  <div style="max-width:480px;width:100%;margin:0 auto;background:#161929;border:1px solid #2a2f45;border-radius:16px;overflow:hidden;">
+    <div style="padding:16px 20px;border-bottom:1px solid #2a2f45;display:flex;justify-content:space-between;align-items:center;">
+      <div style="font-weight:700;font-size:1rem;color:#4fffb0;" id="editModalTitle">メンバー編集</div>
+      <button onclick="closeEditModal()" style="background:none;border:none;color:#8892b0;font-size:1.2rem;cursor:pointer;">✕</button>
+    </div>
+    <div style="padding:16px 20px;">
+      <input type="hidden" id="editRowIndex">
+      <input type="hidden" id="editMemberId">
+      <div style="margin-bottom:12px;">
+        <label style="font-size:0.7rem;font-weight:700;letter-spacing:0.08em;text-transform:uppercase;color:#4a5380;display:block;margin-bottom:5px;">氏名 *</label>
+        <input id="editName" type="text" placeholder="例: 田中 太郎"
+          style="width:100%;padding:10px 12px;background:#1e2235;border:1px solid #2a2f45;border-radius:10px;color:#e8eaf6;font-family:inherit;font-size:0.9rem;outline:none;">
+      </div>
+      <div style="margin-bottom:12px;">
+        <label style="font-size:0.7rem;font-weight:700;letter-spacing:0.08em;text-transform:uppercase;color:#4a5380;display:block;margin-bottom:5px;">よみがな *</label>
+        <input id="editFurigana" type="text" placeholder="例: たなか たろう"
+          style="width:100%;padding:10px 12px;background:#1e2235;border:1px solid #2a2f45;border-radius:10px;color:#e8eaf6;font-family:inherit;font-size:0.9rem;outline:none;">
+      </div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:12px;">
+        <div>
+          <label style="font-size:0.7rem;font-weight:700;letter-spacing:0.08em;text-transform:uppercase;color:#4a5380;display:block;margin-bottom:5px;">性別</label>
+          <select id="editGender"
+            style="width:100%;padding:10px 12px;background:#1e2235;border:1px solid #2a2f45;border-radius:10px;color:#e8eaf6;font-family:inherit;font-size:0.9rem;outline:none;appearance:none;cursor:pointer;">
+            <option value="">未設定</option>
+            <option value="男">男</option>
+            <option value="女">女</option>
+          </select>
+        </div>
+        <div>
+          <label style="font-size:0.7rem;font-weight:700;letter-spacing:0.08em;text-transform:uppercase;color:#4a5380;display:block;margin-bottom:5px;">学年</label>
+          <input id="editGrade" type="text" placeholder="例: 3年"
+            style="width:100%;padding:10px 12px;background:#1e2235;border:1px solid #2a2f45;border-radius:10px;color:#e8eaf6;font-family:inherit;font-size:0.9rem;outline:none;">
+        </div>
+      </div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:12px;">
+        <div>
+          <label style="font-size:0.7rem;font-weight:700;letter-spacing:0.08em;text-transform:uppercase;color:#4a5380;display:block;margin-bottom:5px;">年齢</label>
+          <input id="editAge" type="number" placeholder="例: 9"
+            style="width:100%;padding:10px 12px;background:#1e2235;border:1px solid #2a2f45;border-radius:10px;color:#e8eaf6;font-family:inherit;font-size:0.9rem;outline:none;">
+        </div>
+        <div>
+          <label style="font-size:0.7rem;font-weight:700;letter-spacing:0.08em;text-transform:uppercase;color:#4a5380;display:block;margin-bottom:5px;">小学校名</label>
+          <input id="editSchool" type="text" placeholder="例: ○○小学校"
+            style="width:100%;padding:10px 12px;background:#1e2235;border:1px solid #2a2f45;border-radius:10px;color:#e8eaf6;font-family:inherit;font-size:0.9rem;outline:none;">
+        </div>
+      </div>
+      <div style="margin-bottom:16px;">
+        <label style="font-size:0.7rem;font-weight:700;letter-spacing:0.08em;text-transform:uppercase;color:#4a5380;display:block;margin-bottom:5px;">NFCカードID</label>
+        <input id="editNfcId" type="text" placeholder="例: NFC001"
+          style="width:100%;padding:10px 12px;background:#1e2235;border:1px solid #2a2f45;border-radius:10px;color:#4fffb0;font-family:'DM Mono',monospace;font-size:0.9rem;outline:none;">
+      </div>
+      <div style="display:flex;gap:8px;">
+        <button onclick="closeEditModal()" style="flex:1;padding:12px;background:#1e2235;border:1px solid #2a2f45;border-radius:10px;color:#8892b0;font-family:inherit;font-size:0.88rem;font-weight:700;cursor:pointer;">キャンセル</button>
+        <button onclick="saveMember()" id="editSaveBtn" style="flex:2;padding:12px;background:#4fffb0;border:none;border-radius:10px;color:#0d0f1a;font-family:inherit;font-size:0.88rem;font-weight:700;cursor:pointer;">💾 保存</button>
+      </div>
+    </div>
+  </div>
+</div>
 
 <div class="toast" id="toast"></div>
 
@@ -1660,19 +1725,21 @@ function renderMlTab() {
   container.innerHTML = list.map(m => {
     const hasNfc = !!m.nfcId;
     const genderLabel = m.gender || '';
-    return `<div class="ml-card">
-      <div>
+    return `<div class="ml-card" onclick="openEditModal(${JSON.stringify(m).replace(/"/g,'&quot;')})">
+      <div style="flex:1;">
         <div class="ml-furi">${m.furigana || '—'}</div>
         <div class="ml-name">${m.name || '—'}</div>
         <div class="ml-badges">
           ${m.grade ? `<span class="ml-badge ml-badge-grade">${m.grade}</span>` : ''}
           ${genderLabel ? `<span class="ml-badge ml-badge-gender">${genderLabel}</span>` : ''}
+          ${m.age ? `<span class="ml-badge ml-badge-grade">${m.age}歳</span>` : ''}
+          ${m.school ? `<span class="ml-badge" style="background:rgba(79,255,176,0.08);color:var(--text2);border:1px solid var(--border);">${m.school}</span>` : ''}
           ${hasNfc
-            ? `<span class="ml-badge ml-badge-nfc">📡 NFC登録済</span>`
+            ? `<span class="ml-badge ml-badge-nfc">📡 NFC済</span>`
             : `<span class="ml-badge ml-badge-nonfc">NFC未登録</span>`}
         </div>
-        ${hasNfc ? `<div class="ml-nfc-id">${m.nfcId}</div>` : ''}
       </div>
+      <div style="color:var(--text3);font-size:1rem;padding-left:8px;">›</div>
     </div>`;
   }).join('');
 }
@@ -1689,6 +1756,108 @@ function populateMlGradeFilter() {
   const src = MEMBERS;
   const grades = [...new Set(src.map(m => m.grade).filter(Boolean))].sort((a, b) => gradeNum(a) - gradeNum(b));
   sel.innerHTML = '<option value="">全学年</option>' + grades.map(g => `<option value="${g}">${g}</option>`).join('');
+}
+
+
+// ── MEMBER EDIT / ADD ──
+let editingMember = null;
+
+function openEditModal(m) {
+  editingMember = m;
+  document.getElementById('editModalTitle').textContent = 'メンバー編集';
+  document.getElementById('editRowIndex').value = m.rowIndex || '';
+  document.getElementById('editMemberId').value = m.id || '';
+  document.getElementById('editName').value = m.name || '';
+  document.getElementById('editFurigana').value = m.furigana || '';
+  document.getElementById('editGender').value = m.gender || '';
+  document.getElementById('editGrade').value = m.grade || '';
+  document.getElementById('editAge').value = m.age || '';
+  document.getElementById('editSchool').value = m.school || '';
+  document.getElementById('editNfcId').value = m.nfcId || '';
+  document.getElementById('editSaveBtn').onclick = saveMember;
+  const modal = document.getElementById('editMemberModal');
+  modal.style.display = 'flex';
+}
+
+function openAddModal() {
+  editingMember = null;
+  document.getElementById('editModalTitle').textContent = '新規メンバー追加';
+  ['editRowIndex','editMemberId','editName','editFurigana','editGrade','editAge','editSchool','editNfcId'].forEach(id => {
+    document.getElementById(id).value = '';
+  });
+  document.getElementById('editGender').value = '';
+  document.getElementById('editSaveBtn').onclick = addMemberSubmit;
+  const modal = document.getElementById('editMemberModal');
+  modal.style.display = 'flex';
+}
+
+function closeEditModal() {
+  document.getElementById('editMemberModal').style.display = 'none';
+  editingMember = null;
+}
+
+async function saveMember() {
+  const name = document.getElementById('editName').value.trim();
+  const furigana = document.getElementById('editFurigana').value.trim();
+  if (!name || !furigana) { showToast('⚠ 氏名とよみがなは必須です', true); return; }
+
+  const rowIndex = parseInt(document.getElementById('editRowIndex').value);
+  if (!rowIndex) { showToast('⚠ 行番号が見つかりません', true); return; }
+
+  const btn = document.getElementById('editSaveBtn');
+  btn.disabled = true; btn.textContent = '保存中...';
+
+  try {
+    const res = await fetch(GAS_URL, { method: 'POST', body: JSON.stringify({
+      action: 'updateMember',
+      rowIndex,
+      name,
+      furigana,
+      gender:  document.getElementById('editGender').value,
+      grade:   document.getElementById('editGrade').value.trim(),
+      age:     document.getElementById('editAge').value.trim(),
+      school:  document.getElementById('editSchool').value.trim(),
+      nfcId:   document.getElementById('editNfcId').value.trim(),
+    })});
+    const d = await res.json();
+    if (d.status === 'ok') {
+      showToast('✓ 更新しました');
+      closeEditModal();
+      await loadMembersFromGAS();
+      renderMlTab();
+    } else throw new Error(d.message || 'Error');
+  } catch(e) { showToast('⚠ 保存失敗: ' + e.message, true); }
+  btn.disabled = false; btn.textContent = '💾 保存';
+}
+
+async function addMemberSubmit() {
+  const name = document.getElementById('editName').value.trim();
+  const furigana = document.getElementById('editFurigana').value.trim();
+  if (!name || !furigana) { showToast('⚠ 氏名とよみがなは必須です', true); return; }
+
+  const btn = document.getElementById('editSaveBtn');
+  btn.disabled = true; btn.textContent = '追加中...';
+
+  try {
+    const res = await fetch(GAS_URL, { method: 'POST', body: JSON.stringify({
+      action: 'addMember',
+      name,
+      furigana,
+      gender:  document.getElementById('editGender').value,
+      grade:   document.getElementById('editGrade').value.trim(),
+      age:     document.getElementById('editAge').value.trim(),
+      school:  document.getElementById('editSchool').value.trim(),
+      nfcId:   document.getElementById('editNfcId').value.trim(),
+    })});
+    const d = await res.json();
+    if (d.status === 'ok') {
+      showToast('✓ 新規メンバーを追加しました');
+      closeEditModal();
+      await loadMembersFromGAS();
+      renderMlTab();
+    } else throw new Error(d.message || 'Error');
+  } catch(e) { showToast('⚠ 追加失敗: ' + e.message, true); }
+  btn.disabled = false; btn.textContent = '💾 保存';
 }
 
 </script>

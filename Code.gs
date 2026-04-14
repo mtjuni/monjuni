@@ -14,15 +14,18 @@
 const SS_ID = ''; // 部活管理DB（自動作成）
 const PHOTO_FOLDER_NAME = 'Athletic Club Photos';
 
-// ── Google Forms 生徒リスト スプレッドシート ──
-const FORMS_SHEET_ID  = '1Z2kHyKsq2VEMrOerwVOI8ncbtgg37poxxgTg_4F9ou4';
-const FORMS_SHEET_GID = '2043636996';
-// 列番号（A=1, F=6, G=7, I=9, T=20）
-const COL_NAME     = 6;  // F列：氏名
-const COL_FURIGANA = 7;  // G列：よみがな
-const COL_GRADE    = 9;  // I列：学年
-const COL_NFC      = 20; // T列：NFCカードID（後で入力）
-// コース列は手入力後に追加予定
+// ── 名簿スプレッドシート ──
+const FORMS_SHEET_ID  = '18k0aacw04JHE_VR8EJ8FAmMMPMU8UGoUZPcRTOoacCc';
+const FORMS_SHEET_GID = '1202504577';
+// 列番号（A=1）
+const COL_NAME     = 7;  // G列：名前
+const COL_FURIGANA = 8;  // H列：よみがな
+const COL_GENDER   = 9;  // I列：性別
+const COL_GRADE    = 10; // J列：学年
+const COL_AGE      = 11; // K列：年齢
+const COL_SCHOOL   = 12; // L列：小学校名
+const COL_COURSE   = 0;  // コース列：未設定
+const COL_NFC      = 20; // T列：NFCカードID
 
 function doGet(e) {
   const action = e.parameter.action || '';
@@ -52,6 +55,8 @@ function doPost(e) {
   try {
     switch (data.action) {
       case 'attendance':      result = recordAttendance(data); break;
+      case 'updateMember':   result = updateMember(data); break;
+      case 'addMember':      result = addMember(data); break;
       case 'coachAttendance': result = recordCoachAttendance(data); break;
       case 'payment':         result = recordPayment(data); break;
       case 'registerMember':  result = registerMember(data); break;
@@ -104,42 +109,92 @@ function initSheet(sheet, name) {
   }
 }
 
+function getFormsSheet() {
+  const ss = SpreadsheetApp.openById(FORMS_SHEET_ID);
+  const sheets = ss.getSheets();
+  let sheet = sheets.find(s => String(s.getSheetId()) === FORMS_SHEET_GID);
+  return sheet || sheets[0];
+}
+
 function getMembers() {
   try {
-    // Google Forms スプレッドシートから生徒リストを取得
-    const ss = SpreadsheetApp.openById(FORMS_SHEET_ID);
-    // gidでシートを特定
-    const sheets = ss.getSheets();
-    let sheet = sheets.find(s => String(s.getSheetId()) === FORMS_SHEET_GID);
-    if (!sheet) sheet = sheets[0]; // fallback
-
+    const sheet = getFormsSheet();
     const rows = sheet.getDataRange().getValues();
     const members = [];
 
-    for (let i = 1; i < rows.length; i++) { // 1行目はヘッダーなのでスキップ
+    for (let i = 1; i < rows.length; i++) {
       const row = rows[i];
       const name = row[COL_NAME - 1];
-      if (!name) continue; // 名前が空の行はスキップ
+      if (!name) continue;
 
       const nfcId = row[COL_NFC - 1] || '';
       members.push({
-        id:       nfcId || 'ROW' + i,  // NFCIDがあればそれ、なければ行番号で識別
+        id:       nfcId || 'ROW' + i,
+        rowIndex: i + 1,  // スプレッドシートの実際の行番号（1始まり）
         nfcId:    nfcId,
         name:     String(name),
         furigana: String(row[COL_FURIGANA - 1] || ''),
+        gender:   String(row[COL_GENDER - 1] || ''),
         grade:    String(row[COL_GRADE - 1] || ''),
-        course:   '',    // 後日追加
-        fee:      0,     // 後日追加
-        paidMonths: [],  // Paymentsシートから別途取得
-        assocFee:   false,
-        insurance:  false,
+        age:      String(row[COL_AGE - 1] || ''),
+        school:   String(row[COL_SCHOOL - 1] || ''),
+        course:   '',
       });
     }
 
     return { status: 'ok', members, source: 'forms', count: members.length };
   } catch(e) {
-    // Formsシートが読めない場合は管理DBのMembersシートを返す
-    return { status: 'ok', members: sheetToObjects(getSheet('Members')).filter(m => m.active !== 'false'), source: 'db' };
+    return { status: 'ok', members: [], source: 'error', message: e.message };
+  }
+}
+
+function updateMember(data) {
+  // rowIndexを使ってスプレッドシートの該当行を更新
+  try {
+    const sheet = getFormsSheet();
+    const row = data.rowIndex;
+    if (!row || row < 2) return { status: 'error', message: '行番号が不正です' };
+
+    // 各列を更新（値がnullでない場合のみ）
+    const updates = [
+      { col: COL_NAME,     val: data.name },
+      { col: COL_FURIGANA, val: data.furigana },
+      { col: COL_GENDER,   val: data.gender },
+      { col: COL_GRADE,    val: data.grade },
+      { col: COL_AGE,      val: data.age },
+      { col: COL_SCHOOL,   val: data.school },
+      { col: COL_NFC,      val: data.nfcId },
+    ];
+
+    updates.forEach(u => {
+      if (u.col > 0 && u.val !== undefined && u.val !== null) {
+        sheet.getRange(row, u.col).setValue(u.val);
+      }
+    });
+
+    return { status: 'ok', rowIndex: row };
+  } catch(e) {
+    return { status: 'error', message: e.message };
+  }
+}
+
+function addMember(data) {
+  try {
+    const sheet = getFormsSheet();
+    const lastRow = sheet.getLastRow() + 1;
+
+    // 新規行に書き込み
+    if (COL_NAME     > 0) sheet.getRange(lastRow, COL_NAME).setValue(data.name || '');
+    if (COL_FURIGANA > 0) sheet.getRange(lastRow, COL_FURIGANA).setValue(data.furigana || '');
+    if (COL_GENDER   > 0) sheet.getRange(lastRow, COL_GENDER).setValue(data.gender || '');
+    if (COL_GRADE    > 0) sheet.getRange(lastRow, COL_GRADE).setValue(data.grade || '');
+    if (COL_AGE      > 0) sheet.getRange(lastRow, COL_AGE).setValue(data.age || '');
+    if (COL_SCHOOL   > 0) sheet.getRange(lastRow, COL_SCHOOL).setValue(data.school || '');
+    if (COL_NFC      > 0) sheet.getRange(lastRow, COL_NFC).setValue(data.nfcId || '');
+
+    return { status: 'ok', rowIndex: lastRow };
+  } catch(e) {
+    return { status: 'error', message: e.message };
   }
 }
 
