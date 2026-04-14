@@ -1759,7 +1759,7 @@ function populateMlGradeFilter() {
   const sel = document.getElementById('mlGrade');
   if (!sel) return;
   const src = MEMBERS;
-  const grades = [...new Set(src.map(m => m.grade).filter(Boolean))].sort((a, b) => gradeNum(a) - gradeNum(b));
+  const grades = [...new Set(src.map(m => m.grade).filter(Boolean))].sort((a, b) => mlGradeNum(a) - mlGradeNum(b));
   sel.innerHTML = '<option value="">全学年</option>' + grades.map(g => `<option value="${g}">${g}</option>`).join('');
 }
 
