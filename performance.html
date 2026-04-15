@@ -148,12 +148,39 @@ body::before{content:'';position:fixed;inset:0;pointer-events:none;z-index:0;
   .hdr{padding:16px 32px;}.main{padding:28px 32px;max-width:1000px;}
   .frow{grid-template-columns:1fr 1fr 1fr;}.srow{grid-template-columns:repeat(5,1fr);}
 }
+
+  .memo-textarea {
+    width: 100%;
+    min-height: 80px;
+    padding: 10px 12px;
+    background: var(--surface2, #1e2235);
+    border: 1px solid var(--border2, #2a2f45);
+    border-radius: 10px;
+    color: var(--text, #e8eaf6);
+    font-family: inherit;
+    font-size: 0.88rem;
+    line-height: 1.6;
+    outline: none;
+    resize: none;
+    overflow: hidden;
+    transition: border-color 0.2s;
+    white-space: pre-wrap;
+  }
+  .memo-textarea:focus {
+    border-color: var(--accent, #00e5ff);
+    box-shadow: 0 0 0 2px rgba(0,229,255,0.1);
+  }
+  .memo-textarea::placeholder { color: var(--text3, #4a5380); }
+
 </style>
 </head>
 <body>
 <header class="hdr">
   <div class="htitle">⚡ 計測管理 <span>Athletic Club</span></div>
-  <a href="attendance.html" class="hlink">⚡ 出席 →</a>
+  <div style="display:flex;gap:6px;">
+    <a href="attendance.html" class="hlink">⚡ 出席</a>
+    <a href="accounting.html" class="hlink">💴 会計</a>
+  </div>
 </header>
 <div class="tbar">
   <button class="tbtn active" onclick="sw('new',this)">➕ 新規計測</button>
@@ -467,10 +494,12 @@ function showSess(id){
     </div></div>`);
 }
 async function delSess(id){
-  if(!confirm('この計測を削除しますか？'))return;
-  try{await fetch(GAS,{method:'POST',body:JSON.stringify({action:'deleteSession',id})});
-    SESS=SESS.filter(s=>s.id!==id);renderSess();showT('削除しました');}
-  catch(e){showT('削除に失敗しました',true);}
+  requireAdmin(async () => {
+    if(!confirm('この計測を削除しますか？'))return;
+    try{await fetch(GAS,{method:'POST',body:JSON.stringify({action:'deleteSession',id})});
+      SESS=SESS.filter(s=>s.id!==id);renderSess();showT('削除しました');}
+    catch(e){showT('削除に失敗しました',true);}
+  });
 }
 function renderGrps(){
   const el=document.getElementById('glist');
@@ -691,6 +720,28 @@ function demoS(){
   ];
 }
 init();
+
+function autoResizeTextarea(el) {
+  el.style.height = 'auto';
+  el.style.height = (el.scrollHeight) + 'px';
+}
+
+
+// ── ADMIN AUTH ──
+const ADMIN_PASS = '1223';
+let _adminUnlocked = false;
+
+function requireAdmin(callback) {
+  if (_adminUnlocked) { callback(); return; }
+  const pass = prompt('管理者パスワードを入力してください');
+  if (pass === ADMIN_PASS) {
+    _adminUnlocked = true;
+    callback();
+  } else if (pass !== null) {
+    showT('⚠ パスワードが違います', true);
+  }
+}
+
 </script>
 </body>
 </html>
