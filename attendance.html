@@ -1187,9 +1187,14 @@
           style="width:100%;padding:10px 12px;background:#1e2235;border:1px solid #2a2f45;border-radius:10px;color:#06c755;font-family:'DM Mono',monospace;font-size:0.9rem;outline:none;">
       </div>
       <div style="margin-bottom:12px;">
-        <label style="font-size:0.7rem;font-weight:700;letter-spacing:0.08em;text-transform:uppercase;color:#4a5380;display:block;margin-bottom:5px;">NFCカードID</label>
-        <input id="editNfcId" type="text" placeholder="例: NFC001"
-          style="width:100%;padding:10px 12px;background:#1e2235;border:1px solid #2a2f45;border-radius:10px;color:#4fffb0;font-family:'DM Mono',monospace;font-size:0.9rem;outline:none;">
+        <label style="font-size:0.7rem;font-weight:700;letter-spacing:0.08em;text-transform:uppercase;color:#4a5380;display:block;margin-bottom:5px;">NFCカードID（自動生成）</label>
+        <div style="display:flex;gap:8px;align-items:center;">
+          <input id="editNfcId" type="text" readonly
+            style="flex:1;padding:10px 12px;background:#111420;border:1px solid #2a2f45;border-radius:10px;color:#4fffb0;font-family:'DM Mono',monospace;font-size:0.9rem;outline:none;cursor:default;">
+          <button onclick="copyNfcId(document.getElementById('editNfcId').value)"
+            style="padding:10px 16px;background:rgba(79,255,176,0.12);border:1px solid rgba(79,255,176,0.3);border-radius:10px;color:#4fffb0;font-family:inherit;font-size:0.82rem;font-weight:700;cursor:pointer;white-space:nowrap;">コピー</button>
+        </div>
+        <div style="font-size:0.68rem;color:#4a5380;margin-top:4px;">※ タイムスタンプから自動生成されます。NFC Toolsアプリにコピペして書き込んでください。</div>
       </div>
       <div style="margin-bottom:16px;">
         <label style="font-size:0.7rem;font-weight:700;letter-spacing:0.08em;text-transform:uppercase;color:#4a5380;display:block;margin-bottom:5px;">コース</label>
@@ -1835,6 +1840,11 @@ function renderMlTab() {
           ${m.email ? `<a href="mailto:${m.email}" onclick="event.stopPropagation()" style="font-size:0.7rem;color:var(--accent2);text-decoration:none;background:rgba(123,111,255,0.1);padding:2px 8px;border-radius:8px;border:1px solid rgba(123,111,255,0.2);">✉ メール</a>` : ''}
         </div>
         ${m.parent ? `<div style="font-size:0.7rem;color:var(--text3);margin-top:3px;">👤 ${m.parent}</div>` : ''}
+        ${m.nfcId ? `<div style="display:flex;align-items:center;gap:6px;margin-top:4px;">
+          <span style="font-family:'DM Mono',monospace;font-size:0.68rem;color:var(--text3);">NFC: ${m.nfcId}</span>
+          <button onclick="event.stopPropagation();copyNfcId('${m.nfcId}')"
+            style="padding:1px 8px;background:rgba(79,255,176,0.1);border:1px solid rgba(79,255,176,0.2);border-radius:6px;color:var(--accent);font-family:inherit;font-size:0.65rem;cursor:pointer;">コピー</button>
+        </div>` : ''}
       </div>
       <div style="color:var(--text3);font-size:1rem;padding-left:8px;">›</div>
     </div>`;
@@ -2006,6 +2016,22 @@ async function toggleHiddenMember() {
 function autoResizeTextarea(el) {
   el.style.height = 'auto';
   el.style.height = (el.scrollHeight) + 'px';
+}
+
+
+function copyNfcId(id) {
+  navigator.clipboard.writeText(id).then(() => {
+    showToast('✓ NFCカードID をコピーしました: ' + id);
+  }).catch(() => {
+    // fallback for older browsers
+    const el = document.createElement('textarea');
+    el.value = id;
+    document.body.appendChild(el);
+    el.select();
+    document.execCommand('copy');
+    document.body.removeChild(el);
+    showToast('✓ コピーしました: ' + id);
+  });
 }
 
 </script>
