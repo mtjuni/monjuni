@@ -1064,6 +1064,13 @@
         <option value="registered">登録済み</option>
         <option value="none">未登録</option>
       </select>
+      <select id="mlCourse" onchange="renderMlTab()"
+        style="padding:7px 12px;background:var(--surface2);border:1px solid var(--border);border-radius:8px;
+          color:var(--text);font-family:inherit;font-size:0.82rem;outline:none;cursor:pointer;">
+        <option value="">コース（全て）</option>
+        <option value="月に1回の参加">月1回</option>
+        <option value="月に2回の参加">月2回</option>
+      </select>
     </div>
     <!-- Sort buttons -->
     <div style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:14px;align-items:center;">
@@ -1133,11 +1140,27 @@
             style="width:100%;padding:10px 12px;background:#1e2235;border:1px solid #2a2f45;border-radius:10px;color:#e8eaf6;font-family:inherit;font-size:0.9rem;outline:none;">
         </div>
       </div>
-      <div style="margin-bottom:16px;">
+      <div style="margin-bottom:12px;">
         <label style="font-size:0.7rem;font-weight:700;letter-spacing:0.08em;text-transform:uppercase;color:#4a5380;display:block;margin-bottom:5px;">NFCカードID</label>
         <input id="editNfcId" type="text" placeholder="例: NFC001"
           style="width:100%;padding:10px 12px;background:#1e2235;border:1px solid #2a2f45;border-radius:10px;color:#4fffb0;font-family:'DM Mono',monospace;font-size:0.9rem;outline:none;">
       </div>
+      <div style="margin-bottom:16px;">
+        <label style="font-size:0.7rem;font-weight:700;letter-spacing:0.08em;text-transform:uppercase;color:#4a5380;display:block;margin-bottom:5px;">コース</label>
+        <select id="editCourse"
+          style="width:100%;padding:10px 12px;background:#1e2235;border:1px solid #2a2f45;border-radius:10px;color:#e8eaf6;font-family:inherit;font-size:0.9rem;outline:none;appearance:none;cursor:pointer;">
+          <option value="">未設定</option>
+          <option value="月に1回の参加">月に1回の参加</option>
+          <option value="月に2回の参加">月に2回の参加</option>
+        </select>
+      </div>
+      <div style="display:flex;gap:8px;">
+        <button onclick="toggleHiddenMember()" id="hideToggleBtn"
+          style="flex:1;padding:12px;background:rgba(255,107,107,0.12);border:1px solid rgba(255,107,107,0.3);border-radius:10px;color:var(--warn);font-family:inherit;font-size:0.85rem;font-weight:700;cursor:pointer;">
+          🚫 非表示にする
+        </button>
+      </div>
+      <div style="height:8px;"></div>
       <div style="display:flex;gap:8px;">
         <button onclick="closeEditModal()" style="flex:1;padding:12px;background:#1e2235;border:1px solid #2a2f45;border-radius:10px;color:#8892b0;font-family:inherit;font-size:0.88rem;font-weight:700;cursor:pointer;">キャンセル</button>
         <button onclick="saveMember()" id="editSaveBtn" style="flex:2;padding:12px;background:#4fffb0;border:none;border-radius:10px;color:#0d0f1a;font-family:inherit;font-size:0.88rem;font-weight:700;cursor:pointer;">💾 保存</button>
@@ -1696,6 +1719,8 @@ function renderMlTab() {
   if (genderF) list = list.filter(m => (m.gender || '') === genderF);
   if (nfcF === 'registered') list = list.filter(m => m.nfcId);
   if (nfcF === 'none') list = list.filter(m => !m.nfcId);
+  const courseF = document.getElementById('mlCourse')?.value || '';
+  if (courseF) list = list.filter(m => (m.course || '') === courseF);
 
   // Sort
   list.sort((a, b) => {
@@ -1731,9 +1756,20 @@ function renderMlTab() {
   window._mlMemberMap = {};
   list.forEach(m => { window._mlMemberMap[m.rowIndex] = m; });
 
+  // 重複検出：よみがなが同じメンバーを検出
+  const furiganaCount = {};
+  list.forEach(m => {
+    const f = (m.furigana || '').trim();
+    if (f) furiganaCount[f] = (furiganaCount[f] || 0) + 1;
+  });
+
   container.innerHTML = list.map(m => {
     const hasNfc = !!m.nfcId;
     const genderLabel = m.gender || '';
+    const isDuplicate = (furiganaCount[(m.furigana || '').trim()] || 0) > 1;
+    const courseShort = m.course
+      ? m.course.includes('1回') ? '月1回' : m.course.includes('2回') ? '月2回' : m.course
+      : '';
     return `<div class="ml-card" onclick="openEditByRow(${m.rowIndex})">
       <div style="flex:1;">
         <div class="ml-furi">${m.furigana || '—'}</div>
@@ -1742,10 +1778,11 @@ function renderMlTab() {
           ${m.grade ? `<span class="ml-badge ml-badge-grade">${m.grade}</span>` : ''}
           ${genderLabel ? `<span class="ml-badge ml-badge-gender">${genderLabel}</span>` : ''}
           ${m.age ? `<span class="ml-badge ml-badge-grade">${m.age}歳</span>` : ''}
-          ${m.school ? `<span class="ml-badge" style="background:rgba(79,255,176,0.08);color:var(--text2);border:1px solid var(--border);">${m.school}</span>` : ''}
+          ${courseShort ? `<span class="ml-badge" style="background:rgba(123,111,255,0.18);color:var(--accent2);border:1px solid rgba(123,111,255,0.3);">${courseShort}</span>` : ''}
           ${hasNfc
             ? `<span class="ml-badge ml-badge-nfc">📡 NFC済</span>`
             : `<span class="ml-badge ml-badge-nonfc">NFC未登録</span>`}
+          ${isDuplicate ? `<span class="ml-badge" style="background:rgba(255,107,107,0.2);color:var(--warn);border:1px solid rgba(255,107,107,0.4);">⚠ 重複</span>` : ''}
         </div>
       </div>
       <div style="color:var(--text3);font-size:1rem;padding-left:8px;">›</div>
@@ -1790,6 +1827,10 @@ function openEditModal(m) {
   document.getElementById('editAge').value = m.age || '';
   document.getElementById('editSchool').value = m.school || '';
   document.getElementById('editNfcId').value = m.nfcId || '';
+  document.getElementById('editCourse').value = m.course || '';
+  const hideBtn = document.getElementById('hideToggleBtn');
+  hideBtn.textContent = '🚫 非表示にする';
+  hideBtn.style.background = 'rgba(255,107,107,0.12)';
   document.getElementById('editSaveBtn').onclick = saveMember;
   const modal = document.getElementById('editMemberModal');
   modal.style.display = 'flex';
@@ -1834,6 +1875,7 @@ async function saveMember() {
       age:     document.getElementById('editAge').value.trim(),
       school:  document.getElementById('editSchool').value.trim(),
       nfcId:   document.getElementById('editNfcId').value.trim(),
+      course:  document.getElementById('editCourse').value,
     })});
     const d = await res.json();
     if (d.status === 'ok') {
@@ -1864,6 +1906,7 @@ async function addMemberSubmit() {
       age:     document.getElementById('editAge').value.trim(),
       school:  document.getElementById('editSchool').value.trim(),
       nfcId:   document.getElementById('editNfcId').value.trim(),
+      course:  document.getElementById('editCourse').value,
     })});
     const d = await res.json();
     if (d.status === 'ok') {
@@ -1874,6 +1917,26 @@ async function addMemberSubmit() {
     } else throw new Error(d.message || 'Error');
   } catch(e) { showToast('⚠ 追加失敗: ' + e.message, true); }
   btn.disabled = false; btn.textContent = '💾 保存';
+}
+
+
+async function toggleHiddenMember() {
+  if (!editingMember) return;
+  const rowIndex = parseInt(document.getElementById('editRowIndex').value);
+  if (!rowIndex) return;
+  if (!confirm('このメンバーを非表示にしますか？\n（スプレッドシートのV列に「非表示」と書き込まれます。\n解除するにはスプレッドシートから直接削除してください）')) return;
+  try {
+    const res = await fetch(GAS_URL, { method: 'POST', body: JSON.stringify({
+      action: 'toggleHidden', rowIndex
+    })});
+    const d = await res.json();
+    if (d.status === 'ok') {
+      showToast(d.hidden ? '🚫 非表示にしました' : '✓ 表示に戻しました');
+      closeEditModal();
+      await loadMembersFromGAS();
+      renderMlTab();
+    } else throw new Error(d.message);
+  } catch(e) { showToast('⚠ 失敗: ' + e.message, true); }
 }
 
 </script>
