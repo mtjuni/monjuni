@@ -463,15 +463,7 @@
         <!-- Member Select -->
         <div class="section-title">会員選択</div>
         <div class="member-select-bar">
-          <div style="font-size:0.75rem;color:var(--text3);margin-bottom:8px;">📡 NFCカードのデモ</div>
-          <div class="demo-row">
-            <button class="demo-btn" onclick="selectMember('NFC001')">🪪 田中</button>
-            <button class="demo-btn" onclick="selectMember('NFC002')">🪪 鈴木</button>
-            <button class="demo-btn" onclick="selectMember('NFC003')">🪪 山田</button>
-            <button class="demo-btn" onclick="selectMember('NFC004')">🪪 佐藤</button>
-            <button class="demo-btn" onclick="selectMember('NFC005')">🪪 伊藤</button>
-            <button class="demo-btn" onclick="selectMember('NFC006')">🪪 渡辺</button>
-          </div>
+
           <div class="search-wrap">
             <span class="search-icon">🔍</span>
             <input class="search-input" id="paySearch" type="text" placeholder="名前で検索..." autocomplete="off" oninput="onPaySearch(this.value)">
@@ -642,14 +634,7 @@
   <div id="tab-lookup" class="tab-panel">
     <div class="section-title">会員を選択</div>
     <div class="member-select-bar" style="margin-bottom:16px;">
-      <div class="demo-row">
-        <button class="demo-btn" onclick="lookupMember('NFC001')">田中 太郎</button>
-        <button class="demo-btn" onclick="lookupMember('NFC002')">鈴木 花子</button>
-        <button class="demo-btn" onclick="lookupMember('NFC003')">山田 健太</button>
-        <button class="demo-btn" onclick="lookupMember('NFC004')">佐藤 めぐみ</button>
-        <button class="demo-btn" onclick="lookupMember('NFC005')">伊藤 はるか</button>
-        <button class="demo-btn" onclick="lookupMember('NFC006')">渡辺 こうた</button>
-      </div>
+
     </div>
 
     <div class="member-detail" id="memberDetail">
@@ -768,26 +753,56 @@ function getFiscalYearLabel(fy) {
 }
 function currentFiscalYear() { return getFiscalYear(new Date()); }
 
-// ── DEMO DATA ──
-// assocPaidYears / insurancePaidYears: 支払済の年度リスト（例: ['2025','2026'] = 2025年度と2026年度が済）
-// 年度 = 4月〜翌3月。'2025' = 2025年4月〜2026年3月
-const MEMBERS = [
-  { id:'NFC001', name:'田中 太郎', furigana:'たなか たろう', courseType:2, paidMonths:['2026/04','2026/05'], skippedMonths:[], halfMonths:['2026/04'], assocPaidYears:['2026'], insurancePaidYears:['2026'], isFirstTime:false, regType:'昨シーズンからの継続' },
-  { id:'NFC002', name:'鈴木 花子', furigana:'すずき はなこ', courseType:1, paidMonths:['2026/05','2026/06'], skippedMonths:[], halfMonths:[], assocPaidYears:['2026'], insurancePaidYears:['2026'], isFirstTime:true, regType:'初めての登録' },
-  { id:'NFC003', name:'山田 健太', furigana:'やまだ けんた',  courseType:2, paidMonths:['2025/12','2026/01'], assocPaidYears:[], insurancePaidYears:['2025'], isFirstTime:false },
-  { id:'NFC004', name:'佐藤 めぐみ', furigana:'さとう めぐみ', courseType:1, paidMonths:['2026/01','2026/02'], assocPaidYears:['2025'], insurancePaidYears:['2025'], isFirstTime:false },
-  { id:'NFC005', name:'伊藤 はるか', furigana:'いとう はるか', courseType:2, paidMonths:['2026/02','2026/03'], assocPaidYears:['2025'], insurancePaidYears:['2025'], isFirstTime:false },
-  { id:'NFC006', name:'渡辺 こうた', furigana:'わたなべ こうた', courseType:2, paidMonths:[], assocPaidYears:[], insurancePaidYears:[], isFirstTime:true },
-];
+// ── データ（GASから読み込む）──
+let MEMBERS = []; // GASから読み込む
+let PAYMENTS = []; // GASから読み込む
 
-const PAYMENTS = [
-  { id:'P001', nfcId:'NFC001', name:'田中 太郎', type:'月謝', months:['2026/01','2026/02'], amount:7200, method:'現金', date:'2026/01/05', photos:[] },
-  { id:'P002', nfcId:'NFC002', name:'鈴木 花子', type:'月謝', months:['2025/10','2025/11','2025/12'], amount:4500, method:'振込', date:'2025/10/01', photos:['_demo_'] },
-  { id:'P003', nfcId:'NFC003', name:'山田 健太', type:'初回セット', months:['2025/12','2026/01','2026/02'], amount:8600, method:'現金', date:'2025/12/10', photos:[] },
-  { id:'P004', nfcId:'NFC004', name:'佐藤 めぐみ', type:'月謝', months:['2026/01','2026/02','2026/03'], amount:4500, method:'カード', date:'2026/01/08', photos:[] },
-  { id:'P005', nfcId:'NFC005', name:'伊藤 はるか', type:'月謝', months:['2026/02','2026/03','2026/04'], amount:7200, method:'振込', date:'2026/02/01', photos:['_demo_'] },
-  { id:'P006', nfcId:'NFC001', name:'田中 太郎', type:'保険料', months:[], amount:800, method:'現金', date:'2026/01/05', photos:[] },
-];
+// GASから会員リストと支払い記録を取得
+async function loadAccountingData() {
+  try {
+    // まず会員データだけ読み込む（支払いは別途）
+    const mRes = await fetch(GAS_URL + '?action=getMembers');
+    const mData = await mRes.json();
+    if (mData.members && mData.members.length) {
+      MEMBERS = mData.members.map(m => ({
+        ...m,
+        courseType: m.course && m.course.includes('1回') ? 1 : 2,
+        paidMonths: [],
+        skippedMonths: [],
+        halfMonths: [],
+        assocPaidYears: [],
+        insurancePaidYears: [],
+        isFirstTime: m.isFirstTime || false,
+      }));
+    }
+    // 支払い記録を読み込んで月謝支払い済みを反映
+    try {
+      const pRes = await fetch(GAS_URL + '?action=getAllPayments');
+      const pData = await pRes.json();
+      if (pData.payments && pData.payments.length) {
+        PAYMENTS = pData.payments;
+        PAYMENTS.forEach(p => {
+          const m = MEMBERS.find(x => x.id === p.memberId || x.nfcId === p.nfcId);
+          if (!m) return;
+          if (p.months) {
+            const months = Array.isArray(p.months) ? p.months : p.months.split(',').filter(Boolean);
+            months.forEach(mo => {
+              if (mo && !m.paidMonths.includes(mo)) m.paidMonths.push(mo);
+            });
+          }
+        });
+      }
+    } catch(e2) { /* 支払い記録なくても会員データは使える */ }
+    // 検索窓を再構築
+    buildPaySearchList();
+    buildLookupSearchList();
+  } catch(e) {
+    console.error('Data load error:', e);
+  }
+}
+
+function buildPaySearchList() { /* 検索は入力時に動的フィルタ */ }
+function buildLookupSearchList() { /* 検索は入力時に動的フィルタ */ }
 
 let selectedMemberObj = null;
 let selectedCourse = 0; // 1 or 2
@@ -1573,6 +1588,9 @@ function autoResizeTextarea(el) {
   el.style.height = (el.scrollHeight) + 'px';
 }
 
+
+// 起動時にデータ読み込み
+loadAccountingData();
 </script>
 </body>
 </html>
