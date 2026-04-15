@@ -1,4 +1,3 @@
-
 <!DOCTYPE html>
 <html lang="ja">
 <head>
@@ -210,7 +209,7 @@
 
   .months-preview {
     display:flex; gap:6px; flex-wrap:wrap; padding:12px;
-    background:var(--surface2); border-radius:var(--radius-sm); margin-top:10px; min-height:44px;
+    background:var(--surface2); border-radius:var(--radius-sm); margin-top:10px; min-height:80px;
   }
   .month-chip {
     padding:4px 10px; border-radius:12px; font-size:0.75rem; font-weight:600;
@@ -302,20 +301,33 @@
   .stat-lbl { font-size:0.62rem; color:var(--text3); margin-top:3px; }
 
   /* 12-month calendar */
-  .month-calendar {
-    display:grid; grid-template-columns:repeat(6,1fr); gap:5px;
-    background:var(--surface); border:1px solid var(--border); border-radius:var(--radius); padding:16px; margin-bottom:14px;
-  }
+  /* ── PAYMENT CALENDAR ── */
+  .cal-year-block { margin-bottom:16px; }
+  .cal-year-label { font-size:0.7rem; font-weight:700; letter-spacing:0.1em; color:var(--text3); text-transform:uppercase; font-family:'DM Mono',monospace; margin-bottom:6px; }
+  .cal-grid { display:grid; grid-template-columns:repeat(12,1fr); gap:3px; }
   .cal-cell {
-    aspect-ratio:1; border-radius:8px; display:flex; flex-direction:column;
-    align-items:center; justify-content:center; gap:1px;
+    border-radius:6px; padding:7px 2px; text-align:center;
+    border:1px solid var(--border); cursor:pointer; transition:all 0.15s;
   }
-  .cal-cell.paid { background:rgba(6,214,160,0.18); }
-  .cal-cell.unpaid { background:var(--surface2); }
+  .cal-cell:hover { filter:brightness(1.2); }
+  .cal-cell.paid    { background:rgba(6,214,160,0.18); border-color:rgba(6,214,160,0.4); }
+  .cal-cell.unpaid  { background:rgba(255,107,107,0.1); border-color:rgba(255,107,107,0.3); }
+  .cal-cell.no-act  { background:rgba(123,111,255,0.1); border-color:rgba(123,111,255,0.3); }
+  .cal-cell.half    { background:rgba(255,209,102,0.15); border-color:rgba(255,209,102,0.4); }
+  .cal-cell.future  { background:var(--surface2); border-color:var(--border); opacity:0.45; cursor:default; }
   .cal-cell.current { outline:2px solid var(--gold); outline-offset:1px; }
-  .cal-month { font-family:'DM Mono', monospace; font-size:0.75rem; font-weight:700; color:var(--text2); }
-  .cal-cell.paid .cal-month { color:var(--teal); }
-  .cal-mark { font-size:0.65rem; }
+  .cal-cell.q-end   { border-right:3px solid rgba(255,209,102,0.5); }
+  .cal-month { font-family:'DM Mono',monospace; font-size:0.62rem; font-weight:700; color:var(--text2); display:block; }
+  .cal-cell.paid   .cal-month { color:var(--teal); }
+  .cal-cell.unpaid .cal-month { color:var(--warn); }
+  .cal-cell.no-act .cal-month { color:var(--accent2); }
+  .cal-cell.half   .cal-month { color:var(--gold); }
+  .cal-mark { font-size:0.8rem; display:block; margin-top:1px; }
+  .cal-legend { display:flex; gap:10px; flex-wrap:wrap; margin-bottom:10px; }
+  .cal-leg-item { display:flex; align-items:center; gap:4px; font-size:0.68rem; color:var(--text2); }
+  .cal-leg-dot { width:10px; height:10px; border-radius:3px; flex-shrink:0; }
+  .cal-exc-btn { padding:5px 12px; border-radius:8px; border:1px solid var(--border); background:var(--surface2); color:var(--text2); font-family:inherit; font-size:0.72rem; font-weight:600; cursor:pointer; transition:all 0.15s; }
+  .cal-exc-btn:hover { border-color:var(--gold); color:var(--gold); }
 
   /* payment history table */
   .history-table { width:100%; border-collapse:collapse; font-size:0.82rem; }
@@ -395,12 +407,36 @@
     .tab-btn { min-width:110px; font-size:0.85rem; }
     .pay-layout { display:grid; grid-template-columns:1fr 1fr; gap:24px; align-items:start; }
     .summary-stats { grid-template-columns:repeat(4,1fr); }
-    .month-calendar { grid-template-columns:repeat(12,1fr); }
+    .cal-grid { grid-template-columns:repeat(12,1fr); }
   }
 
   @media (min-width:1024px) {
     .main { max-width:1200px; }
   }
+
+  .memo-textarea {
+    width: 100%;
+    min-height: 80px;
+    padding: 10px 12px;
+    background: var(--surface2, #1e2235);
+    border: 1px solid var(--border2, #2a2f45);
+    border-radius: 10px;
+    color: var(--text, #e8eaf6);
+    font-family: inherit;
+    font-size: 0.88rem;
+    line-height: 1.6;
+    outline: none;
+    resize: none;
+    overflow: hidden;
+    transition: border-color 0.2s;
+    white-space: pre-wrap;
+  }
+  .memo-textarea:focus {
+    border-color: var(--accent, #00e5ff);
+    box-shadow: 0 0 0 2px rgba(0,229,255,0.1);
+  }
+  .memo-textarea::placeholder { color: var(--text3, #4a5380); }
+
 </style>
 </head>
 <body>
@@ -480,10 +516,27 @@
           <div class="form-section">
             <label class="form-label">支払い種別</label>
             <select class="form-select" id="payType" onchange="onPayTypeChange()">
-              <option value="月謝">月謝（3ヶ月）</option>
-              <option value="協会登録費">協会登録費（¥600固定）</option>
-              <option value="保険料">スポーツ保険（¥800固定）</option>
-              <option value="初回セット">初回セット（月謝＋協会費＋保険）</option>
+              <optgroup label="── 初めての登録（月1回目参加）──">
+                <option value="init_first_3">初回セット・月1回目参加＋翌2ヶ月（計3ヶ月）</option>
+                <option value="init_first_2">初回セット・月1回目参加＋翌1ヶ月（計2ヶ月）</option>
+                <option value="init_first_1">初回セット・月1回目参加のみ（計1ヶ月）</option>
+              </optgroup>
+              <optgroup label="── 初めての登録（月2回目参加）──">
+                <option value="init_second_3">初回セット・月2回目参加＋翌2ヶ月（計3ヶ月）</option>
+                <option value="init_second_2">初回セット・月2回目参加＋翌1ヶ月（計2ヶ月）</option>
+                <option value="init_second_1">初回セット・月2回目参加のみ（協会費＋保険のみ）</option>
+              </optgroup>
+              <optgroup label="── 月謝のみ ──">
+                <option value="月謝_2">月謝2ヶ月分</option>
+                <option value="月謝_3">月謝3ヶ月分</option>
+                <option value="月謝_4">月謝4ヶ月分</option>
+                <option value="月謝_5">月謝5ヶ月分</option>
+                <option value="月謝_6">月謝6ヶ月分</option>
+              </optgroup>
+              <optgroup label="── 年間費用のみ ──">
+                <option value="協会登録費">協会登録費（¥600固定）</option>
+                <option value="保険料">スポーツ保険（¥800固定）</option>
+              </optgroup>
               <option value="その他">その他</option>
             </select>
           </div>
@@ -496,7 +549,7 @@
             </div>
 
             <div class="form-section">
-              <label class="form-label">対象月（3ヶ月）— 休会月はタップして除外</label>
+              <label class="form-label" id="monthsLabel">対象月 — タップして休会月を除外</label>
               <div class="months-preview" id="monthsPreview">
                 <span style="color:var(--text3);font-size:0.78rem;">開始月を選択してください</span>
               </div>
@@ -622,8 +675,21 @@
         </div>
       </div>
 
-      <div class="section-title">12ヶ月支払いカレンダー</div>
-      <div class="month-calendar" id="monthCalendar"></div>
+      <div class="section-title" style="display:flex;justify-content:space-between;align-items:center;">
+        <span>支払いカレンダー</span>
+        <div style="display:flex;gap:6px;">
+          <button onclick="addCalException('skip')" class="cal-exc-btn">＋ 活動なし月</button>
+          <button onclick="addCalException('half')" class="cal-exc-btn">＋ 途中参加月</button>
+        </div>
+      </div>
+      <div class="cal-legend">
+        <div class="cal-leg-item"><div class="cal-leg-dot" style="background:rgba(6,214,160,0.5);"></div>支払済 ○</div>
+        <div class="cal-leg-item"><div class="cal-leg-dot" style="background:rgba(255,107,107,0.4);"></div>未払い ✗</div>
+        <div class="cal-leg-item"><div class="cal-leg-dot" style="background:rgba(123,111,255,0.4);"></div>活動なし △</div>
+        <div class="cal-leg-item"><div class="cal-leg-dot" style="background:rgba(255,209,102,0.4);"></div>途中参加 ½</div>
+        <div class="cal-leg-item"><div class="cal-leg-dot" style="background:var(--surface2);opacity:0.5;"></div>未来</div>
+      </div>
+      <div id="monthCalendar"></div>
 
       <div class="section-title">支払い履歴</div>
       <div class="records-table-wrap">
@@ -706,8 +772,8 @@ function currentFiscalYear() { return getFiscalYear(new Date()); }
 // assocPaidYears / insurancePaidYears: 支払済の年度リスト（例: ['2025','2026'] = 2025年度と2026年度が済）
 // 年度 = 4月〜翌3月。'2025' = 2025年4月〜2026年3月
 const MEMBERS = [
-  { id:'NFC001', name:'田中 太郎', furigana:'たなか たろう', courseType:2, paidMonths:['2026/01','2026/02','2025/11','2025/12'], assocPaidYears:['2025'], insurancePaidYears:['2025'], isFirstTime:false },
-  { id:'NFC002', name:'鈴木 花子', furigana:'すずき はなこ', courseType:1, paidMonths:['2026/01','2026/02','2026/03','2025/10','2025/11','2025/12'], assocPaidYears:['2025'], insurancePaidYears:['2025'], isFirstTime:false },
+  { id:'NFC001', name:'田中 太郎', furigana:'たなか たろう', courseType:2, paidMonths:['2026/04','2026/05'], skippedMonths:[], halfMonths:['2026/04'], assocPaidYears:['2026'], insurancePaidYears:['2026'], isFirstTime:false, regType:'昨シーズンからの継続' },
+  { id:'NFC002', name:'鈴木 花子', furigana:'すずき はなこ', courseType:1, paidMonths:['2026/05','2026/06'], skippedMonths:[], halfMonths:[], assocPaidYears:['2026'], insurancePaidYears:['2026'], isFirstTime:true, regType:'初めての登録' },
   { id:'NFC003', name:'山田 健太', furigana:'やまだ けんた',  courseType:2, paidMonths:['2025/12','2026/01'], assocPaidYears:[], insurancePaidYears:['2025'], isFirstTime:false },
   { id:'NFC004', name:'佐藤 めぐみ', furigana:'さとう めぐみ', courseType:1, paidMonths:['2026/01','2026/02'], assocPaidYears:['2025'], insurancePaidYears:['2025'], isFirstTime:false },
   { id:'NFC005', name:'伊藤 はるか', furigana:'いとう はるか', courseType:2, paidMonths:['2026/02','2026/03'], assocPaidYears:['2025'], insurancePaidYears:['2025'], isFirstTime:false },
@@ -737,7 +803,9 @@ function selectMember(id) {
   document.getElementById('selectedChip').classList.add('show');
   document.getElementById('chipAvatar').textContent = m.name[0];
   document.getElementById('chipName').textContent = m.name;
-  document.getElementById('chipSub').textContent = `${m.courseType === 1 ? '月1回' : '月2回'}コース · ${m.furigana}`;
+  const courseLabel = m.courseType === 1 ? '月1回' : '月2回';
+  const firstLabel = m.isFirstTime ? (m.courseType === 1 ? ' · 初月無料' : ' · 初月1回分') : '';
+  document.getElementById('chipSub').textContent = `${courseLabel}コース${firstLabel} · ${m.furigana}`;
   document.getElementById('noMemberHint').style.display = 'none';
 
   // Auto-select course from member profile
@@ -745,9 +813,9 @@ function selectMember(id) {
 
   // Auto-set pay type based on first-time status
   if (m.isFirstTime) {
-    document.getElementById('payType').value = '初回セット';
+    document.getElementById('payType').value = 'init_first_3'; // デフォルト：初回3ヶ月
   } else {
-    document.getElementById('payType').value = '月謝';
+    document.getElementById('payType').value = '月謝_3';
   }
   onPayTypeChange();
   skippedMonths.clear();
@@ -788,10 +856,37 @@ function selectCourse(n, silent=false) {
 }
 
 // ── PAY TYPE CHANGE ──
+function getPayTypeInfo(type) {
+  // 種別から月数・初回フラグ・2回目フラグを返す
+  const isInit = type.startsWith('init_');
+  const isSecond = type.startsWith('init_second');
+  const isFirst = type.startsWith('init_first');
+  const monthlyOnly = type.startsWith('月謝_');
+  let months = 3;
+  if (type.endsWith('_1')) months = 1;
+  else if (type.endsWith('_2')) months = 2;
+  else if (type.endsWith('_3')) months = 3;
+  else if (type === '月謝_4') months = 4;
+  else if (type === '月謝_5') months = 5;
+  else if (type === '月謝_6') months = 6;
+  return { isInit, isFirst, isSecond, monthlyOnly, months };
+}
+
 function onPayTypeChange() {
   const type = document.getElementById('payType').value;
-  const showMonthly = (type === '月謝' || type === '初回セット');
+  const info = getPayTypeInfo(type);
+  const showMonthly = type !== '協会登録費' && type !== '保険料' && type !== 'その他';
   document.getElementById('monthlySection').style.display = showMonthly ? '' : 'none';
+
+  // ラベルを動的に更新
+  const lbl = document.getElementById('monthsLabel');
+  if (lbl) {
+    if (info.isSecond && info.months === 1) {
+      lbl.textContent = '初月（月2回目参加・月謝なし）';
+    } else {
+      lbl.textContent = `対象月（${info.months}ヶ月）— タップして休会月を除外`;
+    }
+  }
   calcAndFill();
   updateSummary();
 }
@@ -811,10 +906,11 @@ function toggleMonth(mo) {
 // ── CALCULATE & AUTO-FILL ──
 function calcAndFill() {
   const type = document.getElementById('payType').value;
+  const info = getPayTypeInfo(type);
   const startVal = document.getElementById('startMonth').value;
-  const monthFee = COURSE_FEES[selectedCourse] || 0;
+  const normalFee = COURSE_FEES[selectedCourse] || 0;
+  const firstFee = 1500; // 初月1回分は常に¥1,500
 
-  // Determine fiscal year from start month (or today)
   let fiscalYear = currentFiscalYear();
   if (startVal) {
     const [y, m] = startVal.split('-').map(Number);
@@ -822,38 +918,62 @@ function calcAndFill() {
   }
 
   const assocAlreadyPaid = selectedMemberObj?.assocPaidYears?.includes(fiscalYear) || false;
-  const insAlreadyPaid = selectedMemberObj?.insurancePaidYears?.includes(fiscalYear) || false;
+  const insAlreadyPaid   = selectedMemberObj?.insurancePaidYears?.includes(fiscalYear) || false;
 
   let total = 0;
   let lines = [];
 
-  if (type === '月謝' || type === '初回セット') {
-    if (startVal && selectedCourse) {
-      const [y, m] = startVal.split('-').map(Number);
-      for (let i = 0; i < MONTHS_PER_PERIOD; i++) {
+  if (type === '協会登録費') {
+    lines = [{ label: `協会登録費 ${getFiscalYearLabel(fiscalYear)}`, amt: ASSOC_FEE, alreadyPaid: assocAlreadyPaid }];
+    if (!assocAlreadyPaid) total = ASSOC_FEE;
+  } else if (type === '保険料') {
+    lines = [{ label: `スポーツ保険 ${getFiscalYearLabel(fiscalYear)}`, amt: INSURANCE_FEE, alreadyPaid: insAlreadyPaid }];
+    if (!insAlreadyPaid) total = INSURANCE_FEE;
+  } else if (startVal && selectedCourse) {
+    const [y, m] = startVal.split('-').map(Number);
+
+    if (info.isSecond && info.months === 1) {
+      // 月2回目参加・初月のみ → 月謝なし、協会費+保険のみ
+      lines.push({ label: '月謝 初月（月2回目参加・無料）', amt: 0, skip: true });
+    } else {
+      // 月謝行を生成
+      for (let i = 0; i < info.months; i++) {
         const d = new Date(y, m - 1 + i, 1);
         const key = `${d.getFullYear()}/${String(d.getMonth()+1).padStart(2,'0')}`;
         const skipped = skippedMonths.has(key);
-        const dupPaid = selectedMemberObj?.paidMonths.includes(key);
-        if (!skipped && !dupPaid) total += monthFee;
-        lines.push({ label: `月謝 ${key}`, amt: monthFee, skip: skipped, dup: dupPaid });
+        const dupPaid = selectedMemberObj?.paidMonths?.includes(key);
+
+        let fee = normalFee;
+        let label = `月謝 ${key}`;
+
+        // 初月の料金判定
+        if (i === 0) {
+          if (info.isSecond) {
+            // 月2回目参加：初月無料（でも翌月から月謝発生）
+            fee = 0;
+            label += '（月2回目参加・無料）';
+          } else if (info.isFirst) {
+            // 月1回目参加：初月は1回分¥1,500
+            fee = firstFee;
+            label += '（初月1回分）';
+          }
+        }
+
+        if (!skipped && !dupPaid) total += fee;
+        lines.push({ label, amt: fee, skip: skipped || (i===0 && info.isSecond), dup: dupPaid });
       }
     }
-    if (type === '初回セット') {
-      lines.push({ label: `協会登録費 ${getFiscalYearLabel(fiscalYear)}`, amt: ASSOC_FEE, skip: false, fixed: true, alreadyPaid: assocAlreadyPaid });
-      lines.push({ label: `スポーツ保険 ${getFiscalYearLabel(fiscalYear)}`, amt: INSURANCE_FEE, skip: false, fixed: true, alreadyPaid: insAlreadyPaid });
+
+    // 初回セットの場合は協会費・保険を追加
+    if (info.isInit) {
+      lines.push({ label: `協会登録費 ${getFiscalYearLabel(fiscalYear)}`, amt: ASSOC_FEE, fixed: true, alreadyPaid: assocAlreadyPaid });
+      lines.push({ label: `スポーツ保険 ${getFiscalYearLabel(fiscalYear)}`, amt: INSURANCE_FEE, fixed: true, alreadyPaid: insAlreadyPaid });
       if (!assocAlreadyPaid) total += ASSOC_FEE;
-      if (!insAlreadyPaid) total += INSURANCE_FEE;
+      if (!insAlreadyPaid)   total += INSURANCE_FEE;
     }
-  } else if (type === '協会登録費') {
-    lines = [{ label: `協会登録費 ${getFiscalYearLabel(fiscalYear)}`, amt: ASSOC_FEE, skip: false, fixed: true, alreadyPaid: assocAlreadyPaid }];
-    if (!assocAlreadyPaid) total = ASSOC_FEE;
-  } else if (type === '保険料') {
-    lines = [{ label: `スポーツ保険 ${getFiscalYearLabel(fiscalYear)}`, amt: INSURANCE_FEE, skip: false, fixed: true, alreadyPaid: insAlreadyPaid }];
-    if (!insAlreadyPaid) total = INSURANCE_FEE;
   }
 
-  // Render breakdown
+  // 内訳を描画
   const bd = document.getElementById('feeBreakdown');
   const bl = document.getElementById('breakdownLines');
   const bt = document.getElementById('breakdownTotal');
@@ -863,10 +983,10 @@ function calcAndFill() {
       <div class="breakdown-line ${l.skip || l.alreadyPaid ? 'skip' : ''}">
         <span>${l.label}
           ${l.dup ? '<span class="bl-badge">支払済</span>' : ''}
-          ${l.skip ? '<span class="bl-badge">休会</span>' : ''}
+          ${l.skip ? '<span class="bl-badge">対象外</span>' : ''}
           ${l.alreadyPaid ? '<span class="bl-badge paid-badge">今年度済</span>' : ''}
         </span>
-        <span class="bl-amt">¥${l.amt.toLocaleString()}</span>
+        <span class="bl-amt ${l.amt===0?'skip':''}">¥${l.amt.toLocaleString()}</span>
       </div>`).join('') + '<hr class="breakdown-sep">';
     bt.innerHTML = `<span class="bt-label">合計</span><span class="bt-val">¥${total.toLocaleString()}</span>`;
   } else {
@@ -881,6 +1001,8 @@ function calcAndFill() {
 // ── MONTHS PREVIEW ──
 function updateMonthsPreview() {
   const startVal = document.getElementById('startMonth').value;
+  const type = document.getElementById('payType').value;
+  const info = getPayTypeInfo(type);
   const preview = document.getElementById('monthsPreview');
   if (!startVal) {
     preview.innerHTML = '<span style="color:var(--text3);font-size:0.78rem;">開始月を選択してください</span>';
@@ -889,8 +1011,9 @@ function updateMonthsPreview() {
     return;
   }
   const [y, m] = startVal.split('-').map(Number);
+  const numMonths = info.months || 3;
   const months = [];
-  for (let i = 0; i < MONTHS_PER_PERIOD; i++) {
+  for (let i = 0; i < numMonths; i++) {
     const d = new Date(y, m - 1 + i, 1);
     months.push(`${d.getFullYear()}/${String(d.getMonth()+1).padStart(2,'0')}`);
   }
@@ -991,10 +1114,12 @@ function updateSummary() {
   const method = document.getElementById('payMethod').value;
 
   const startVal = document.getElementById('startMonth').value;
+  const info3 = getPayTypeInfo(type);
+  const hasMonthly3 = type !== '協会登録費' && type !== '保険料' && type !== 'その他';
   let monthsArr = [];
-  if (startVal && (type === '月謝' || type === '初回セット')) {
+  if (startVal && hasMonthly3) {
     const [y, m] = startVal.split('-').map(Number);
-    for (let i = 0; i < MONTHS_PER_PERIOD; i++) {
+    for (let i = 0; i < (info3.months || 3); i++) {
       const d = new Date(y, m - 1 + i, 1);
       const key = `${d.getFullYear()}/${String(d.getMonth()+1).padStart(2,'0')}`;
       if (!skippedMonths.has(key)) monthsArr.push(key);
@@ -1004,7 +1129,19 @@ function updateSummary() {
   const dupMonths = monthsArr.filter(mo => selectedMemberObj.paidMonths.includes(mo));
 
   document.getElementById('cfMember').textContent = selectedMemberObj.name;
-  document.getElementById('cfType').textContent = type;
+  // 種別表示を読みやすく
+  const typeLabels = {
+    'init_first_3': '初回セット・1回目参加（3ヶ月）',
+    'init_first_2': '初回セット・1回目参加（2ヶ月）',
+    'init_first_1': '初回セット・1回目参加（1ヶ月）',
+    'init_second_3': '初回セット・2回目参加（3ヶ月）',
+    'init_second_2': '初回セット・2回目参加（2ヶ月）',
+    'init_second_1': '初回セット・2回目参加（協会費+保険のみ）',
+    '月謝_2': '月謝2ヶ月分', '月謝_3': '月謝3ヶ月分',
+    '月謝_4': '月謝4ヶ月分', '月謝_5': '月謝5ヶ月分', '月謝_6': '月謝6ヶ月分',
+    '協会登録費': '協会登録費', '保険料': 'スポーツ保険', 'その他': 'その他'
+  };
+  document.getElementById('cfType').textContent = typeLabels[type] || type;
   document.getElementById('cfPeriod').textContent = monthsArr.length ? monthsArr.join(', ') : (type === '協会登録費' || type === '保険料') ? '年間' : '—';
   document.getElementById('cfMethod').textContent = method;
   document.getElementById('cfPhotos').textContent = capturedPhotos.length + '枚';
@@ -1030,7 +1167,7 @@ function submitPayment() {
   const fy = currentFiscalYear();
 
   // 初回セット登録時：協会費・保険を自動で支払済に
-  if (type === '初回セット') {
+  if (type.startsWith('init_')) {
     if (!selectedMemberObj.assocPaidYears) selectedMemberObj.assocPaidYears = [];
     if (!selectedMemberObj.insurancePaidYears) selectedMemberObj.insurancePaidYears = [];
     if (!selectedMemberObj.assocPaidYears.includes(fy)) selectedMemberObj.assocPaidYears.push(fy);
@@ -1093,21 +1230,8 @@ function lookupMember(id) {
   // Annual fee status
   renderAnnualFeeStatus(m, 'annualFeeStatus');
 
-  // 12-month calendar
-  const now = new Date();
-  const cal = document.getElementById('monthCalendar');
-  cal.innerHTML = '';
-  for (let i = 11; i >= 0; i--) {
-    const d = new Date(now.getFullYear(), now.getMonth() - i, 1);
-    const key = `${d.getFullYear()}/${String(d.getMonth()+1).padStart(2,'0')}`;
-    const paid = m.paidMonths.includes(key);
-    const isCurrent = key === `${now.getFullYear()}/${String(now.getMonth()+1).padStart(2,'0')}`;
-    cal.innerHTML += `
-      <div class="cal-cell ${paid?'paid':'unpaid'} ${isCurrent?'current':''}">
-        <span class="cal-month">${d.getMonth()+1}月</span>
-        <span class="cal-mark">${paid?'✓':'✗'}</span>
-      </div>`;
-  }
+  // Payment calendar - enhanced
+  renderPaymentCalendar(m);
 
   // payment history
   const memberPayments = PAYMENTS.filter(p => p.nfcId === id);
@@ -1319,6 +1443,136 @@ document.addEventListener('click', e => {
 });
 
 checkUrlParam();
+
+// ── ENHANCED PAYMENT CALENDAR ──
+let calCurrentMember = null;
+
+function renderPaymentCalendar(m) {
+  calCurrentMember = m;
+  const container = document.getElementById('monthCalendar');
+  const now = new Date();
+  const currentKey = `${now.getFullYear()}/${String(now.getMonth()+1).padStart(2,'0')}`;
+
+  // 新年度開始: 2026年4月 を表示開始点とする
+  const FISCAL_START = '2026/04';
+  // 今年度末（来年3月）まで表示
+  const fiscalEndYear = now.getMonth() >= 3 ? now.getFullYear() + 1 : now.getFullYear();
+  const FISCAL_END = `${fiscalEndYear}/03`;
+
+  // 月リストを生成（2026/04 〜 来年3月）
+  const months = [];
+  let cur = FISCAL_START;
+  while (cur <= FISCAL_END) {
+    months.push(cur);
+    const [y, mo] = cur.split('/').map(Number);
+    const next = mo === 12 ? `${y+1}/01` : `${y}/${String(mo+1).padStart(2,'0')}`;
+    cur = next;
+  }
+
+  // 年ごとにグループ化
+  const byYear = {};
+  months.forEach(key => {
+    const yr = key.split('/')[0];
+    if (!byYear[yr]) byYear[yr] = [];
+    byYear[yr].push(key);
+  });
+
+  // 初月判定（最初の活動月）
+  const firstMonth = m.isFirstTime ? FISCAL_START : null;
+
+  let html = '';
+  Object.entries(byYear).forEach(([year, ks]) => {
+    html += `<div class="cal-year-block">
+      <div class="cal-year-label">${year}年度</div>
+      <div class="cal-grid" style="grid-template-columns:repeat(${ks.length},1fr);">`;
+
+    ks.forEach(key => {
+      const mo = parseInt(key.split('/')[1]);
+      const isFuture = key > currentKey;
+      const isCurrent = key === currentKey;
+      const isPaid   = (m.paidMonths||[]).includes(key);
+      const isNoAct  = (m.skippedMonths||[]).includes(key);
+      const isHalf   = (m.halfMonths||[]).includes(key);
+      const isFirst  = firstMonth && key === firstMonth;
+      // 四半期区切り（年度内: 6月・9月・12月・3月）
+      const isQEnd   = [6,9,12,3].includes(mo);
+
+      let cls = 'future', mark = '·', title = key;
+      if (!isFuture) {
+        if (isPaid)       { cls = 'paid';   mark = '○'; }
+        else if (isNoAct) { cls = 'no-act'; mark = '△'; title += ' 活動なし'; }
+        else if (isHalf)  { cls = 'half';   mark = '½'; title += ' 途中参加'; }
+        else if (isFirst && m.isFirstTime && (m.courseType===1||m.course&&m.course.includes('1回'))) {
+          cls = 'no-act'; mark = '無'; title += ' 初回無料';
+        }
+        else              { cls = 'unpaid'; mark = '✗'; }
+      }
+      if (isCurrent) cls += ' current';
+      if (isQEnd)    cls += ' q-end';
+
+      html += `<div class="cal-cell ${cls}" title="${title}" onclick="calCellClick('${key}')">
+        <span class="cal-month">${mo}月</span>
+        <span class="cal-mark">${mark}</span>
+      </div>`;
+    });
+    html += `</div></div>`;
+  });
+
+  // 未払い月サマリー（活動なし・初回無料・未来を除く）
+  const unpaidMonths = months.filter(key => {
+    if (key > currentKey) return false;
+    const isPaid   = (m.paidMonths||[]).includes(key);
+    const isNoAct  = (m.skippedMonths||[]).includes(key);
+    const isFirst1 = firstMonth && key === firstMonth && m.isFirstTime && (m.courseType===1||m.course&&m.course.includes('1回'));
+    return !isPaid && !isNoAct && !isFirst1;
+  });
+
+  if (unpaidMonths.length) {
+    html += `<div style="background:rgba(255,107,107,0.1);border:1px solid rgba(255,107,107,0.3);border-radius:10px;padding:12px;margin-top:10px;">
+      <div style="font-size:0.72rem;font-weight:700;color:var(--warn);margin-bottom:6px;">⚠ 未払い月（${unpaidMonths.length}ヶ月）</div>
+      <div style="font-family:'DM Mono',monospace;font-size:0.75rem;color:var(--text2);line-height:1.8;">${unpaidMonths.join(' · ')}</div>
+    </div>`;
+  } else {
+    html += `<div style="background:rgba(6,214,160,0.08);border:1px solid rgba(6,214,160,0.2);border-radius:10px;padding:10px;margin-top:10px;font-size:0.78rem;color:var(--teal);text-align:center;">✓ 未払い月はありません</div>`;
+  }
+
+  container.innerHTML = html;
+}
+
+function calCellClick(key, cls) {
+  // 将来月はクリック不可
+  if (cls.includes('future')) return;
+  // 詳細アクションは将来実装
+}
+
+function addCalException(type) {
+  if (!calCurrentMember) { showToast('⚠ 先に会員を選択してください', true); return; }
+  const label = type === 'skip' ? '活動なし月（△）' : '途中参加月（½）';
+  const month = prompt(`${label}として登録する月を入力してください
+例: 2025/08`);
+  if (!month || !/^\d{4}\/\d{2}$/.test(month)) {
+    if (month !== null) showToast('⚠ 形式が違います（例: 2025/08）', true);
+    return;
+  }
+  const m = calCurrentMember;
+  if (type === 'skip') {
+    if (!m.skippedMonths) m.skippedMonths = [];
+    if (!m.skippedMonths.includes(month)) m.skippedMonths.push(month);
+  } else {
+    if (!m.halfMonths) m.halfMonths = [];
+    if (!m.halfMonths.includes(month)) m.halfMonths.push(month);
+  }
+  renderPaymentCalendar(m);
+  showToast(`✓ ${month} を${label}に設定しました`);
+  // TODO: GASに保存（将来実装）
+}
+
+
+function autoResizeTextarea(el) {
+  el.style.height = 'auto';
+  el.style.height = (el.scrollHeight) + 'px';
+}
+
 </script>
 </body>
 </html>
