@@ -1,0 +1,567 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<title>個人ページ — Athletic Club</title>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@300;400;500;700;900&family=Oswald:wght@400;600;700&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#070810;--sur:#0d0f1c;--sur2:#141728;--sur3:#1a1e30;
+  --bd:#1e2238;--bd2:#252b42;
+  --cyan:#00e5ff;--lime:#b8ff3c;--or:#ff6b35;--pu:#9b59ff;
+  --gd:#ffd93d;--rd:#ff4757;--tl:#1dd1a1;--pk:#ff6eb4;
+  --tx:#e8eaf6;--tx2:#7b85a8;--tx3:#3a4060;
+  --r:16px;--rs:10px;
+  --st:env(safe-area-inset-top,0px);--sb:env(safe-area-inset-bottom,0px);
+}
+*{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent;}
+body{font-family:'Noto Sans JP',sans-serif;background:var(--bg);color:var(--tx);min-height:100dvh;overflow-x:hidden;}
+
+/* HERO */
+.hero{position:relative;padding:calc(var(--st)+60px) 20px 32px;overflow:hidden;}
+.hero::before{content:'';position:absolute;inset:0;
+  background:radial-gradient(ellipse 80% 60% at 50% 0%,rgba(0,229,255,0.12),transparent 70%);
+  pointer-events:none;}
+.hero-back{position:absolute;top:calc(var(--st)+14px);left:16px;
+  background:rgba(255,255,255,0.06);border:1px solid var(--bd2);
+  border-radius:20px;padding:6px 14px;color:var(--tx2);font-size:.8rem;
+  text-decoration:none;backdrop-filter:blur(10px);z-index:10;}
+.hero-back:hover{color:var(--cyan);border-color:var(--cyan);}
+.avatar-wrap{display:flex;align-items:center;gap:18px;margin-bottom:16px;}
+.avatar{width:72px;height:72px;border-radius:50%;
+  background:linear-gradient(135deg,var(--cyan),var(--pu));
+  display:flex;align-items:center;justify-content:center;
+  font-family:'Oswald',sans-serif;font-size:2rem;font-weight:700;
+  color:var(--bg);flex-shrink:0;position:relative;
+  box-shadow:0 0 24px rgba(0,229,255,0.3);}
+.avatar::after{content:'';position:absolute;inset:-3px;border-radius:50%;
+  background:linear-gradient(135deg,var(--cyan),var(--pu));z-index:-1;opacity:.3;}
+.hero-info{}
+.hero-furi{font-size:.72rem;color:var(--tx3);letter-spacing:.04em;}
+.hero-name{font-family:'Oswald',sans-serif;font-size:1.7rem;font-weight:700;
+  letter-spacing:.02em;line-height:1.1;margin:.2rem 0 .4rem;}
+.hero-badges{display:flex;gap:6px;flex-wrap:wrap;}
+.badge{font-size:.68rem;font-weight:700;padding:3px 10px;border-radius:10px;letter-spacing:.04em;}
+.badge-grade{background:rgba(155,89,255,.18);color:var(--pu);border:1px solid rgba(155,89,255,.3);}
+.badge-course{background:rgba(0,229,255,.12);color:var(--cyan);border:1px solid rgba(0,229,255,.25);}
+.badge-first{background:rgba(255,209,61,.15);color:var(--gd);border:1px solid rgba(255,209,61,.3);}
+.badge-cont{background:rgba(29,209,161,.12);color:var(--tl);border:1px solid rgba(29,209,161,.25);}
+.badge-nfc{background:rgba(79,255,176,.1);color:#4fffb0;border:1px solid rgba(79,255,176,.2);}
+
+/* CONTACT BAR */
+.contact-bar{display:flex;gap:8px;padding:0 20px 20px;flex-wrap:wrap;}
+.contact-btn{display:flex;align-items:center;gap:6px;padding:9px 16px;
+  background:var(--sur2);border:1px solid var(--bd2);border-radius:var(--rs);
+  color:var(--tx2);text-decoration:none;font-size:.8rem;font-weight:600;
+  transition:all .2s;flex:1;min-width:120px;justify-content:center;}
+.contact-btn:hover{border-color:var(--cyan);color:var(--cyan);}
+.contact-btn.phone{border-color:rgba(29,209,161,.3);color:var(--tl);}
+.contact-btn.email{border-color:rgba(155,89,255,.3);color:var(--pu);}
+
+/* MAIN */
+.main{padding:0 16px calc(var(--sb)+32px);max-width:760px;margin:0 auto;}
+.section{margin-bottom:20px;}
+.sec-title{font-family:'Oswald',sans-serif;font-size:.72rem;font-weight:600;
+  letter-spacing:.14em;text-transform:uppercase;color:var(--tx3);
+  margin-bottom:10px;padding-bottom:8px;border-bottom:1px solid var(--bd);
+  display:flex;align-items:center;gap:8px;}
+.sec-title span{font-size:.9rem;}
+
+/* STATS ROW */
+.stats-row{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:14px;}
+.stat-card{background:var(--sur);border:1px solid var(--bd2);border-radius:var(--rs);
+  padding:12px;text-align:center;}
+.stat-val{font-family:'DM Mono',monospace;font-size:1.1rem;font-weight:700;}
+.stat-val.cy{color:var(--cyan);}.stat-val.lm{color:var(--lime);}.stat-val.or{color:var(--or);}
+.stat-val.gd{color:var(--gd);}.stat-val.tl{color:var(--tl);}
+.stat-lbl{font-size:.6rem;color:var(--tx3);margin-top:3px;text-transform:uppercase;letter-spacing:.05em;}
+
+/* CALENDAR */
+.cal-wrap{background:var(--sur);border:1px solid var(--bd2);border-radius:var(--r);overflow:hidden;margin-bottom:10px;}
+.cal-head{display:flex;justify-content:space-between;align-items:center;padding:10px 14px;
+  background:var(--sur2);border-bottom:1px solid var(--bd);}
+.cal-year{font-family:'DM Mono',monospace;font-size:.75rem;font-weight:700;color:var(--tx2);}
+.cal-grid{display:grid;grid-template-columns:repeat(6,1fr);gap:4px;padding:10px;}
+.cal-cell{aspect-ratio:1;border-radius:6px;display:flex;flex-direction:column;
+  align-items:center;justify-content:center;gap:1px;border:1px solid transparent;transition:all .15s;}
+.cal-cell.att{background:rgba(0,229,255,.15);border-color:rgba(0,229,255,.35);}
+.cal-cell.paid{background:rgba(29,209,161,.15);border-color:rgba(29,209,161,.3);}
+.cal-cell.unpaid{background:rgba(255,71,87,.08);border-color:rgba(255,71,87,.25);}
+.cal-cell.noact{background:rgba(155,89,255,.1);border-color:rgba(155,89,255,.25);}
+.cal-cell.future{opacity:.3;}
+.cal-cell.now{outline:2px solid var(--gd);outline-offset:1px;}
+.cal-mo{font-family:'DM Mono',monospace;font-size:.58rem;color:var(--tx3);}
+.cal-mk{font-size:.75rem;}
+
+/* PAYMENT CALENDAR */
+.pay-cal-grid{display:grid;grid-template-columns:repeat(12,1fr);gap:3px;margin-bottom:8px;}
+.pay-cell{border-radius:5px;padding:5px 2px;text-align:center;border:1px solid var(--bd);transition:all .15s;}
+.pay-cell.paid{background:rgba(29,209,161,.15);border-color:rgba(29,209,161,.3);}
+.pay-cell.unpaid{background:rgba(255,71,87,.08);border-color:rgba(255,71,87,.25);}
+.pay-cell.noact{background:rgba(155,89,255,.1);border-color:rgba(155,89,255,.25);}
+.pay-cell.future{opacity:.3;}
+.pay-cell.now{outline:2px solid var(--gd);outline-offset:1px;}
+.pay-mo{font-size:.58rem;color:var(--tx3);display:block;font-family:'DM Mono',monospace;}
+.pay-mk{font-size:.72rem;display:block;margin-top:1px;}
+
+/* PERFORMANCE */
+.perf-item{background:var(--sur);border:1px solid var(--bd2);border-radius:var(--rs);
+  padding:12px 14px;margin-bottom:8px;}
+.perf-ev{font-weight:700;font-size:.9rem;margin-bottom:3px;}
+.perf-meta{font-size:.72rem;color:var(--tx2);margin-bottom:6px;}
+.perf-stats{display:flex;gap:10px;flex-wrap:wrap;}
+.perf-stat{font-family:'DM Mono',monospace;font-size:.78rem;}
+.perf-stat.fast{color:var(--lime);}
+.perf-stat.slow{color:var(--or);}
+.perf-stat.avg{color:var(--tx2);}
+
+/* TREND */
+.trend-wrap{background:var(--sur2);border-radius:var(--rs);padding:10px;margin-top:8px;}
+.trend-svg{width:100%;height:70px;overflow:visible;}
+
+/* INFO LIST */
+.info-list{background:var(--sur);border:1px solid var(--bd2);border-radius:var(--r);overflow:hidden;}
+.info-row{display:flex;align-items:center;padding:11px 14px;border-bottom:1px solid var(--bd);}
+.info-row:last-child{border-bottom:none;}
+.info-lbl{font-size:.68rem;font-weight:700;letter-spacing:.06em;text-transform:uppercase;
+  color:var(--tx3);width:90px;flex-shrink:0;}
+.info-val{font-size:.85rem;color:var(--tx);}
+.info-val a{color:var(--cyan);text-decoration:none;}
+.info-val.mono{font-family:'DM Mono',monospace;font-size:.8rem;color:var(--tx2);}
+
+/* MEMO */
+.memo-box{background:var(--sur);border:1px solid var(--bd2);border-radius:var(--r);padding:14px;}
+.memo-textarea{width:100%;min-height:80px;background:var(--sur2);border:1px solid var(--bd2);
+  border-radius:var(--rs);color:var(--tx);font-family:inherit;font-size:.88rem;
+  line-height:1.6;padding:10px 12px;outline:none;resize:none;overflow:hidden;
+  transition:border-color .2s;}
+.memo-textarea:focus{border-color:var(--pu);box-shadow:0 0 0 2px rgba(155,89,255,.1);}
+.memo-textarea::placeholder{color:var(--tx3);}
+.memo-save{margin-top:8px;padding:8px 18px;background:var(--pu);border:none;border-radius:var(--rs);
+  color:#fff;font-family:inherit;font-size:.82rem;font-weight:700;cursor:pointer;transition:all .2s;}
+.memo-save:hover{background:#b07fff;}
+
+/* LOADING */
+.ld{text-align:center;padding:60px 20px;color:var(--tx3);}
+.spin{width:32px;height:32px;border:2px solid var(--bd2);border-top-color:var(--cyan);
+  border-radius:50%;animation:sp .7s linear infinite;margin:0 auto 12px;}
+@keyframes sp{to{transform:rotate(360deg);}}
+
+/* LEGEND */
+.legend{display:flex;gap:10px;flex-wrap:wrap;margin-bottom:8px;}
+.leg{display:flex;align-items:center;gap:4px;font-size:.65rem;color:var(--tx2);}
+.leg-dot{width:10px;height:10px;border-radius:3px;flex-shrink:0;}
+
+/* UNPAID ALERT */
+.unpaid-alert{background:rgba(255,71,87,.08);border:1px solid rgba(255,71,87,.25);
+  border-radius:var(--rs);padding:10px 14px;margin-top:8px;}
+.unpaid-title{font-size:.72rem;font-weight:700;color:var(--rd);margin-bottom:4px;}
+.unpaid-months{font-family:'DM Mono',monospace;font-size:.72rem;color:var(--tx2);line-height:1.8;}
+
+/* TOAST */
+.toast{position:fixed;bottom:calc(var(--sb)+24px);left:50%;
+  transform:translateX(-50%) translateY(20px);
+  background:var(--cyan);color:var(--bg);padding:10px 22px;border-radius:20px;
+  font-size:.85rem;font-weight:700;opacity:0;transition:all .3s;z-index:1000;
+  white-space:nowrap;pointer-events:none;}
+.toast.show{opacity:1;transform:translateX(-50%) translateY(0);}
+
+@media(min-width:600px){
+  .hero{padding:calc(var(--st)+70px) 32px 32px;}
+  .contact-bar{padding:0 32px 24px;}
+  .main{padding:0 32px calc(var(--sb)+40px);}
+  .stats-row{grid-template-columns:repeat(5,1fr);}
+  .cal-grid{grid-template-columns:repeat(12,1fr);}
+  .pay-cal-grid{grid-template-columns:repeat(12,1fr);}
+}
+</style>
+</head>
+<body>
+
+<div id="loadingScreen" class="ld">
+  <div class="spin"></div>
+  データを読み込み中...
+</div>
+
+<div id="mainContent" style="display:none;">
+
+<!-- HERO -->
+<div class="hero">
+  <a href="attendance.html" class="hero-back">← 一覧へ</a>
+  <div class="avatar-wrap">
+    <div class="avatar" id="hAvatar">?</div>
+    <div class="hero-info">
+      <div class="hero-furi" id="hFuri">—</div>
+      <div class="hero-name" id="hName">—</div>
+      <div class="hero-badges" id="hBadges"></div>
+    </div>
+  </div>
+</div>
+
+<!-- CONTACT -->
+<div class="contact-bar" id="contactBar"></div>
+
+<div class="main">
+
+  <!-- 基本情報 -->
+  <div class="section">
+    <div class="sec-title"><span>👤</span> 基本情報</div>
+    <div class="info-list" id="infoList"></div>
+  </div>
+
+  <!-- 出席 -->
+  <div class="section">
+    <div class="sec-title"><span>📅</span> 出席状況</div>
+    <div class="stats-row" id="attStats"></div>
+    <div class="legend">
+      <div class="leg"><div class="leg-dot" style="background:rgba(0,229,255,.4);"></div>参加</div>
+      <div class="leg"><div class="leg-dot" style="background:var(--sur2);opacity:.4;"></div>未参加 / 未来</div>
+    </div>
+    <div id="attCalendar"></div>
+  </div>
+
+  <!-- 支払い -->
+  <div class="section">
+    <div class="sec-title"><span>💴</span> 支払い状況</div>
+    <div class="stats-row" id="payStats"></div>
+    <div class="legend">
+      <div class="leg"><div class="leg-dot" style="background:rgba(29,209,161,.4);"></div>支払済 ○</div>
+      <div class="leg"><div class="leg-dot" style="background:rgba(255,71,87,.3);"></div>未払い ✗</div>
+      <div class="leg"><div class="leg-dot" style="background:rgba(155,89,255,.3);"></div>活動なし △</div>
+    </div>
+    <div id="payCalendar"></div>
+    <div id="unpaidAlert"></div>
+  </div>
+
+  <!-- 計測 -->
+  <div class="section">
+    <div class="sec-title"><span>⚡</span> 計測記録</div>
+    <div class="stats-row" id="perfStats"></div>
+    <div id="perfTrend"></div>
+    <div id="perfHistory"></div>
+  </div>
+
+  <!-- メモ -->
+  <div class="section">
+    <div class="sec-title"><span>📝</span> メモ</div>
+    <div class="memo-box">
+      <textarea class="memo-textarea" id="memoArea" placeholder="この生徒についてのメモを入力..."
+        oninput="this.style.height='auto';this.style.height=this.scrollHeight+'px'"></textarea>
+      <button class="memo-save" onclick="saveMemo()">保存</button>
+    </div>
+  </div>
+
+</div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+const GAS = 'https://script.google.com/macros/s/AKfycbyVH4yXtC0PsG4gwbWITAnsMFUdwvMSij2hNsZ9z4bfRTRS0RxHzqvZZeaN3AVIEOte/exec';
+const FISCAL_START = '2026/04';
+
+let MEMBER = null;
+let ATTENDANCE = [];
+let PAYMENTS = [];
+let SESSIONS = [];
+
+// ── INIT ──
+async function init() {
+  const id = new URLSearchParams(location.search).get('id');
+  if (!id) { document.getElementById('loadingScreen').innerHTML = '<div style="color:var(--rd);padding:40px;">IDが指定されていません</div>'; return; }
+
+  try {
+    // 並列でデータ取得
+    const [mRes, aRes, pRes, sRes] = await Promise.all([
+      fetch(GAS + '?action=getMembers'),
+      fetch(GAS + '?action=getAttendance&date=all').catch(() => ({ json: () => ({}) })),
+      fetch(GAS + '?action=getAllPayments').catch(() => ({ json: () => ({}) })),
+      fetch(GAS + '?action=getSessions').catch(() => ({ json: () => ({}) })),
+    ]);
+    const [mData, aData, pData, sData] = await Promise.all([mRes.json(), aRes.json(), pRes.json(), sRes.json()]);
+
+    MEMBER = (mData.members || []).find(m => m.id === id || m.nfcId === id);
+    if (!MEMBER) { document.getElementById('loadingScreen').innerHTML = '<div style="color:var(--rd);padding:40px;">メンバーが見つかりません</div>'; return; }
+
+    ATTENDANCE = (aData.attendance || []).filter(a => a.memberId === id || a.nfcId === id);
+    PAYMENTS = (pData.payments || []).filter(p => p.memberId === id || p.nfcId === id);
+    SESSIONS = (sData.sessions || []);
+
+    renderAll();
+    loadMemo(id);
+
+    document.getElementById('loadingScreen').style.display = 'none';
+    document.getElementById('mainContent').style.display = '';
+  } catch(e) {
+    document.getElementById('loadingScreen').innerHTML = `<div style="color:var(--rd);padding:40px;">読み込みに失敗しました<br><small>${e.message}</small></div>`;
+  }
+}
+
+// ── RENDER ALL ──
+function renderAll() {
+  renderHero();
+  renderContact();
+  renderInfo();
+  renderAttendance();
+  renderPayments();
+  renderPerformance();
+}
+
+// ── HERO ──
+function renderHero() {
+  const m = MEMBER;
+  document.getElementById('hAvatar').textContent = (m.name || '?')[0];
+  document.getElementById('hFuri').textContent = m.furigana || '—';
+  document.getElementById('hName').textContent = m.name || '—';
+
+  const courseLabel = m.course
+    ? (m.course.includes('1回') ? '月1回コース' : m.course.includes('2回') ? '月2回コース' : m.course)
+    : 'コース未設定';
+  const regLabel = m.isFirstTime ? '初めての登録' : (m.regType && m.regType.includes('継続') ? '継続' : '');
+
+  const badges = [
+    m.grade ? `<span class="badge badge-grade">${m.grade}</span>` : '',
+    m.course ? `<span class="badge badge-course">${courseLabel}</span>` : '',
+    m.isFirstTime ? `<span class="badge badge-first">★ 初回登録</span>` : (regLabel ? `<span class="badge badge-cont">${regLabel}</span>` : ''),
+    m.nfcId ? `<span class="badge badge-nfc">📡 NFC登録済</span>` : '',
+  ].filter(Boolean).join('');
+  document.getElementById('hBadges').innerHTML = badges;
+}
+
+// ── CONTACT ──
+function renderContact() {
+  const m = MEMBER;
+  const btns = [];
+  if (m.phone) btns.push(`<a href="tel:${m.phone}" class="contact-btn phone">📞 ${m.phone}</a>`);
+  if (m.email) btns.push(`<a href="mailto:${m.email}" class="contact-btn email">✉ メール</a>`);
+  document.getElementById('contactBar').innerHTML = btns.join('');
+}
+
+// ── INFO ──
+function renderInfo() {
+  const m = MEMBER;
+  const rows = [
+    ['学年', m.grade || '—'],
+    ['年齢', m.age ? m.age + '歳' : '—'],
+    ['性別', m.gender || '—'],
+    ['小学校', m.school || '—'],
+    ['保護者', m.parent || '—'],
+    ['NFC ID', m.nfcId ? `<span class="mono">${m.nfcId}</span>` : '未登録'],
+  ];
+  document.getElementById('infoList').innerHTML = rows.map(([l, v]) =>
+    `<div class="info-row"><div class="info-lbl">${l}</div><div class="info-val">${v}</div></div>`
+  ).join('');
+}
+
+// ── ATTENDANCE ──
+function renderAttendance() {
+  const attDates = new Set(ATTENDANCE.map(a => a.date ? a.date.slice(0,7).replace(/-/g,'/') : '').filter(Boolean));
+  const total = ATTENDANCE.length;
+  const lastAtt = ATTENDANCE.length ? ATTENDANCE.sort((a,b) => (b.date||'').localeCompare(a.date||''))[0].date : null;
+
+  // Stats
+  document.getElementById('attStats').innerHTML = `
+    <div class="stat-card"><div class="stat-val cy">${total}</div><div class="stat-lbl">参加回数</div></div>
+    <div class="stat-card"><div class="stat-val lm">${lastAtt ? lastAtt.slice(5,10) : '—'}</div><div class="stat-lbl">最終参加</div></div>
+    <div class="stat-card"><div class="stat-val gd">${attDates.size}</div><div class="stat-lbl">参加月数</div></div>`;
+
+  // Calendar (fiscal year)
+  const now = new Date();
+  const nowKey = `${now.getFullYear()}/${String(now.getMonth()+1).padStart(2,'0')}`;
+  const fiscalEndYear = now.getMonth() >= 3 ? now.getFullYear() + 1 : now.getFullYear();
+  const months = [];
+  let cur = FISCAL_START;
+  const end = `${fiscalEndYear}/03`;
+  while (cur <= end) {
+    months.push(cur);
+    const [y,mo] = cur.split('/').map(Number);
+    cur = mo === 12 ? `${y+1}/01` : `${y}/${String(mo+1).padStart(2,'0')}`;
+  }
+
+  document.getElementById('attCalendar').innerHTML = `
+    <div class="cal-wrap">
+      <div class="cal-head"><span class="cal-year">2026年度</span></div>
+      <div class="cal-grid" style="grid-template-columns:repeat(${Math.min(months.length,6)},1fr);">
+        ${months.map(key => {
+          const mo = parseInt(key.split('/')[1]);
+          const isFuture = key > nowKey;
+          const isNow = key === nowKey;
+          const hasAtt = attDates.has(key);
+          let cls = isFuture ? 'future' : hasAtt ? 'att' : '';
+          if (isNow) cls += ' now';
+          return `<div class="cal-cell ${cls}">
+            <span class="cal-mo">${mo}月</span>
+            <span class="cal-mk">${isFuture ? '·' : hasAtt ? '○' : '—'}</span>
+          </div>`;
+        }).join('')}
+      </div>
+    </div>`;
+}
+
+// ── PAYMENTS ──
+function renderPayments() {
+  // 支払済月を収集
+  const paidMonths = new Set();
+  PAYMENTS.forEach(p => {
+    if (!p.months) return;
+    const months = Array.isArray(p.months) ? p.months : String(p.months).split(',').filter(Boolean);
+    months.forEach(m => paidMonths.add(m.trim()));
+  });
+
+  const totalPaid = paidMonths.size;
+  const fee = MEMBER.course && MEMBER.course.includes('1回') ? 1500 : 2400;
+  const totalAmt = PAYMENTS.reduce((s, p) => s + (parseInt(p.amount) || 0), 0);
+
+  document.getElementById('payStats').innerHTML = `
+    <div class="stat-card"><div class="stat-val tl">${totalPaid}</div><div class="stat-lbl">支払済月数</div></div>
+    <div class="stat-card"><div class="stat-val cy">¥${totalAmt.toLocaleString()}</div><div class="stat-lbl">累計支払額</div></div>
+    <div class="stat-card"><div class="stat-val gd">${PAYMENTS.length}</div><div class="stat-lbl">支払回数</div></div>`;
+
+  // 年度カレンダー
+  const now = new Date();
+  const nowKey = `${now.getFullYear()}/${String(now.getMonth()+1).padStart(2,'0')}`;
+  const fiscalEndYear = now.getMonth() >= 3 ? now.getFullYear() + 1 : now.getFullYear();
+  const months = [];
+  let cur = FISCAL_START;
+  const endKey = `${fiscalEndYear}/03`;
+  while (cur <= endKey) {
+    months.push(cur);
+    const [y,mo] = cur.split('/').map(Number);
+    cur = mo === 12 ? `${y+1}/01` : `${y}/${String(mo+1).padStart(2,'0')}`;
+  }
+
+  const unpaid = [];
+  const cells = months.map(key => {
+    const mo = parseInt(key.split('/')[1]);
+    const isFuture = key > nowKey;
+    const isNow = key === nowKey;
+    const isPaid = paidMonths.has(key);
+    let cls = 'future', mk = '·';
+    if (!isFuture) {
+      cls = isPaid ? 'paid' : 'unpaid';
+      mk = isPaid ? '○' : '✗';
+      if (!isPaid) unpaid.push(key);
+    }
+    if (isNow) cls += ' now';
+    return `<div class="pay-cell ${cls}">
+      <span class="pay-mo">${mo}月</span>
+      <span class="pay-mk">${mk}</span>
+    </div>`;
+  }).join('');
+
+  document.getElementById('payCalendar').innerHTML = `
+    <div style="font-size:.7rem;color:var(--tx3);margin-bottom:5px;font-family:'DM Mono',monospace;">2026年度（4月〜）</div>
+    <div class="pay-cal-grid" style="grid-template-columns:repeat(${months.length},1fr);">${cells}</div>`;
+
+  if (unpaid.length) {
+    document.getElementById('unpaidAlert').innerHTML = `
+      <div class="unpaid-alert">
+        <div class="unpaid-title">⚠ 未払い月（${unpaid.length}ヶ月）</div>
+        <div class="unpaid-months">${unpaid.join(' · ')}</div>
+      </div>`;
+  } else if (months.filter(k => k <= nowKey).length > 0) {
+    document.getElementById('unpaidAlert').innerHTML = `
+      <div style="background:rgba(29,209,161,.08);border:1px solid rgba(29,209,161,.2);border-radius:var(--rs);padding:10px 14px;margin-top:8px;font-size:.78rem;color:var(--tl);text-align:center;">✓ 未払い月はありません</div>`;
+  }
+}
+
+// ── PERFORMANCE ──
+function renderPerformance() {
+  const memberId = MEMBER.id || MEMBER.nfcId;
+  const entries = SESSIONS.flatMap(s =>
+    (s.entries || []).filter(e => e.memberId === memberId)
+      .map(e => ({ ...e, date: s.date, eventName: s.eventName }))
+  ).sort((a,b) => (a.date||'').localeCompare(b.date||''));
+
+  if (!entries.length) {
+    document.getElementById('perfStats').innerHTML = `
+      <div class="stat-card"><div class="stat-val cy">0</div><div class="stat-lbl">参加回数</div></div>
+      <div class="stat-card"><div class="stat-val lm">—</div><div class="stat-lbl">自己ベスト</div></div>
+      <div class="stat-card"><div class="stat-val cy">—</div><div class="stat-lbl">平均相対値</div></div>`;
+    document.getElementById('perfHistory').innerHTML =
+      '<div style="text-align:center;padding:24px;color:var(--tx3);font-size:.85rem;">計測データがありません</div>';
+    return;
+  }
+
+  const times = entries.map(e => parseFloat(e.time));
+  const best = Math.min(...times);
+  const avgRel = Math.round(entries.reduce((s,e) => s + (parseFloat(e.relative)||0), 0) / entries.length);
+  const improve = times.length > 1 ? ((times[0]-times[times.length-1])/times[0]*100).toFixed(1) : null;
+
+  document.getElementById('perfStats').innerHTML = `
+    <div class="stat-card"><div class="stat-val cy">${entries.length}</div><div class="stat-lbl">参加回数</div></div>
+    <div class="stat-card"><div class="stat-val lm">${best.toFixed(2)}s</div><div class="stat-lbl">自己ベスト</div></div>
+    <div class="stat-card"><div class="stat-val cy">${avgRel}</div><div class="stat-lbl">平均相対値</div></div>
+    ${improve ? `<div class="stat-card"><div class="stat-val ${parseFloat(improve)>0?'tl':'or'}">${parseFloat(improve)>0?'▲':'▼'}${Math.abs(improve)}%</div><div class="stat-lbl">改善率</div></div>` : ''}`;
+
+  // Trend SVG
+  if (entries.length >= 2) {
+    const W=600,H=60,P=6;
+    const mn=Math.min(...times),mx=Math.max(...times),rng=mx-mn||1;
+    const pts=entries.map((e,i)=>({
+      x:P+(i/(entries.length-1))*(W-P*2),
+      y:P+((parseFloat(e.time)-mn)/rng)*(H-P*2)
+    }));
+    const ld=pts.map((p,i)=>`${i===0?'M':'L'}${p.x},${p.y}`).join(' ');
+    document.getElementById('perfTrend').innerHTML = `
+      <div class="trend-wrap">
+        <svg class="trend-svg" viewBox="0 0 ${W} ${H}" preserveAspectRatio="none" style="height:60px;">
+          <defs><linearGradient id="tg" x1="0" y1="0" x2="0" y2="1">
+            <stop offset="0%" stop-color="#00e5ff" stop-opacity=".35"/>
+            <stop offset="100%" stop-color="#00e5ff" stop-opacity="0"/>
+          </linearGradient></defs>
+          <path d="${ld} L${pts[pts.length-1].x},${H} L${pts[0].x},${H} Z" fill="url(#tg)"/>
+          <path d="${ld}" fill="none" stroke="#00e5ff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+          ${pts.map((p,i)=>`<circle cx="${p.x}" cy="${p.y}" r="4" fill="#00e5ff" stroke="#070810" stroke-width="2"><title>${entries[i].date}: ${parseFloat(entries[i].time).toFixed(2)}s</title></circle>`).join('')}
+        </svg>
+        <div style="display:flex;justify-content:space-between;font-size:.6rem;color:var(--tx3);margin-top:3px;font-family:'DM Mono',monospace;">
+          ${entries.map(e=>`<span>${e.date.slice(5)}</span>`).join('')}
+        </div>
+      </div>`;
+  }
+
+  // History
+  document.getElementById('perfHistory').innerHTML = [...entries].reverse().map(e => {
+    const rel = parseFloat(e.relative||0);
+    const rc = rel<=25?'fast':rel>=75?'slow':'avg';
+    return `<div class="perf-item">
+      <div class="perf-ev">${e.eventName||'—'}</div>
+      <div class="perf-meta">${e.date||'—'}</div>
+      <div class="perf-stats">
+        <span class="perf-stat" style="color:var(--cyan);">${parseFloat(e.time).toFixed(2)}s</span>
+        <span class="perf-stat ${rc}">相対値 ${rel}</span>
+        ${e.memo ? `<span style="font-size:.72rem;color:var(--pu);">💬 ${e.memo}</span>` : ''}
+      </div>
+    </div>`;
+  }).join('');
+}
+
+// ── MEMO ──
+function loadMemo(id) {
+  const saved = localStorage.getItem('memo_' + id);
+  if (saved) document.getElementById('memoArea').value = saved;
+}
+
+function saveMemo() {
+  const id = new URLSearchParams(location.search).get('id');
+  const val = document.getElementById('memoArea').value;
+  localStorage.setItem('memo_' + id, val);
+  showToast('✓ メモを保存しました');
+}
+
+function showToast(msg, err=false) {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.style.background = err ? 'var(--rd)' : 'var(--cyan)';
+  t.style.color = err ? '#fff' : 'var(--bg)';
+  t.classList.add('show');
+  setTimeout(() => t.classList.remove('show'), 3000);
+}
+
+init();
+</script>
+</body>
+</html>

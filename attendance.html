@@ -788,7 +788,11 @@
 
 <header class="app-header">
   <div class="app-title">⚡ 出席管理 <span>Athletic Club</span></div>
-  <a href="accounting.html" class="header-link">💴 会計 →</a>
+  <div style="display:flex;gap:6px;">
+    <a href="accounting.html" class="header-link">💴 会計</a>
+    <a href="performance.html" class="header-link">⚡ 計測</a>
+    <a href="coach.html" class="header-link">🏃 コーチ</a>
+  </div>
 </header>
 
 <div class="tab-bar">
@@ -1857,7 +1861,13 @@ function renderMlTab() {
             style="padding:1px 8px;background:rgba(79,255,176,0.1);border:1px solid rgba(79,255,176,0.2);border-radius:6px;color:var(--accent);font-family:inherit;font-size:0.65rem;cursor:pointer;">コピー</button>
         </div>` : ''}
       </div>
-      <div style="color:var(--text3);font-size:1rem;padding-left:8px;">›</div>
+      <div style="display:flex;flex-direction:column;align-items:center;gap:6px;padding-left:8px;">
+        <div style="color:var(--text3);font-size:1rem;">›</div>
+        <a href="member.html?id=${m.id}" onclick="event.stopPropagation()"
+          style="font-size:.62rem;color:var(--accent2);background:rgba(123,111,255,.12);
+          border:1px solid rgba(123,111,255,.25);border-radius:6px;padding:2px 6px;
+          text-decoration:none;white-space:nowrap;">詳細</a>
+      </div>
     </div>`;
   }).join('');
 }
