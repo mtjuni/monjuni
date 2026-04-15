@@ -4,718 +4,632 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
 <meta name="apple-mobile-web-app-capable" content="yes">
-<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="mobile-web-app-capable" content="yes">
-<title>コーチ出席管理 — Athletic Club</title>
-<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@300;400;500;700;900&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+<title>コーチ管理 — Athletic Club</title>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@300;400;500;700;900&family=Oswald:wght@400;600;700&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
 <style>
-  :root {
-    --bg: #0a0d1a;
-    --surface: #12172a;
-    --surface2: #1a2038;
-    --border: #252d48;
-    --orange: #ff9f43;
-    --blue: #48dbfb;
-    --green: #1dd1a1;
-    --purple: #a29bfe;
-    --warn: #ff6b6b;
-    --text: #e8eaf6;
-    --text2: #8892b0;
-    --text3: #404870;
-    --radius: 16px;
-    --radius-sm: 10px;
-    --safe-top: env(safe-area-inset-top, 0px);
-    --safe-bottom: env(safe-area-inset-bottom, 0px);
-  }
+:root{
+  --bg:#0a0c14;--sur:#11141f;--sur2:#181c2a;--sur3:#1e2338;
+  --bd:#1e2235;--bd2:#272f4a;
+  --or:#ff6b35;--cy:#00e5ff;--lm:#b8ff3c;--pu:#9b59ff;
+  --gd:#ffd93d;--rd:#ff4757;--tl:#1dd1a1;
+  --tx:#e8eaf6;--tx2:#7b85a8;--tx3:#3a4060;
+  --r:14px;--rs:8px;
+  --st:env(safe-area-inset-top,0px);--sb:env(safe-area-inset-bottom,0px);
+}
+*{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent;}
+body{font-family:'Noto Sans JP',sans-serif;background:var(--bg);color:var(--tx);min-height:100dvh;overflow-x:hidden;}
+body::before{content:'';position:fixed;inset:0;pointer-events:none;
+  background:radial-gradient(ellipse 60% 40% at 80% 20%,rgba(255,107,53,.06),transparent 60%);}
 
-  * { margin:0; padding:0; box-sizing:border-box; -webkit-tap-highlight-color:transparent; }
+.hdr{position:sticky;top:0;z-index:100;background:rgba(10,12,20,.95);
+  backdrop-filter:blur(20px);border-bottom:1px solid var(--bd);
+  padding:calc(var(--st)+12px) 20px 12px;display:flex;align-items:center;justify-content:space-between;}
+.htitle{font-family:'Oswald',sans-serif;font-size:1.1rem;font-weight:700;
+  letter-spacing:.1em;color:var(--or);text-transform:uppercase;}
+.htitle span{color:var(--tx2);font-weight:400;font-size:.82rem;}
+.hlinks{display:flex;gap:6px;}
+.hlink{background:var(--sur2);border:1px solid var(--bd2);color:var(--tx2);
+  padding:6px 12px;border-radius:20px;font-size:.75rem;font-weight:500;text-decoration:none;transition:all .2s;}
+.hlink:hover{color:var(--or);border-color:var(--or);}
 
-  body {
-    font-family:'Noto Sans JP', sans-serif;
-    background:var(--bg);
-    color:var(--text);
-    min-height:100dvh;
-    overflow-x:hidden;
-  }
+.tbar{display:flex;background:var(--sur);border-bottom:1px solid var(--bd);overflow-x:auto;scrollbar-width:none;}
+.tbar::-webkit-scrollbar{display:none;}
+.tbtn{flex:1;min-width:80px;padding:12px 6px;background:none;border:none;color:var(--tx3);
+  font-family:inherit;font-size:.72rem;font-weight:600;cursor:pointer;transition:all .2s;
+  white-space:nowrap;position:relative;}
+.tbtn.active{color:var(--or);}
+.tbtn.active::after{content:'';position:absolute;bottom:0;left:15%;right:15%;height:2px;
+  background:var(--or);border-radius:2px 2px 0 0;box-shadow:0 0 8px var(--or);}
 
-  /* ── HEADER ── */
-  .app-header {
-    position:sticky; top:0; z-index:100;
-    background:rgba(10,13,26,0.93);
-    backdrop-filter:blur(20px);
-    -webkit-backdrop-filter:blur(20px);
-    border-bottom:1px solid var(--border);
-    padding:calc(var(--safe-top) + 12px) 20px 12px;
-    display:flex; align-items:center; justify-content:space-between;
-  }
-  .app-title { font-size:1.05rem; font-weight:700; letter-spacing:0.05em; color:var(--orange); }
-  .app-title span { color:var(--text2); font-weight:300; }
-  .header-link {
-    background:var(--surface2); border:1px solid var(--border);
-    color:var(--text2); padding:6px 14px; border-radius:20px;
-    font-size:0.78rem; font-weight:500; text-decoration:none; transition:all 0.2s;
-  }
-  .header-link:hover { color:var(--orange); border-color:var(--orange); }
+.main{padding:20px;max-width:760px;margin:0 auto;}
+.pnl{display:none;}.pnl.active{display:block;}
+.stitle{font-family:'Oswald',sans-serif;font-size:.73rem;font-weight:500;letter-spacing:.12em;
+  text-transform:uppercase;color:var(--tx3);margin-bottom:12px;padding-bottom:8px;border-bottom:1px solid var(--bd);}
+.card{background:var(--sur);border:1px solid var(--bd2);border-radius:var(--r);padding:16px;margin-bottom:14px;}
 
-  /* ── TABS ── */
-  .tab-bar {
-    display:flex; background:var(--surface); border-bottom:1px solid var(--border);
-    overflow-x:auto; scrollbar-width:none; -webkit-overflow-scrolling:touch;
-  }
-  .tab-bar::-webkit-scrollbar { display:none; }
-  .tab-btn {
-    flex:1; min-width:90px; padding:12px 10px;
-    background:none; border:none; color:var(--text3);
-    font-family:inherit; font-size:0.78rem; font-weight:500; cursor:pointer;
-    transition:all 0.2s; white-space:nowrap; position:relative;
-  }
-  .tab-btn.active { color:var(--orange); }
-  .tab-btn.active::after {
-    content:''; position:absolute; bottom:0; left:20%; right:20%;
-    height:2px; background:var(--orange); border-radius:2px 2px 0 0;
-  }
+/* TIME ZONE BADGES */
+.tz-prep{color:#ff6b35;background:rgba(255,107,53,.15);border:1px solid rgba(255,107,53,.3);padding:2px 8px;border-radius:6px;font-size:.68rem;font-weight:700;}
+.tz-act{color:var(--gd);background:rgba(255,209,61,.1);border:1px solid rgba(255,209,61,.25);padding:2px 8px;border-radius:6px;font-size:.68rem;font-weight:700;}
+.tz-rem{color:var(--cy);background:rgba(0,229,255,.1);border:1px solid rgba(0,229,255,.25);padding:2px 8px;border-radius:6px;font-size:.68rem;font-weight:700;}
 
-  .main { padding:20px; max-width:680px; margin:0 auto; }
-  .tab-panel { display:none; }
-  .tab-panel.active { display:block; }
+/* FORM */
+.lbl{font-size:.7rem;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--tx3);display:block;margin-bottom:5px;}
+.inp,.sel{width:100%;padding:10px 12px;background:var(--sur2);border:1px solid var(--bd2);
+  border-radius:var(--rs);color:var(--tx);font-family:inherit;font-size:.9rem;outline:none;transition:border-color .2s;}
+.inp:focus,.sel:focus{border-color:var(--or);box-shadow:0 0 0 2px rgba(255,107,53,.1);}
+.inp::placeholder{color:var(--tx3);}.sel{appearance:none;cursor:pointer;}
+.fsec{margin-bottom:12px;}
+.frow{display:grid;grid-template-columns:1fr 1fr;gap:10px;}
+.btn{padding:10px 18px;border:none;border-radius:var(--rs);font-family:inherit;
+  font-size:.85rem;font-weight:700;cursor:pointer;transition:all .2s;}
+.bpr{background:var(--or);color:#fff;box-shadow:0 0 16px rgba(255,107,53,.25);}
+.bpr:hover{background:#ff8555;}
+.bgh{background:var(--sur2);border:1px solid var(--bd2);color:var(--tx2);}
+.bgh:hover{border-color:var(--or);color:var(--or);}
+.bdng{background:rgba(255,71,87,.12);border:1px solid rgba(255,71,87,.3);color:var(--rd);}
+.bfl{width:100%;}.bsm{padding:6px 12px;font-size:.75rem;}
 
-  .section-title {
-    font-size:0.7rem; font-weight:700; letter-spacing:0.1em; text-transform:uppercase;
-    color:var(--text3); margin-bottom:12px; padding-bottom:8px; border-bottom:1px solid var(--border);
-  }
+/* COACH CARDS */
+.coach-card{background:var(--sur);border:1px solid var(--bd2);border-radius:var(--r);
+  padding:14px 16px;margin-bottom:10px;display:flex;align-items:center;gap:12px;}
+.coach-avtr{width:40px;height:40px;border-radius:50%;
+  background:linear-gradient(135deg,var(--or),var(--rd));
+  display:flex;align-items:center;justify-content:center;
+  font-family:'Oswald',sans-serif;font-size:1.1rem;font-weight:700;color:#fff;flex-shrink:0;}
+.coach-nm{font-weight:700;font-size:.92rem;}
+.coach-furi{font-size:.72rem;color:var(--tx3);}
+.coach-del{margin-left:auto;padding:5px 10px;background:rgba(255,71,87,.1);
+  border:1px solid rgba(255,71,87,.25);border-radius:6px;color:var(--rd);
+  font-family:inherit;font-size:.72rem;cursor:pointer;flex-shrink:0;}
 
-  /* ── NFC ZONE ── */
-  .nfc-zone {
-    width:140px; height:140px; border-radius:50%; margin:0 auto 16px;
-    display:flex; flex-direction:column; align-items:center; justify-content:center; gap:6px;
-    border:2px solid var(--border); background:var(--surface2); cursor:pointer;
-    transition:all 0.3s; position:relative;
-  }
-  .nfc-zone::before {
-    content:''; position:absolute; inset:-8px; border-radius:50%;
-    border:1px solid var(--border); opacity:0.4; animation:pulse-ring 2.5s ease-in-out infinite;
-  }
-  @keyframes pulse-ring { 0%,100% { transform:scale(1); opacity:0.4; } 50% { transform:scale(1.06); opacity:0.15; } }
-  .nfc-zone.scanning { border-color:var(--orange); animation:spin-border 0.8s linear infinite; }
-  .nfc-zone.success { border-color:var(--green); background:rgba(29,209,161,0.08); }
-  .nfc-zone.error { border-color:var(--warn); background:rgba(255,107,107,0.08); }
-  @keyframes spin-border { to { transform:rotate(360deg); } }
-  .nfc-icon { font-size:2.8rem; }
-  .nfc-label { font-size:0.7rem; color:var(--text3); }
-  .nfc-status { font-size:0.78rem; color:var(--text2); text-align:center; margin-bottom:16px; min-height:20px; }
-  .nfc-status.ok { color:var(--green); }
-  .nfc-status.err { color:var(--warn); }
+/* ATTENDANCE RECORD */
+.act-date-label{font-family:'DM Mono',monospace;font-size:.8rem;color:var(--tx2);
+  margin-bottom:14px;padding:8px 12px;background:var(--sur2);border-radius:var(--rs);
+  display:inline-block;}
 
-  /* ── SEARCH ── */
-  .search-wrap { position:relative; margin-bottom:20px; }
-  .search-icon { position:absolute; left:14px; top:50%; transform:translateY(-50%); color:var(--text3); pointer-events:none; }
-  .search-input {
-    width:100%; padding:13px 13px 13px 40px;
-    background:var(--surface2); border:1px solid var(--border); border-radius:var(--radius-sm);
-    color:var(--text); font-family:inherit; font-size:0.95rem; outline:none; transition:border-color 0.2s;
-  }
-  .search-input:focus { border-color:var(--orange); }
-  .search-input::placeholder { color:var(--text3); }
-  .search-results {
-    position:absolute; left:0; right:0; top:100%; margin-top:4px;
-    background:var(--surface); border:1px solid var(--border); border-radius:var(--radius-sm);
-    z-index:50; display:none; overflow:hidden; max-height:300px; overflow-y:auto;
-    box-shadow:0 8px 24px rgba(0,0,0,0.4);
-  }
-  .search-results.show { display:block; }
-  .search-result-item {
-    padding:11px 14px; cursor:pointer; transition:background 0.15s;
-    display:flex; align-items:center; gap:10px; border-bottom:1px solid var(--border);
-  }
-  .search-result-item:last-child { border-bottom:none; }
-  .search-result-item:hover { background:var(--surface2); }
-  .result-avatar {
-    width:36px; height:36px; border-radius:50%; background:var(--orange);
-    display:flex; align-items:center; justify-content:center;
-    font-weight:700; color:#0a0d1a; font-size:0.95rem; flex-shrink:0;
-  }
-  .result-name { font-weight:600; font-size:0.9rem; }
-  .result-meta { font-size:0.75rem; color:var(--text2); margin-top:1px; }
+.att-row{background:var(--sur);border:1px solid var(--bd2);border-radius:var(--r);
+  padding:14px 16px;margin-bottom:10px;}
+.att-coach-name{font-weight:700;font-size:.92rem;margin-bottom:10px;
+  display:flex;align-items:center;gap:8px;}
+.att-times{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:8px;}
+.att-time-lbl{font-size:.68rem;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:var(--tx3);margin-bottom:4px;}
+.att-time-val{font-family:'DM Mono',monospace;font-size:1rem;font-weight:700;color:var(--or);}
+.att-zone{margin-top:4px;}
 
-  /* ── COACH CARD ── */
-  .coach-card {
-    background:var(--surface); border:1px solid var(--border); border-radius:var(--radius);
-    padding:20px; margin-bottom:16px; display:none;
-  }
-  .coach-card.show { display:block; }
-  .coach-header { display:flex; align-items:center; gap:14px; margin-bottom:20px; }
-  .coach-avatar {
-    width:56px; height:56px; border-radius:50%;
-    background:linear-gradient(135deg, var(--orange), var(--purple));
-    display:flex; align-items:center; justify-content:center;
-    font-size:1.5rem; font-weight:900; color:#0a0d1a; flex-shrink:0;
-  }
-  .coach-name { font-size:1.1rem; font-weight:700; }
-  .coach-sub { font-size:0.78rem; color:var(--text2); margin-top:2px; }
+/* TIME ZONE INDICATOR */
+.zone-bar{height:6px;border-radius:3px;margin-top:8px;
+  background:linear-gradient(to right,
+    rgba(255,107,53,.7) 0%, rgba(255,107,53,.7) 55%,
+    rgba(255,209,61,.5) 55%, rgba(255,209,61,.5) 80%,
+    rgba(0,229,255,.5) 80%, rgba(0,229,255,.5) 100%);
+  position:relative;}
+.zone-marker{position:absolute;top:-4px;width:14px;height:14px;border-radius:50%;
+  background:var(--or);border:2px solid var(--bg);transform:translateX(-50%);transition:left .3s;}
 
-  /* ── TIME SLOT SELECTOR ── */
-  .timeslot-label {
-    font-size:0.75rem; font-weight:700; letter-spacing:0.06em; text-transform:uppercase;
-    color:var(--text2); margin-bottom:12px; display:block;
-  }
-  .timeslot-grid { display:grid; grid-template-columns:repeat(2,1fr); gap:10px; margin-bottom:20px; }
-  .timeslot-btn {
-    padding:16px 12px; background:var(--surface2); border:2px solid var(--border);
-    border-radius:var(--radius-sm); color:var(--text2); font-family:inherit;
-    cursor:pointer; transition:all 0.2s; text-align:center; position:relative;
-  }
-  .timeslot-btn:hover { border-color:var(--orange); color:var(--text); }
-  .timeslot-btn.active {
-    background:rgba(255,159,67,0.12); border-color:var(--orange); color:var(--orange);
-  }
-  .timeslot-btn.active.paid-slot { background:rgba(29,209,161,0.1); border-color:var(--green); color:var(--green); }
-  .slot-fraction { font-size:1.4rem; font-weight:900; font-family:'DM Mono',monospace; display:block; margin-bottom:4px; }
-  .slot-desc { font-size:0.72rem; line-height:1.4; }
-  .slot-reward {
-    display:inline-block; margin-top:6px; padding:2px 8px;
-    border-radius:8px; font-size:0.65rem; font-weight:700;
-  }
-  .slot-reward.yes { background:rgba(29,209,161,0.2); color:var(--green); }
-  .slot-reward.no { background:rgba(64,72,112,0.4); color:var(--text3); }
+/* STATS */
+.stats-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:14px;}
+.stat-c{background:var(--sur2);border-radius:var(--rs);padding:12px;text-align:center;}
+.stat-v{font-family:'DM Mono',monospace;font-size:1rem;font-weight:700;}
+.stat-v.or{color:var(--or);}.stat-v.lm{color:var(--lm);}.stat-v.cy{color:var(--cy);}
+.stat-v.gd{color:var(--gd);}.stat-v.tl{color:var(--tl);}
+.stat-l{font-size:.6rem;color:var(--tx3);margin-top:3px;text-transform:uppercase;letter-spacing:.05em;}
 
-  /* ── CONFIRM BTN ── */
-  .confirm-btn {
-    width:100%; padding:15px; background:var(--orange); color:#0a0d1a;
-    border:none; border-radius:var(--radius-sm); font-family:inherit;
-    font-size:1rem; font-weight:800; cursor:pointer; letter-spacing:0.04em;
-    transition:all 0.2s; margin-top:4px;
-  }
-  .confirm-btn:active { transform:scale(0.98); }
-  .confirm-btn:hover { background:#ffb347; }
-  .confirm-btn:disabled { background:var(--text3); color:var(--surface); cursor:not-allowed; }
+/* HISTORY TABLE */
+.htbl-wrap{background:var(--sur);border:1px solid var(--bd2);border-radius:var(--r);overflow:hidden;}
+.htbl{width:100%;border-collapse:collapse;}
+.htbl th{padding:9px 12px;font-size:.65rem;font-weight:700;letter-spacing:.1em;
+  text-transform:uppercase;color:var(--tx3);background:var(--sur2);
+  border-bottom:1px solid var(--bd);text-align:left;}
+.htbl td{padding:10px 12px;border-bottom:1px solid var(--bd);font-size:.82rem;}
+.htbl tr:last-child td{border-bottom:none;}
+.htbl tr:hover td{background:rgba(255,107,53,.03);}
+.td-time{font-family:'DM Mono',monospace;font-weight:600;}
+.td-full{color:var(--tl);font-size:.72rem;}
+.td-early{color:var(--or);font-size:.72rem;}
 
-  /* ── TODAY LIST ── */
-  .today-header {
-    display:flex; align-items:center; justify-content:space-between;
-    padding:14px 0; margin-bottom:12px; border-bottom:1px solid var(--border);
-  }
-  .today-title { font-size:0.9rem; font-weight:700; }
-  .today-count {
-    background:rgba(255,159,67,0.15); color:var(--orange);
-    border:1px solid rgba(255,159,67,0.3); border-radius:20px;
-    padding:3px 12px; font-size:0.78rem; font-weight:700;
-    font-family:'DM Mono',monospace;
-  }
+/* TOAST */
+.toast{position:fixed;bottom:calc(var(--sb)+24px);left:50%;
+  transform:translateX(-50%) translateY(20px);
+  background:var(--or);color:#fff;padding:11px 22px;border-radius:20px;
+  font-size:.85rem;font-weight:700;opacity:0;transition:all .3s;z-index:1000;
+  white-space:nowrap;pointer-events:none;box-shadow:0 0 20px rgba(255,107,53,.4);}
+.toast.show{opacity:1;transform:translateX(-50%) translateY(0);}
 
-  .attendance-item {
-    display:flex; align-items:center; gap:12px; padding:12px 14px;
-    background:var(--surface); border:1px solid var(--border); border-radius:var(--radius-sm);
-    margin-bottom:8px; transition:all 0.2s;
-  }
-  .att-time { font-family:'DM Mono',monospace; font-size:0.8rem; color:var(--text3); width:42px; flex-shrink:0; }
-  .att-avatar {
-    width:34px; height:34px; border-radius:50%; flex-shrink:0;
-    background:linear-gradient(135deg,var(--orange),var(--purple));
-    display:flex; align-items:center; justify-content:center;
-    font-weight:700; color:#0a0d1a; font-size:0.9rem;
-  }
-  .att-name { flex:1; font-weight:600; font-size:0.88rem; }
-  .att-slot {
-    padding:3px 10px; border-radius:10px; font-size:0.72rem; font-weight:700;
-    font-family:'DM Mono',monospace;
-  }
-  .att-slot.paid { background:rgba(29,209,161,0.15); color:var(--green); border:1px solid rgba(29,209,161,0.3); }
-  .att-slot.nopay { background:rgba(64,72,112,0.4); color:var(--text3); border:1px solid var(--border); }
-  .att-undo {
-    background:none; border:none; color:var(--text3); cursor:pointer;
-    font-size:1rem; padding:4px; border-radius:6px; transition:color 0.2s;
-  }
-  .att-undo:hover { color:var(--warn); }
+.ld{text-align:center;padding:32px;color:var(--tx3);font-size:.85rem;}
+.spin{width:28px;height:28px;border:2px solid var(--bd2);border-top-color:var(--or);
+  border-radius:50%;animation:sp .7s linear infinite;margin:0 auto 10px;}
+@keyframes sp{to{transform:rotate(360deg);}}
 
-  /* ── HISTORY TAB ── */
-  .history-table { width:100%; border-collapse:collapse; font-size:0.82rem; }
-  .history-table th {
-    text-align:left; padding:8px 10px; font-size:0.68rem; font-weight:700;
-    text-transform:uppercase; letter-spacing:0.06em; color:var(--text3);
-    border-bottom:1px solid var(--border); background:var(--surface2);
-  }
-  .history-table td { padding:10px; border-bottom:1px solid var(--border); }
-  .history-table tr:last-child td { border-bottom:none; }
-  .history-table tr:hover td { background:var(--surface2); }
-  .ht-slot { font-family:'DM Mono',monospace; font-size:0.8rem; }
-  .ht-paid { color:var(--green); font-weight:700; }
-  .ht-nopay { color:var(--text3); }
-
-  /* ── COACH REGISTER ── */
-  .form-card { background:var(--surface); border:1px solid var(--border); border-radius:var(--radius); padding:18px; margin-bottom:16px; }
-  .form-section { margin-bottom:14px; }
-  .form-label { font-size:0.75rem; font-weight:600; letter-spacing:0.06em; text-transform:uppercase; color:var(--text2); display:block; margin-bottom:6px; }
-  .form-input, .form-select {
-    width:100%; padding:12px 13px; background:var(--surface2); border:1px solid var(--border);
-    border-radius:var(--radius-sm); color:var(--text); font-family:inherit; font-size:0.95rem;
-    outline:none; transition:border-color 0.2s; appearance:none; -webkit-appearance:none;
-  }
-  .form-input:focus, .form-select:focus { border-color:var(--orange); }
-  .form-row { display:grid; grid-template-columns:1fr 1fr; gap:10px; }
-
-  /* ── EMPTY STATE ── */
-  .empty-state { text-align:center; padding:40px 20px; color:var(--text3); }
-  .empty-icon { font-size:3rem; margin-bottom:12px; }
-  .empty-state p { font-size:0.85rem; line-height:1.7; }
-
-  /* ── TOAST ── */
-  .toast {
-    position:fixed; bottom:calc(var(--safe-bottom) + 24px); left:50%; transform:translateX(-50%) translateY(20px);
-    background:var(--orange); color:#0a0d1a; padding:11px 20px; border-radius:20px;
-    font-size:0.85rem; font-weight:700; opacity:0; transition:all 0.3s; z-index:999;
-    white-space:nowrap; pointer-events:none; box-shadow:0 8px 24px rgba(255,159,67,0.35);
-  }
-  .toast.show { opacity:1; transform:translateX(-50%) translateY(0); }
-
-  /* ── DESKTOP ── */
-  @media (min-width:768px) {
-    .app-header { padding:16px 32px; }
-    .main { padding:28px 32px; max-width:1000px; }
-    .scan-layout { display:grid; grid-template-columns:1fr 1fr; gap:24px; align-items:start; }
-    .timeslot-grid { grid-template-columns:repeat(4,1fr); }
-  }
+@media(min-width:768px){
+  .hdr{padding:16px 32px;}.main{padding:28px 32px;}
+  .stats-grid{grid-template-columns:repeat(5,1fr);}
+}
 </style>
 </head>
 <body>
-
-<header class="app-header">
-  <div class="app-title">🏅 コーチ出席 <span>Athletic Club</span></div>
-  <a href="attendance.html" class="header-link">⚡ 生徒出席 →</a>
+<header class="hdr">
+  <div class="htitle">🏃 コーチ管理 <span>Athletic Club</span></div>
+  <div class="hlinks">
+    <a href="attendance.html" class="hlink">⚡ 出席</a>
+    <a href="accounting.html" class="hlink">💴 会計</a>
+  </div>
 </header>
-
-<div class="tab-bar">
-  <button class="tab-btn active" onclick="switchTab('scan',this)">📡 チェックイン</button>
-  <button class="tab-btn" onclick="switchTab('today',this)">📋 本日</button>
-  <button class="tab-btn" onclick="switchTab('history',this)">📊 履歴</button>
-  <button class="tab-btn" onclick="switchTab('register',this)">➕ コーチ登録</button>
+<div class="tbar">
+  <button class="tbtn active" onclick="sw('record',this)">⏱ 出退記録</button>
+  <button class="tbtn" onclick="sw('stats',this)">📊 統計</button>
+  <button class="tbtn" onclick="sw('coaches',this)">👥 コーチ登録</button>
 </div>
-
 <div class="main">
 
-  <!-- ── TAB: SCAN ── -->
-  <div id="tab-scan" class="tab-panel active">
-    <div class="scan-layout">
-      <div class="scan-left">
-        <!-- NFC Zone -->
-        <div style="text-align:center; margin-bottom:20px;">
-          <div class="nfc-zone" id="nfcZone">
-            <div class="nfc-icon">🏅</div>
-            <div class="nfc-label">NFCタッチ</div>
-          </div>
-          <div class="nfc-status" id="nfcStatus">コーチカードをかざしてください</div>
-        </div>
-
-        <!-- 名前検索 -->
-        <div class="section-title">コーチ名で検索</div>
-        <div class="search-wrap">
-          <span class="search-icon">🔍</span>
-          <input class="search-input" id="searchInput" type="text"
-            placeholder="名前で検索..." autocomplete="off" oninput="onSearch(this.value)">
-          <div class="search-results" id="searchResults"></div>
-        </div>
+<!-- ── 出退記録 ── -->
+<div id="pnl-record" class="pnl active">
+  <div class="stitle">活動日・コーチ選択</div>
+  <div class="card">
+    <div class="frow" style="margin-bottom:12px;">
+      <div class="fsec" style="margin:0;">
+        <label class="lbl">活動日</label>
+        <input class="inp" type="date" id="actDate">
       </div>
-
-      <div class="scan-right">
-        <!-- Coach Card -->
-        <div class="coach-card" id="coachCard">
-          <div class="coach-header">
-            <div class="coach-avatar" id="coachAvatar">?</div>
-            <div>
-              <div id="coachFurigana" style="font-size:0.75rem;color:var(--text2);">—</div>
-              <div class="coach-name" id="coachName">—</div>
-              <div class="coach-sub" id="coachSub">—</div>
-            </div>
-          </div>
-
-          <!-- Time Slot Selection -->
-          <span class="timeslot-label">参加時間帯を選択</span>
-          <div class="timeslot-grid">
-            <button class="timeslot-btn" id="slot-full" onclick="selectSlot('full')">
-              <span class="slot-fraction">全体</span>
-              <span class="slot-desc">最初から参加<br>（全時間）</span>
-              <span class="slot-reward yes">✓ 報酬あり</span>
-            </button>
-            <button class="timeslot-btn" id="slot-1-3" onclick="selectSlot('1/3')">
-              <span class="slot-fraction">1/3〜</span>
-              <span class="slot-desc">1/3の時点から<br>参加</span>
-              <span class="slot-reward yes">✓ 報酬あり</span>
-            </button>
-            <button class="timeslot-btn" id="slot-2-3" onclick="selectSlot('2/3')">
-              <span class="slot-fraction">2/3〜</span>
-              <span class="slot-desc">2/3の時点から<br>参加</span>
-              <span class="slot-reward no">— 報酬なし</span>
-            </button>
-            <button class="timeslot-btn" id="slot-3-3" onclick="selectSlot('3/3')">
-              <span class="slot-fraction">3/3〜</span>
-              <span class="slot-desc">最後の1/3から<br>参加</span>
-              <span class="slot-reward no">— 報酬なし</span>
-            </button>
-          </div>
-
-          <button class="confirm-btn" id="confirmBtn" onclick="confirmAttendance()" disabled>
-            参加時間帯を選択してください
-          </button>
-        </div>
-
-        <div id="noCoachState">
-          <div class="empty-state">
-            <div class="empty-icon">🏅</div>
-            <p>NFCカードをかざすか<br>名前で検索してください</p>
-          </div>
-        </div>
+      <div class="fsec" style="margin:0;">
+        <label class="lbl">コーチ選択</label>
+        <select class="sel" id="coachSel" onchange="onCoachSelect()">
+          <option value="">選択してください</option>
+        </select>
       </div>
     </div>
   </div>
 
-  <!-- ── TAB: TODAY ── -->
-  <div id="tab-today" class="tab-panel">
-    <div class="today-header">
-      <div class="today-title" id="todayDate">—</div>
-      <div class="today-count" id="todayCount">0名</div>
-    </div>
-    <div id="todayList">
-      <div class="empty-state">
-        <div class="empty-icon">📋</div>
-        <p>まだチェックインがありません</p>
-      </div>
-    </div>
-  </div>
+  <!-- 時間入力 -->
+  <div id="timeInputArea" style="display:none;">
+    <div class="stitle">出退時刻入力</div>
+    <div class="card">
+      <div class="att-coach-name" id="selCoachName">—</div>
 
-  <!-- ── TAB: HISTORY ── -->
-  <div id="tab-history" class="tab-panel">
-    <div class="section-title">出席履歴</div>
-    <div style="margin-bottom:12px;">
-      <input class="form-input" id="historyFilter" type="text"
-        placeholder="名前・日付で絞り込み..." oninput="renderHistory(this.value)"
-        style="background:var(--surface2);border:1px solid var(--border);border-radius:var(--radius-sm);color:var(--text);padding:11px 14px;width:100%;outline:none;">
-    </div>
-    <div style="background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);overflow:hidden;">
-      <table class="history-table">
-        <thead>
-          <tr>
-            <th>日付</th>
-            <th>コーチ名</th>
-            <th>参加時間帯</th>
-            <th>報酬対象</th>
-          </tr>
-        </thead>
-        <tbody id="historyTbody"></tbody>
-      </table>
-    </div>
-    <div style="padding:12px 14px;display:flex;justify-content:space-between;font-size:0.78rem;color:var(--text2);border-top:1px solid var(--border);">
-      <span id="historyCount">0件</span>
-      <span>報酬対象: <strong id="historyPaidCount" style="color:var(--green);">0件</strong></span>
-    </div>
-  </div>
+      <!-- 時間帯説明 -->
+      <div style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:14px;">
+        <span class="tz-prep">🔴 準備 12:00〜13:20</span>
+        <span class="tz-act">🟡 活動 13:30〜15:00</span>
+        <span class="tz-rem">🔵 撤去 15:00〜15:30</span>
+      </div>
 
-  <!-- ── TAB: REGISTER ── -->
-  <div id="tab-register" class="tab-panel">
-    <div class="section-title">コーチ登録</div>
-    <div class="form-card">
-      <div class="form-section">
-        <label class="form-label">氏名</label>
-        <input class="form-input" id="regName" type="text" placeholder="山本 太郎">
-      </div>
-      <div class="form-section">
-        <label class="form-label">ふりがな</label>
-        <input class="form-input" id="regFurigana" type="text" placeholder="やまもと たろう">
-      </div>
-      <div class="form-section form-row">
+      <div class="frow" style="margin-bottom:14px;">
         <div>
-          <label class="form-label">NFCカードID</label>
-          <input class="form-input" id="regNfc" type="text" placeholder="COACH001">
+          <label class="lbl">到着時刻</label>
+          <select class="sel" id="arrivalSel" onchange="updateZone()">
+            <option value="">選択</option>
+          </select>
+          <div id="arrZone" style="margin-top:6px;"></div>
         </div>
         <div>
-          <label class="form-label">専門種目</label>
-          <input class="form-input" id="regSpec" type="text" placeholder="体操・武道 など">
+          <label class="lbl">退館時刻</label>
+          <select class="sel" id="departureSel" onchange="updateZone()">
+            <option value="">選択（任意）</option>
+          </select>
+          <div id="depZone" style="margin-top:6px;"></div>
         </div>
       </div>
-      <div class="form-section">
-        <label class="form-label">連絡先</label>
-        <input class="form-input" id="regPhone" type="tel" placeholder="090-0000-0000">
-      </div>
-      <button class="confirm-btn" onclick="registerCoach()" style="margin-top:4px;">✓ コーチを登録する</button>
-    </div>
 
-    <div class="section-title" style="margin-top:20px;">登録済みコーチ一覧</div>
-    <div id="coachListDisplay"></div>
+      <!-- ゾーンバー -->
+      <div style="margin-bottom:14px;">
+        <div style="display:flex;justify-content:space-between;font-size:.62rem;color:var(--tx3);font-family:'DM Mono',monospace;margin-bottom:3px;">
+          <span>12:00</span><span>13:20</span><span>15:00</span><span>15:30</span>
+        </div>
+        <div class="zone-bar">
+          <div class="zone-marker" id="arrMarker" style="left:0%;display:none;"></div>
+          <div class="zone-marker" id="depMarker" style="left:100%;background:var(--cy);display:none;"></div>
+        </div>
+      </div>
+
+      <div class="fsec">
+        <label class="lbl">メモ（任意）</label>
+        <input class="inp" type="text" id="attMemo" placeholder="特記事項など">
+      </div>
+
+      <div style="display:flex;gap:8px;">
+        <button class="btn bgh bfl" onclick="resetTimeInput()">リセット</button>
+        <button class="btn bpr bfl" onclick="saveAttendance()">💾 記録する</button>
+      </div>
+    </div>
   </div>
 
+  <!-- 本日の記録一覧 -->
+  <div id="todayRecords" style="display:none;">
+    <div class="stitle">本日の記録</div>
+    <div id="todayList"></div>
+  </div>
 </div>
 
+<!-- ── 統計 ── -->
+<div id="pnl-stats" class="pnl">
+  <div class="stitle">期間フィルター</div>
+  <div class="card">
+    <div class="frow">
+      <div class="fsec" style="margin:0;">
+        <label class="lbl">開始日</label>
+        <input class="inp" type="date" id="statsFrom">
+      </div>
+      <div class="fsec" style="margin:0;">
+        <label class="lbl">終了日</label>
+        <input class="inp" type="date" id="statsTo">
+      </div>
+    </div>
+    <button class="btn bpr bfl" style="margin-top:10px;" onclick="renderStats()">集計する</button>
+  </div>
+  <div id="statsContent"></div>
+</div>
+
+<!-- ── コーチ登録 ── -->
+<div id="pnl-coaches" class="pnl">
+  <div class="stitle">新規コーチ登録</div>
+  <div class="card">
+    <div class="frow" style="margin-bottom:12px;">
+      <div class="fsec" style="margin:0;">
+        <label class="lbl">氏名 *</label>
+        <input class="inp" type="text" id="newCoachName" placeholder="例: 山田 太郎">
+      </div>
+      <div class="fsec" style="margin:0;">
+        <label class="lbl">よみがな</label>
+        <input class="inp" type="text" id="newCoachFuri" placeholder="例: やまだ たろう">
+      </div>
+    </div>
+    <div class="fsec">
+      <label class="lbl">基本謝礼額（¥/回）</label>
+      <input class="inp" type="number" id="newCoachFee" placeholder="例: 2000" min="0" step="500">
+    </div>
+    <button class="btn bpr bfl" onclick="addCoach()">➕ 登録</button>
+  </div>
+  <div class="stitle">登録済みコーチ</div>
+  <div id="coachList"><div class="ld"><div class="spin"></div></div></div>
+</div>
+
+</div>
 <div class="toast" id="toast"></div>
 
 <script>
-// ── CONFIG ──
-const GAS_URL = 'https://script.google.com/macros/s/AKfycbyVH4yXtC0PsG4gwbWITAnsMFUdwvMSij2hNsZ9z4bfRTRS0RxHzqvZZeaN3AVIEOte/exec';
+const GAS='https://script.google.com/macros/s/AKfycbyVH4yXtC0PsG4gwbWITAnsMFUdwvMSij2hNsZ9z4bfRTRS0RxHzqvZZeaN3AVIEOte/exec';
+const STORAGE_KEY_COACHES='ac_coaches';
+const STORAGE_KEY_ATT='ac_coach_attendance';
 
-// ── SLOT DEFINITIONS ──
-// 報酬対象: 全体 と 1/3〜 のみ
-const SLOT_REWARD = { 'full': true, '1/3': true, '2/3': false, '3/3': false };
-const SLOT_LABEL = { 'full': '全体（最初から）', '1/3': '1/3〜', '2/3': '2/3〜', '3/3': '3/3〜' };
+// 時間帯定義
+const TIME_START=720; // 12:00 (分)
+const TIME_END=930;   // 15:30
+const PREP_END=800;   // 13:20
+const ACT_START=810;  // 13:30
+const ACT_END=900;    // 15:00
 
-// ── COACH DATA ──
-let COACHES = [
-  { id:'COACH001', name:'山本 花子', furigana:'やまもと はなこ', specialty:'体操', phone:'090-0001-0001' },
-  { id:'COACH002', name:'佐々木 健', furigana:'ささき けん', specialty:'武道', phone:'090-0002-0002' },
-  { id:'COACH003', name:'中村 あいこ', furigana:'なかむら あいこ', specialty:'バレエ', phone:'090-0003-0003' },
-];
+let COACHES=[];
+let ATTENDANCE=[];
 
-let todayAttendance = [];
-let selectedCoach = null;
-let selectedSlot = null;
+// ── INIT ──
+function init(){
+  loadData();
+  buildTimeSels();
+  document.getElementById('actDate').valueAsDate=new Date();
+  // 統計の初期期間（今月）
+  const now=new Date();
+  const y=now.getFullYear(),m=now.getMonth();
+  document.getElementById('statsFrom').value=`${y}-${String(m+1).padStart(2,'0')}-01`;
+  document.getElementById('statsTo').valueAsDate=now;
+  renderCoachList();
+  populateCoachSel();
+}
 
-// ── URL PARAM: NFC trigger ──
-function checkUrlParam() {
-  const params = new URLSearchParams(window.location.search);
-  const coachId = params.get('coach') || params.get('id');
-  if (coachId) {
-    history.replaceState({}, '', window.location.pathname);
-    setTimeout(() => simulateScan(coachId), 400);
+// ── DATA (localStorage) ──
+function loadData(){
+  try{COACHES=JSON.parse(localStorage.getItem(STORAGE_KEY_COACHES)||'[]');}catch(e){COACHES=[];}
+  try{ATTENDANCE=JSON.parse(localStorage.getItem(STORAGE_KEY_ATT)||'[]');}catch(e){ATTENDANCE=[];}
+}
+function saveData(){
+  localStorage.setItem(STORAGE_KEY_COACHES,JSON.stringify(COACHES));
+  localStorage.setItem(STORAGE_KEY_ATT,JSON.stringify(ATTENDANCE));
+}
+
+// ── TIME SELECTS (5分刻み 12:00〜15:30) ──
+function buildTimeSels(){
+  const opts=['<option value="">選択</option>'];
+  const dOpts=['<option value="">選択（任意）</option>'];
+  for(let t=TIME_START;t<=TIME_END;t+=5){
+    const h=Math.floor(t/60),m=t%60;
+    const label=`${String(h).padStart(2,'0')}:${String(m).padStart(2,'0')}`;
+    opts.push(`<option value="${t}">${label}</option>`);
+    dOpts.push(`<option value="${t}">${label}</option>`);
+  }
+  document.getElementById('arrivalSel').innerHTML=opts.join('');
+  document.getElementById('departureSel').innerHTML=dOpts.join('');
+}
+
+function getZoneLabel(min){
+  min=parseInt(min);
+  if(min<=PREP_END) return {label:'🔴 準備帯',cls:'tz-prep'};
+  if(min<ACT_END)   return {label:'🟡 活動帯',cls:'tz-act'};
+  return {label:'🔵 撤去帯',cls:'tz-rem'};
+}
+
+function minToStr(min){
+  if(!min&&min!==0) return '—';
+  min=parseInt(min);
+  const h=Math.floor(min/60),m=min%60;
+  return `${String(h).padStart(2,'0')}:${String(m).padStart(2,'0')}`;
+}
+
+function timeToPercent(min){
+  min=parseInt(min);
+  return Math.max(0,Math.min(100,((min-TIME_START)/(TIME_END-TIME_START))*100));
+}
+
+function updateZone(){
+  const arr=document.getElementById('arrivalSel').value;
+  const dep=document.getElementById('departureSel').value;
+
+  const az=document.getElementById('arrZone');
+  const dz=document.getElementById('depZone');
+  const am=document.getElementById('arrMarker');
+  const dm=document.getElementById('depMarker');
+
+  if(arr){
+    const z=getZoneLabel(arr);
+    az.innerHTML=`<span class="${z.cls}">${z.label}</span>`;
+    am.style.display='';
+    am.style.left=timeToPercent(arr)+'%';
+  } else {
+    az.innerHTML=''; am.style.display='none';
+  }
+  if(dep){
+    const z=getZoneLabel(dep);
+    dz.innerHTML=`<span class="${z.cls}">${z.label}</span>`;
+    dm.style.display='';
+    dm.style.left=timeToPercent(dep)+'%';
+  } else {
+    dz.innerHTML=''; dm.style.display='none';
   }
 }
 
-function simulateScan(id) {
-  const zone = document.getElementById('nfcZone');
-  const status = document.getElementById('nfcStatus');
-  zone.className = 'nfc-zone scanning';
-  status.textContent = 'スキャン中...';
-  status.className = 'nfc-status';
-  setTimeout(() => {
-    const coach = COACHES.find(c => c.id === id);
-    if (coach) {
-      zone.className = 'nfc-zone success';
-      status.textContent = '✓ 認識しました';
-      status.className = 'nfc-status ok';
-      showCoach(coach);
-      if (navigator.vibrate) navigator.vibrate([50, 30, 50]);
-    } else {
-      zone.className = 'nfc-zone error';
-      status.textContent = '✗ 未登録のカードです';
-      status.className = 'nfc-status err';
-    }
-    setTimeout(() => {
-      zone.className = 'nfc-zone';
-      status.textContent = 'コーチカードをかざしてください';
-      status.className = 'nfc-status';
-    }, 3000);
-  }, 800);
+// ── COACH SELECT ──
+function populateCoachSel(){
+  const sel=document.getElementById('coachSel');
+  const cur=sel.value;
+  sel.innerHTML='<option value="">選択してください</option>'+
+    COACHES.map(c=>`<option value="${c.id}">${c.name}</option>`).join('');
+  if(cur) sel.value=cur;
 }
 
-function showCoach(coach) {
-  selectedCoach = coach;
-  selectedSlot = null;
-  document.getElementById('coachAvatar').textContent = coach.name[0];
-  document.getElementById('coachFurigana').textContent = coach.furigana;
-  document.getElementById('coachName').textContent = coach.name;
-  document.getElementById('coachSub').textContent = coach.specialty || '—';
-  document.getElementById('coachCard').classList.add('show');
-  document.getElementById('noCoachState').style.display = 'none';
+function onCoachSelect(){
+  const id=document.getElementById('coachSel').value;
+  const area=document.getElementById('timeInputArea');
+  if(!id){area.style.display='none';return;}
+  const c=COACHES.find(x=>x.id===id);
+  if(!c)return;
+  document.getElementById('selCoachName').innerHTML=
+    `<div class="coach-avtr" style="width:32px;height:32px;font-size:.9rem;display:inline-flex;align-items:center;justify-content:center;border-radius:50%;background:linear-gradient(135deg,var(--or),var(--rd));color:#fff;font-family:'Oswald',sans-serif;font-weight:700;margin-right:8px;">${c.name[0]}</div>${c.name}`;
+  area.style.display='';
+  resetTimeInput();
+  renderTodayRecords();
+}
 
-  // Reset slot buttons
-  document.querySelectorAll('.timeslot-btn').forEach(b => b.classList.remove('active'));
-  const btn = document.getElementById('confirmBtn');
-  btn.disabled = true;
-  btn.textContent = '参加時間帯を選択してください';
+function resetTimeInput(){
+  document.getElementById('arrivalSel').value='';
+  document.getElementById('departureSel').value='';
+  document.getElementById('attMemo').value='';
+  updateZone();
+}
 
-  if (window.innerWidth < 768) {
-    setTimeout(() => document.getElementById('coachCard').scrollIntoView({ behavior:'smooth', block:'nearest' }), 100);
+// ── SAVE ATTENDANCE ──
+function saveAttendance(){
+  const date=document.getElementById('actDate').value;
+  const coachId=document.getElementById('coachSel').value;
+  const arr=document.getElementById('arrivalSel').value;
+  const dep=document.getElementById('departureSel').value;
+  const memo=document.getElementById('attMemo').value.trim();
+
+  if(!date){showT('⚠ 活動日を選択してください',true);return;}
+  if(!coachId){showT('⚠ コーチを選択してください',true);return;}
+  if(!arr){showT('⚠ 到着時刻を選択してください',true);return;}
+
+  const coach=COACHES.find(c=>c.id===coachId);
+  const dateStr=date.replace(/-/g,'/');
+
+  // 同日同コーチの重複確認
+  const dup=ATTENDANCE.find(a=>a.date===dateStr&&a.coachId===coachId);
+  if(dup){
+    if(!confirm(`${coach.name}さんの${dateStr}の記録が既にあります。上書きしますか？`))return;
+    const idx=ATTENDANCE.indexOf(dup);
+    ATTENDANCE.splice(idx,1);
   }
+
+  const isFullDay=dep&&parseInt(dep)>=ACT_END; // 15:00以降まで参加
+  const isPrepTime=parseInt(arr)<=PREP_END;     // 準備帯に到着
+
+  ATTENDANCE.push({
+    id:'ATT'+Date.now(),
+    coachId,coachName:coach.name,
+    date:dateStr,
+    arrival:parseInt(arr),
+    departure:dep?parseInt(dep):null,
+    memo,
+    isFullDay,
+    isPrepTime,
+    arrZone:getZoneLabel(arr).label,
+  });
+  saveData();
+  showT(`✓ ${coach.name}さんの記録を保存しました`);
+  resetTimeInput();
+  renderTodayRecords();
 }
 
-// ── SLOT SELECT ──
-function selectSlot(slot) {
-  selectedSlot = slot;
-  document.querySelectorAll('.timeslot-btn').forEach(b => b.classList.remove('active'));
-  const btn = document.getElementById('slot-' + (slot === 'full' ? 'full' : slot.replace('/','-')));
-  if (btn) {
-    btn.classList.add('active');
-    if (SLOT_REWARD[slot]) btn.classList.add('paid-slot');
-  }
-  const confirm = document.getElementById('confirmBtn');
-  confirm.disabled = false;
-  const rewardText = SLOT_REWARD[slot] ? '（報酬対象✓）' : '（報酬なし）';
-  confirm.textContent = `✓ ${SLOT_LABEL[slot]} で出席登録 ${rewardText}`;
-}
-
-// ── CONFIRM ──
-function confirmAttendance() {
-  if (!selectedCoach || !selectedSlot) return;
-  const now = new Date();
-  const time = `${String(now.getHours()).padStart(2,'0')}:${String(now.getMinutes()).padStart(2,'0')}`;
-  const dateKey = `${now.getFullYear()}/${String(now.getMonth()+1).padStart(2,'0')}/${String(now.getDate()).padStart(2,'0')}`;
-  const entry = {
-    coach: selectedCoach,
-    slot: selectedSlot,
-    slotLabel: SLOT_LABEL[selectedSlot],
-    reward: SLOT_REWARD[selectedSlot],
-    time,
-    date: dateKey
-  };
-  todayAttendance.unshift(entry);
-  renderTodayList();
-  showToast(`✓ ${selectedCoach.name}さん（${SLOT_LABEL[selectedSlot]}）を登録しました`);
-
-  // GAS送信
-  sendToGAS({ action:'coachAttendance', coachId: selectedCoach.id, coachName: selectedCoach.name, slot: selectedSlot, reward: SLOT_REWARD[selectedSlot], time, date: dateKey });
-
-  // Reset
-  document.getElementById('coachCard').classList.remove('show');
-  document.getElementById('noCoachState').style.display = '';
-  document.getElementById('searchInput').value = '';
-  document.getElementById('searchResults').classList.remove('show');
-  selectedCoach = null;
-  selectedSlot = null;
-}
-
-function sendToGAS(data) {
-  fetch(GAS_URL, { method:'POST', body:JSON.stringify(data) }).catch(()=>{});
-}
-
-// ── SEARCH ──
-function onSearch(q) {
-  const c = document.getElementById('searchResults');
-  if (!q.trim()) { c.classList.remove('show'); return; }
-  const r = COACHES.filter(m => m.name.includes(q) || m.furigana.includes(q));
-  if (!r.length) { c.classList.remove('show'); return; }
-  c.innerHTML = r.map(m => `
-    <div class="search-result-item" onclick="selectFromSearch('${m.id}')">
-      <div class="result-avatar">${m.name[0]}</div>
-      <div>
-        <div class="result-name">${m.name}</div>
-        <div class="result-meta">${m.furigana} · ${m.specialty || '—'}</div>
+// ── TODAY RECORDS ──
+function renderTodayRecords(){
+  const date=document.getElementById('actDate').value.replace(/-/g,'/');
+  const recs=ATTENDANCE.filter(a=>a.date===date).sort((a,b)=>a.arrival-b.arrival);
+  const el=document.getElementById('todayRecords');
+  const list=document.getElementById('todayList');
+  if(!recs.length){el.style.display='none';return;}
+  el.style.display='';
+  list.innerHTML=recs.map(a=>{
+    const arr=minToStr(a.arrival),dep=a.departure?minToStr(a.departure):'未退館';
+    const az=getZoneLabel(a.arrival);
+    return `<div class="att-row">
+      <div class="att-coach-name">
+        ${a.coachName}
+        ${a.isPrepTime?'<span class="tz-prep" style="font-size:.65rem;">準備参加</span>':''}
+        ${a.isFullDay?'<span class="tz-rem" style="font-size:.65rem;">最後まで</span>':''}
       </div>
-    </div>`).join('');
-  c.classList.add('show');
+      <div class="att-times">
+        <div>
+          <div class="att-time-lbl">到着</div>
+          <div class="att-time-val">${arr}</div>
+          <div class="att-zone"><span class="${az.cls}" style="font-size:.65rem;">${az.label}</span></div>
+        </div>
+        <div>
+          <div class="att-time-lbl">退館</div>
+          <div class="att-time-val" style="color:var(--cy);">${dep}</div>
+        </div>
+      </div>
+      ${a.memo?`<div style="font-size:.75rem;color:var(--tx2);margin-top:6px;">💬 ${a.memo}</div>`:''}
+      <div style="margin-top:8px;text-align:right;">
+        <button class="btn bdng bsm" onclick="delAtt('${a.id}')">削除</button>
+      </div>
+    </div>`;
+  }).join('');
 }
 
-function selectFromSearch(id) {
-  const coach = COACHES.find(c => c.id === id);
-  if (coach) {
-    showCoach(coach);
-    document.getElementById('searchResults').classList.remove('show');
-    document.getElementById('searchInput').value = coach.name;
-  }
+function delAtt(id){
+  if(!confirm('この記録を削除しますか？'))return;
+  ATTENDANCE=ATTENDANCE.filter(a=>a.id!==id);
+  saveData();renderTodayRecords();showT('削除しました');
 }
 
-// ── TODAY LIST ──
-function renderTodayList() {
-  const now = new Date();
-  document.getElementById('todayDate').textContent =
-    `${now.getFullYear()}年${now.getMonth()+1}月${now.getDate()}日 (${['日','月','火','水','木','金','土'][now.getDay()]})`;
-  document.getElementById('todayCount').textContent = todayAttendance.length + '名';
-  const list = document.getElementById('todayList');
-  if (!todayAttendance.length) {
-    list.innerHTML = '<div class="empty-state"><div class="empty-icon">📋</div><p>まだチェックインがありません</p></div>';
+// ── STATS ──
+function renderStats(){
+  const from=document.getElementById('statsFrom').value.replace(/-/g,'/');
+  const to=document.getElementById('statsTo').value.replace(/-/g,'/');
+  const recs=ATTENDANCE.filter(a=>a.date>=from&&a.date<=to);
+  const el=document.getElementById('statsContent');
+
+  if(!recs.length){
+    el.innerHTML='<div style="text-align:center;padding:32px;color:var(--tx3);">この期間の記録がありません</div>';
     return;
   }
-  list.innerHTML = todayAttendance.map((a, i) => `
-    <div class="attendance-item">
-      <span class="att-time">${a.time}</span>
-      <div class="att-avatar">${a.coach.name[0]}</div>
-      <span class="att-name">${a.coach.name}</span>
-      <span class="att-slot ${a.reward ? 'paid' : 'nopay'}">${a.slotLabel}</span>
-      <button class="att-undo" onclick="undoAttendance(${i})" title="取消">✕</button>
-    </div>`).join('');
+
+  // コーチごとに集計
+  const byCoach={};
+  recs.forEach(a=>{
+    if(!byCoach[a.coachId]) byCoach[a.coachId]={name:a.coachName,recs:[]};
+    byCoach[a.coachId].recs.push(a);
+  });
+
+  const rows=Object.values(byCoach).map(c=>{
+    const n=c.recs.length;
+    const prepCount=c.recs.filter(r=>r.isPrepTime).length;
+    const fullCount=c.recs.filter(r=>r.isFullDay).length;
+    const avgArr=Math.round(c.recs.reduce((s,r)=>s+r.arrival,0)/n);
+    const early=c.recs.filter(r=>r.arrival<=720).length; // 12:00ちょうど
+    const coach=COACHES.find(x=>x.name===c.name);
+    const baseFee=coach?(coach.baseFee||0):0;
+    return {name:c.name,n,prepCount,fullCount,avgArr,early,baseFee,recs:c.recs};
+  }).sort((a,b)=>b.prepCount-a.prepCount||b.n-a.n);
+
+  el.innerHTML=`
+    <div class="stitle">コーチ別集計（${from}〜${to}）</div>
+    ${rows.map(r=>`
+      <div class="card">
+        <div style="display:flex;align-items:center;gap:10px;margin-bottom:12px;">
+          <div class="coach-avtr">${r.name[0]}</div>
+          <div>
+            <div style="font-weight:700;font-size:.95rem;">${r.name}</div>
+            <div style="font-size:.72rem;color:var(--tx2);">${from}〜${to}</div>
+            ${r.baseFee ? `<div style="font-family:'DM Mono',monospace;font-size:.72rem;color:var(--gd);">基本謝礼 ¥${r.baseFee.toLocaleString()}/回</div>` : ''}
+          </div>
+        </div>
+        <div class="stats-grid">
+          <div class="stat-c"><div class="stat-v or">${r.n}</div><div class="stat-l">参加回数</div></div>
+          <div class="stat-c"><div class="stat-v lm">${r.prepCount}</div><div class="stat-l">準備帯参加</div></div>
+          <div class="stat-c"><div class="stat-v tl">${r.fullCount}</div><div class="stat-l">最後まで</div></div>
+          <div class="stat-c"><div class="stat-v cy">${minToStr(r.avgArr)}</div><div class="stat-l">平均到着</div></div>
+          <div class="stat-c"><div class="stat-v gd">${Math.round(r.prepCount/r.n*100)}%</div><div class="stat-l">準備参加率</div></div>
+        </div>
+        <div class="stitle" style="margin-top:4px;">個別記録</div>
+        <div class="htbl-wrap"><table class="htbl">
+          <thead><tr><th>日付</th><th>到着</th><th>退館</th><th>区分</th><th>メモ</th></tr></thead>
+          <tbody>${r.recs.sort((a,b)=>b.date.localeCompare(a.date)).map(a=>`
+            <tr>
+              <td style="font-family:'DM Mono',monospace;font-size:.78rem;">${a.date}</td>
+              <td class="td-time" style="color:var(--or);">${minToStr(a.arrival)}</td>
+              <td class="td-time" style="color:var(--cy);">${a.departure?minToStr(a.departure):'—'}</td>
+              <td>
+                ${a.isPrepTime?'<span class="td-early">準備参加</span>':''}
+                ${a.isFullDay?'<span class="td-full">最後まで</span>':''}
+                ${!a.isPrepTime&&!a.isFullDay?'<span style="color:var(--tx3);font-size:.72rem;">活動帯</span>':''}
+              </td>
+              <td style="font-size:.75rem;color:var(--tx2);">${a.memo||'—'}</td>
+            </tr>`).join('')}
+          </tbody>
+        </table></div>
+      </div>`).join('')}`;
 }
 
-function undoAttendance(i) {
-  todayAttendance.splice(i, 1);
-  renderTodayList();
-  showToast('取消しました');
-}
-
-// ── HISTORY ──
-// デモ用の履歴データ
-let HISTORY = [
-  { date:'2026/03/08', coach: COACHES[0], slot:'full', slotLabel:'全体（最初から）', reward:true },
-  { date:'2026/03/08', coach: COACHES[1], slot:'1/3', slotLabel:'1/3〜', reward:true },
-  { date:'2026/03/01', coach: COACHES[0], slot:'2/3', slotLabel:'2/3〜', reward:false },
-  { date:'2026/02/22', coach: COACHES[2], slot:'full', slotLabel:'全体（最初から）', reward:true },
-  { date:'2026/02/22', coach: COACHES[1], slot:'3/3', slotLabel:'3/3〜', reward:false },
-];
-
-function renderHistory(filter='') {
-  const q = (filter || '').toLowerCase();
-  const data = [...HISTORY, ...todayAttendance.map(a => ({ ...a, coach: a.coach }))];
-  const filtered = q ? data.filter(r =>
-    r.coach.name.includes(q) || r.date.includes(q) || r.slotLabel.includes(q)
-  ) : data;
-
-  const tbody = document.getElementById('historyTbody');
-  tbody.innerHTML = filtered.length ? filtered.map(r => `
-    <tr>
-      <td style="font-family:'DM Mono',monospace;font-size:0.8rem;">${r.date}</td>
-      <td style="font-weight:600;">${r.coach.name}</td>
-      <td class="ht-slot">${r.slotLabel}</td>
-      <td class="${r.reward ? 'ht-paid' : 'ht-nopay'}">${r.reward ? '✓ 対象' : '—'}</td>
-    </tr>`).join('') :
-    '<tr><td colspan="4" style="text-align:center;color:var(--text3);padding:20px;">該当なし</td></tr>';
-
-  document.getElementById('historyCount').textContent = filtered.length + '件';
-  document.getElementById('historyPaidCount').textContent = filtered.filter(r => r.reward).length + '件';
-}
-
-// ── REGISTER ──
-function registerCoach() {
-  const name = document.getElementById('regName').value.trim();
-  const furigana = document.getElementById('regFurigana').value.trim();
-  const nfc = document.getElementById('regNfc').value.trim();
-  const spec = document.getElementById('regSpec').value.trim();
-  const phone = document.getElementById('regPhone').value.trim();
-  if (!name) { showToast('⚠ 氏名を入力してください', true); return; }
-  if (!nfc) { showToast('⚠ NFCカードIDを入力してください', true); return; }
-  if (COACHES.find(c => c.id === nfc)) { showToast('⚠ そのNFCカードIDは既に使用されています', true); return; }
-
-  const newCoach = { id: nfc, name, furigana, specialty: spec, phone };
-  COACHES.push(newCoach);
-  showToast(`✓ ${name} さんをコーチ登録しました`);
-  ['regName','regFurigana','regNfc','regSpec','regPhone'].forEach(id => document.getElementById(id).value = '');
+// ── COACH REGISTER ──
+function addCoach(){
+  const name=document.getElementById('newCoachName').value.trim();
+  const furi=document.getElementById('newCoachFuri').value.trim();
+  if(!name){showT('⚠ 氏名を入力してください',true);return;}
+  if(COACHES.find(c=>c.name===name)){showT('⚠ 同じ名前のコーチが既に登録されています',true);return;}
+  const fee = parseInt(document.getElementById('newCoachFee').value) || 0;
+  COACHES.push({id:'C'+Date.now(),name,furigana:furi,baseFee:fee});
+  saveData();
+  document.getElementById('newCoachName').value='';
+  document.getElementById('newCoachFuri').value='';
+  document.getElementById('newCoachFee').value='';
   renderCoachList();
+  populateCoachSel();
+  showT(`✓ ${name}さんを登録しました`);
 }
 
-function renderCoachList() {
-  const el = document.getElementById('coachListDisplay');
-  el.innerHTML = COACHES.map(c => `
-    <div style="background:var(--surface);border:1px solid var(--border);border-radius:var(--radius-sm);padding:12px 14px;margin-bottom:8px;display:flex;align-items:center;gap:12px;">
-      <div style="width:36px;height:36px;border-radius:50%;background:linear-gradient(135deg,var(--orange),var(--purple));display:flex;align-items:center;justify-content:center;font-weight:700;color:#0a0d1a;font-size:0.9rem;flex-shrink:0;">${c.name[0]}</div>
+function renderCoachList(){
+  const el=document.getElementById('coachList');
+  if(!COACHES.length){
+    el.innerHTML='<div style="text-align:center;padding:24px;color:var(--tx3);">コーチが登録されていません</div>';
+    return;
+  }
+  el.innerHTML=COACHES.map(c=>`
+    <div class="coach-card">
+      <div class="coach-avtr">${c.name[0]}</div>
       <div style="flex:1;">
-        <div style="font-weight:600;font-size:0.9rem;">${c.name}</div>
-        <div style="font-size:0.72rem;color:var(--text2);">${c.furigana} · ${c.specialty||'—'} · <span style="font-family:'DM Mono',monospace;">${c.id}</span></div>
+        <div class="coach-nm">${c.name}</div>
+        <div class="coach-furi">${c.furigana||'—'}</div>
+        ${c.baseFee ? `<div style="font-family:'DM Mono',monospace;font-size:.72rem;color:var(--gd);margin-top:2px;">¥${c.baseFee.toLocaleString()}/回</div>` : '<div style="font-size:.7rem;color:var(--tx3);margin-top:2px;">謝礼未設定</div>'}
       </div>
+      <button class="coach-del" onclick="delCoach('${c.id}')">削除</button>
     </div>`).join('');
+}
+
+function delCoach(id){
+  const c=COACHES.find(x=>x.id===id);
+  if(!confirm(`${c?.name}を削除しますか？`))return;
+  COACHES=COACHES.filter(x=>x.id!==id);
+  saveData();renderCoachList();populateCoachSel();
+  showT('削除しました');
 }
 
 // ── TABS ──
-function switchTab(name, btn) {
-  document.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('active'));
-  document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
-  document.getElementById('tab-' + name).classList.add('active');
-  btn.classList.add('active');
-  if (name === 'today') renderTodayList();
-  if (name === 'history') renderHistory();
-  if (name === 'register') renderCoachList();
+function sw(name,btn){
+  document.querySelectorAll('.pnl').forEach(p=>p.classList.remove('active'));
+  document.querySelectorAll('.tbtn').forEach(b=>b.classList.remove('active'));
+  document.getElementById('pnl-'+name).classList.add('active');
+  if(btn)btn.classList.add('active');
+  if(name==='stats')renderStats();
+  if(name==='coaches')renderCoachList();
 }
 
-// ── TOAST ──
-function showToast(msg, err=false) {
-  const t = document.getElementById('toast');
-  t.textContent = msg;
-  t.style.background = err ? 'var(--warn)' : 'var(--orange)';
-  t.style.color = err ? '#fff' : '#0a0d1a';
+function showT(msg,err=false){
+  const t=document.getElementById('toast');
+  t.textContent=msg;
+  t.style.background=err?'var(--rd)':'var(--or)';
   t.classList.add('show');
-  setTimeout(() => t.classList.remove('show'), 3000);
+  setTimeout(()=>t.classList.remove('show'),3000);
 }
 
-// ── INIT ──
-renderTodayList();
-checkUrlParam();
-
-document.addEventListener('click', e => {
-  if (!e.target.closest('.search-wrap')) {
-    document.getElementById('searchResults').classList.remove('show');
-  }
-});
+init();
 </script>
 </body>
 </html>
