@@ -173,6 +173,11 @@ body::before{content:'';position:fixed;inset:0;pointer-events:none;z-index:0;
   }
   .memo-textarea::placeholder { color: var(--text3, #4a5380); }
 
+
+  .esort-btn{padding:5px 12px;background:var(--sur2);border:1px solid var(--bd2);border-radius:16px;
+    color:var(--tx2);font-family:inherit;font-size:.72rem;font-weight:600;cursor:pointer;transition:all .15s;}
+  .esort-btn.active{background:rgba(0,229,255,.12);border-color:var(--cy);color:var(--cy);}
+  .esort-btn:hover{border-color:var(--cy);color:var(--cy);}
 </style>
 </head>
 <body>
@@ -211,9 +216,17 @@ body::before{content:'';position:fixed;inset:0;pointer-events:none;z-index:0;
     <div class="spill"><div class="spv or" id="lsW">—</div><div class="spl">最遅</div></div>
     <div class="spill"><div class="spv cy" id="lsR">—</div><div class="spl">差</div></div>
   </div>
+  <div style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:8px;align-items:center;">
+    <span style="font-size:.7rem;color:var(--tx3);font-weight:700;letter-spacing:.06em;text-transform:uppercase;">並び替え:</span>
+    <button class="esort-btn active" id="esort-furigana" onclick="setEntrySort('furigana')">よみがな順</button>
+    <button class="esort-btn" id="esort-grade" onclick="setEntrySort('grade')">学年順</button>
+    <button class="esort-btn" id="esort-name" onclick="setEntrySort('name')">氏名順</button>
+    <button class="esort-btn" id="esort-time" onclick="setEntrySort('time')">タイム順</button>
+    <button class="esort-btn" id="esort-rel" onclick="setEntrySort('rel')">相対値順</button>
+  </div>
   <div class="ewrap">
     <table class="etbl">
-      <thead><tr><th>氏名</th><th>学年</th><th>タイム(秒)</th><th style="text-align:center;">相対値</th><th>メモ</th></tr></thead>
+      <thead><tr><th>氏名</th><th>学年</th><th>タイム</th><th style="text-align:center;">相対値</th><th>メモ</th></tr></thead>
       <tbody id="nTbody"></tbody>
     </table>
   </div>
@@ -310,6 +323,7 @@ body::before{content:'';position:fixed;inset:0;pointer-events:none;z-index:0;
 <script>
 const GAS='https://script.google.com/macros/s/AKfycbyVH4yXtC0PsG4gwbWITAnsMFUdwvMSij2hNsZ9z4bfRTRS0RxHzqvZZeaN3AVIEOte/exec';
 let MBR=[],SESS=[],GRPS=[],cpics=[],nt={},nm2={},eGid=null;
+let entrySortKey='furigana',entrySortAsc=true;
 
 async function init(){
   await ldMbr();buildTbl();
@@ -334,19 +348,110 @@ async function ldGrps(){
   try{const r=await fetch(GAS+'?action=getGroups');const d=await r.json();if(d.groups)GRPS=d.groups;}
   catch(e){GRPS=[];}
 }
+function gradeToNum(g) {
+  if (!g) return 99;
+  if (g.includes('中学')) return 20;
+  const n = g.match(/\d+/);
+  return n ? parseInt(n[0]) : 99;
+}
+
+function getSortedMbr() {
+  let list = [...MBR];
+  list.sort((a, b) => {
+    let va, vb;
+    if (entrySortKey === 'furigana') {
+      va = a.furigana || ''; vb = b.furigana || '';
+      return entrySortAsc ? va.localeCompare(vb,'ja') : vb.localeCompare(va,'ja');
+    }
+    if (entrySortKey === 'name') {
+      va = a.name || ''; vb = b.name || '';
+      return entrySortAsc ? va.localeCompare(vb,'ja') : vb.localeCompare(va,'ja');
+    }
+    if (entrySortKey === 'grade') {
+      va = gradeToNum(a.grade); vb = gradeToNum(b.grade);
+      return entrySortAsc ? va - vb : vb - va;
+    }
+    if (entrySortKey === 'time') {
+      va = nt[a.id] || 9999; vb = nt[b.id] || 9999;
+      return entrySortAsc ? va - vb : vb - va;
+    }
+    if (entrySortKey === 'rel') {
+      // 相対値は入力済みのもののみ、未入力は末尾
+      const ra = nt[a.id] ? (parseFloat(document.getElementById('r_'+a.id)?.textContent) || 999) : 999;
+      const rb = nt[b.id] ? (parseFloat(document.getElementById('r_'+b.id)?.textContent) || 999) : 999;
+      return entrySortAsc ? ra - rb : rb - ra;
+    }
+    return 0;
+  });
+  return list;
+}
+
+function setEntrySort(key) {
+  if (entrySortKey === key) {
+    entrySortAsc = !entrySortAsc; // 同じキーなら昇降順切替
+  } else {
+    entrySortKey = key;
+    entrySortAsc = true;
+  }
+  document.querySelectorAll('.esort-btn').forEach(b => b.classList.remove('active'));
+  const btn = document.getElementById('esort-' + key);
+  if (btn) {
+    btn.classList.add('active');
+    btn.textContent = btn.textContent.replace(' ↑','').replace(' ↓','') + (entrySortAsc ? ' ↑' : ' ↓');
+  }
+  buildTbl();
+}
+
 function buildTbl(){
-  document.getElementById('nTbody').innerHTML=MBR.map(m=>`
+  const sorted = getSortedMbr();
+  // 既存の入力値・メモを保持
+  document.getElementById('nTbody').innerHTML=sorted.map(m=>`
     <tr>
       <td style="font-weight:600;font-size:.85rem;">${m.name}</td>
       <td style="font-size:.72rem;color:var(--tx2);">${m.grade||'—'}</td>
-      <td><input class="tdinp" type="number" step="0.01" min="0" placeholder="—"
-        id="t_${m.id}" oninput="onTC('${m.id}',this.value)" inputmode="decimal"></td>
+      <td><input class="tdinp" type="text" placeholder="例:8.45 / 1:23.4"
+        id="t_${m.id}" oninput="onTC('${m.id}',this.value)"
+        inputmode="decimal" autocomplete="off" style="width:90px;"></td>
       <td class="rcell" id="r_${m.id}">—</td>
       <td><input class="meminp" type="text" id="m_${m.id}" placeholder="メモ..."
         oninput="nm2['${m.id}']=this.value"></td>
     </tr>`).join('');
 }
-function onTC(id,v){const t=parseFloat(v);nt[id]=(!isNaN(t)&&t>0)?t:null;liveSt();}
+function parseTime(v) {
+  if (!v || !v.trim()) return null;
+  v = v.trim();
+  // 分:秒 形式 (例: 1:23.45)
+  if (v.includes(':')) {
+    const parts = v.split(':');
+    const mins = parseFloat(parts[0]);
+    const secs = parseFloat(parts[1]);
+    if (!isNaN(mins) && !isNaN(secs)) {
+      const total = mins * 60 + secs;
+      return total > 0 ? total : null;
+    }
+    return null;
+  }
+  // 秒のみ (例: 8.45)
+  const t = parseFloat(v);
+  return (!isNaN(t) && t > 0) ? t : null;
+}
+
+function formatTime(sec) {
+  if (!sec) return '—';
+  if (sec >= 60) {
+    const m = Math.floor(sec / 60);
+    const s = (sec - m * 60).toFixed(2);
+    return `${m}:${s.padStart(5,'0')}`;
+  }
+  return sec.toFixed(2) + 's';
+}
+
+function onTC(id,v){
+  nt[id]=parseTime(v);
+  liveSt();
+  // タイム順・相対値順でソート中は再描画
+  if(entrySortKey==='time'||entrySortKey==='rel') buildTbl();
+}
 function liveSt(){
   const vs=Object.values(nt).filter(v=>v);
   if(!vs.length){document.getElementById('lsN').textContent='0';
@@ -354,10 +459,10 @@ function liveSt(){
     MBR.forEach(m=>{const e=document.getElementById('r_'+m.id);if(e){e.textContent='—';e.className='rcell';}});return;}
   const b=Math.min(...vs),w=Math.max(...vs),rng=w-b,avg=vs.reduce((a,c)=>a+c,0)/vs.length;
   document.getElementById('lsN').textContent=vs.length;
-  document.getElementById('lsA').textContent=avg.toFixed(2)+'s';
-  document.getElementById('lsB').textContent=b.toFixed(2)+'s';
-  document.getElementById('lsW').textContent=w.toFixed(2)+'s';
-  document.getElementById('lsR').textContent=rng.toFixed(2)+'s';
+  document.getElementById('lsA').textContent=formatTime(avg);
+  document.getElementById('lsB').textContent=formatTime(b);
+  document.getElementById('lsW').textContent=formatTime(w);
+  document.getElementById('lsR').textContent=formatTime(rng);
   MBR.forEach(m=>{
     const t=nt[m.id],el=document.getElementById('r_'+m.id);if(!el)return;
     if(!t){el.textContent='—';el.className='rcell';return;}
@@ -430,8 +535,8 @@ function renderSess(){
   const q=(document.getElementById('ssrch').value||'').toLowerCase();
   let list=SESS;if(q)list=list.filter(s=>(s.eventName||'').toLowerCase().includes(q)||(s.date||'').includes(q));
   document.getElementById('sesslist').innerHTML=list.length?list.map(s=>{
-    const pc=(s.participantCount||0)+'名',bt=s.bestTime?parseFloat(s.bestTime).toFixed(2)+'s':'—';
-    const av=s.avgTime?parseFloat(s.avgTime).toFixed(2)+'s':'—';
+    const pc=(s.participantCount||0)+'名',bt=s.bestTime?formatTime(parseFloat(s.bestTime)):'—';
+    const av=s.avgTime?formatTime(parseFloat(s.avgTime)):'—';
     const ph=s.photoUrls?s.photoUrls.split(',').filter(Boolean):[];
     return `<div class="sitm">
       <div onclick="showSess('${s.id}')" style="cursor:pointer;">
@@ -481,7 +586,7 @@ function showSess(id){
             const rcls=rel<=25?'rf':rel>=75?'rs':'ra';
             return `<tr><td class="rnum ${rc}">${i+1}</td><td style="font-weight:600;">${e.memberName||'—'}</td>
               <td style="font-size:.72rem;color:var(--tx2);">${e.grade||'—'}</td>
-              <td class="rtm">${parseFloat(e.time||0).toFixed(2)}s</td>
+              <td class="rtm">${formatTime(parseFloat(e.time||0))}</td>
               <td class="rrl ${rcls}">${rel} (${rta>=0?'+':''}${rta.toFixed(2)}s)</td>
               <td class="rrl ${grel<=25?'rf':grel>=75?'rs':'ra'}">${grel}</td>
               <td style="font-size:.72rem;color:var(--tx2);">${e.memo||'—'}</td></tr>`;
@@ -593,7 +698,7 @@ async function selP(id){
       padding:9px 0;border-bottom:1px solid var(--bd);font-size:.8rem;">
       <span style="font-family:'DM Mono',monospace;font-size:.7rem;color:var(--tx3);">${e.date}</span>
       <span style="color:var(--tx2);font-size:.75rem;">${e.eventName}</span>
-      <span style="font-family:'DM Mono',monospace;color:var(--cy);font-weight:600;">${t.toFixed(2)}s</span>
+      <span style="font-family:'DM Mono',monospace;color:var(--cy);font-weight:600;">${formatTime(t)}</span>
       <span class="rcell ${rc}" style="font-size:.72rem;">${rel}</span>
       ${e.memo?`<span style="font-size:.7rem;color:var(--pu);">💬${e.memo}</span>`:'<span></span>'}
     </div>`;
