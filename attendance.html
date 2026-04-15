@@ -1182,6 +1182,11 @@
         </div>
       </div>
       <div style="margin-bottom:12px;">
+        <label style="font-size:0.7rem;font-weight:700;letter-spacing:0.08em;text-transform:uppercase;color:#4a5380;display:block;margin-bottom:5px;">LINE ID</label>
+        <input id="editLineId" type="text" placeholder="例: @xxxxx"
+          style="width:100%;padding:10px 12px;background:#1e2235;border:1px solid #2a2f45;border-radius:10px;color:#06c755;font-family:'DM Mono',monospace;font-size:0.9rem;outline:none;">
+      </div>
+      <div style="margin-bottom:12px;">
         <label style="font-size:0.7rem;font-weight:700;letter-spacing:0.08em;text-transform:uppercase;color:#4a5380;display:block;margin-bottom:5px;">NFCカードID</label>
         <input id="editNfcId" type="text" placeholder="例: NFC001"
           style="width:100%;padding:10px 12px;background:#1e2235;border:1px solid #2a2f45;border-radius:10px;color:#4fffb0;font-family:'DM Mono',monospace;font-size:0.9rem;outline:none;">
@@ -1825,7 +1830,11 @@ function renderMlTab() {
             : `<span class="ml-badge ml-badge-nonfc">NFC未登録</span>`}
           ${isDuplicate ? `<span class="ml-badge" style="background:rgba(255,107,107,0.2);color:var(--warn);border:1px solid rgba(255,107,107,0.4);">⚠ 重複</span>` : ''}
         </div>
-        ${m.parent ? `<div style="font-size:0.7rem;color:var(--text3);margin-top:3px;">👤 ${m.parent}${m.phone?' · '+m.phone:''}</div>` : ''}
+        <div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:4px;">
+          ${m.phone ? `<a href="tel:${m.phone}" onclick="event.stopPropagation()" style="font-size:0.7rem;color:var(--accent);text-decoration:none;background:rgba(79,255,176,0.1);padding:2px 8px;border-radius:8px;border:1px solid rgba(79,255,176,0.2);">📞 ${m.phone}</a>` : ''}
+          ${m.email ? `<a href="mailto:${m.email}" onclick="event.stopPropagation()" style="font-size:0.7rem;color:var(--accent2);text-decoration:none;background:rgba(123,111,255,0.1);padding:2px 8px;border-radius:8px;border:1px solid rgba(123,111,255,0.2);">✉ メール</a>` : ''}
+        </div>
+        ${m.parent ? `<div style="font-size:0.7rem;color:var(--text3);margin-top:3px;">👤 ${m.parent}</div>` : ''}
       </div>
       <div style="color:var(--text3);font-size:1rem;padding-left:8px;">›</div>
     </div>`;
@@ -1873,6 +1882,7 @@ function openEditModal(m) {
   document.getElementById('editParent').value = m.parent || '';
   document.getElementById('editEmail').value  = m.email || '';
   document.getElementById('editPhone').value  = m.phone || '';
+  document.getElementById('editLineId').value = m.lineId || '';
   const hideBtn = document.getElementById('hideToggleBtn');
   hideBtn.textContent = '🚫 非表示にする';
   hideBtn.style.background = 'rgba(255,107,107,0.12)';
@@ -1884,7 +1894,7 @@ function openEditModal(m) {
 function openAddModal() {
   editingMember = null;
   document.getElementById('editModalTitle').textContent = '新規メンバー追加';
-  ['editRowIndex','editMemberId','editName','editFurigana','editGrade','editAge','editSchool','editNfcId','editParent','editEmail','editPhone'].forEach(id => {
+  ['editRowIndex','editMemberId','editName','editFurigana','editGrade','editAge','editSchool','editNfcId','editParent','editEmail','editPhone','editLineId'].forEach(id => {
     document.getElementById(id).value = '';
   });
   document.getElementById('editGender').value = '';
@@ -1924,6 +1934,7 @@ async function saveMember() {
       parent:  document.getElementById('editParent').value.trim(),
       email:   document.getElementById('editEmail').value.trim(),
       phone:   document.getElementById('editPhone').value.trim(),
+      lineId:  document.getElementById('editLineId').value.trim(),
     })});
     const d = await res.json();
     if (d.status === 'ok') {
@@ -1958,6 +1969,7 @@ async function addMemberSubmit() {
       parent:  document.getElementById('editParent').value.trim(),
       email:   document.getElementById('editEmail').value.trim(),
       phone:   document.getElementById('editPhone').value.trim(),
+      lineId:  document.getElementById('editLineId').value.trim(),
     })});
     const d = await res.json();
     if (d.status === 'ok') {
