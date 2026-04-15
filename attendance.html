@@ -1249,7 +1249,6 @@ async function loadMembersFromGAS() {
     if (data && data.members && data.members.length > 0) {
       MEMBERS = data.members;
       // 読み込み完了後にUIを更新
-      buildTable(); // 出席登録の入力テーブルを再構築
       buildAiueoGrid(); // 五十音グリッドを再構築
       showToast(`✓ 生徒リスト ${MEMBERS.length}名 を読み込みました`);
     }
