@@ -284,6 +284,30 @@ body::before{content:'';position:fixed;inset:0;pointer-events:none;
 </div>
 
 </div>
+
+<!-- EDIT MODAL -->
+<div id="editModal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.88);z-index:200;align-items:center;justify-content:center;padding:20px;">
+  <div style="background:var(--sur);border:1px solid var(--bd2);border-radius:var(--r);padding:20px;width:100%;max-width:460px;">
+    <div style="font-weight:700;font-size:1rem;color:var(--or);margin-bottom:14px;">コーチ情報を編集</div>
+    <input type="hidden" id="editCoachId">
+    <div class="fsec">
+      <label class="lbl">氏名 *</label>
+      <input class="inp" type="text" id="editCoachName">
+    </div>
+    <div class="fsec">
+      <label class="lbl">よみがな</label>
+      <input class="inp" type="text" id="editCoachFuri">
+    </div>
+    <div class="fsec">
+      <label class="lbl">基本謝礼額（¥/回）</label>
+      <input class="inp" type="number" id="editCoachFee" min="0" step="500">
+    </div>
+    <div style="display:flex;gap:8px;margin-top:14px;">
+      <button class="btn bgh bfl" onclick="closeEditModal()">キャンセル</button>
+      <button class="btn bpr bfl" onclick="saveEditCoach()">💾 保存</button>
+    </div>
+  </div>
+</div>
 <div class="toast" id="toast"></div>
 
 <script>
@@ -599,7 +623,10 @@ function renderCoachList(){
         <div class="coach-furi">${c.furigana||'—'}</div>
         ${c.baseFee ? `<div style="font-family:'DM Mono',monospace;font-size:.72rem;color:var(--gd);margin-top:2px;">¥${c.baseFee.toLocaleString()}/回</div>` : '<div style="font-size:.7rem;color:var(--tx3);margin-top:2px;">謝礼未設定</div>'}
       </div>
-      <button class="coach-del" onclick="delCoach('${c.id}')">削除</button>
+      <div style="display:flex;flex-direction:column;gap:6px;">
+        <button class="bsm btn bgh" onclick="openEditModal('${c.id}')">編集</button>
+        <button class="coach-del" onclick="delCoach('${c.id}')">削除</button>
+      </div>
     </div>`).join('');
 }
 
@@ -630,6 +657,37 @@ function showT(msg,err=false){
 }
 
 init();
+
+function openEditModal(id) {
+  const c = COACHES.find(x => x.id === id);
+  if (!c) return;
+  document.getElementById('editCoachId').value = c.id;
+  document.getElementById('editCoachName').value = c.name;
+  document.getElementById('editCoachFuri').value = c.furigana || '';
+  document.getElementById('editCoachFee').value = c.baseFee || '';
+  document.getElementById('editModal').style.display = 'flex';
+}
+
+function closeEditModal() {
+  document.getElementById('editModal').style.display = 'none';
+}
+
+function saveEditCoach() {
+  const id = document.getElementById('editCoachId').value;
+  const name = document.getElementById('editCoachName').value.trim();
+  if (!name) { showT('⚠ 氏名を入力してください', true); return; }
+  const idx = COACHES.findIndex(c => c.id === id);
+  if (idx === -1) return;
+  COACHES[idx].name = name;
+  COACHES[idx].furigana = document.getElementById('editCoachFuri').value.trim();
+  COACHES[idx].baseFee = parseInt(document.getElementById('editCoachFee').value) || 0;
+  saveData();
+  renderCoachList();
+  populateCoachSel();
+  closeEditModal();
+  showT('✓ 更新しました');
+}
+
 </script>
 </body>
 </html>
