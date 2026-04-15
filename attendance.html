@@ -1239,14 +1239,7 @@ const GAS_URL = 'https://script.google.com/macros/s/AKfycbyVH4yXtC0PsG4gwbWITAns
 // スプレッドシートのID設定はCode.gsのSS_IDで行う
 
 // ── 生徒データ（GASから取得、未接続時はデモデータ）──
-let MEMBERS = [
-  { id:'NFC001', name:'田中 太郎', furigana:'たなか たろう', course:'月2回コース', fee:2400, paidMonths:['2026/01','2026/02','2025/11','2025/12'], assocFee:true, insurance:true },
-  { id:'NFC002', name:'鈴木 花子', furigana:'すずき はなこ', course:'月1回コース', fee:1500, paidMonths:['2026/01','2026/02','2026/03','2025/10','2025/11','2025/12'], assocFee:true, insurance:true },
-  { id:'NFC003', name:'山田 健太', furigana:'やまだ けんた', course:'月2回コース', fee:2400, paidMonths:['2025/12','2026/01'], assocFee:false, insurance:true },
-  { id:'NFC004', name:'佐藤 めぐみ', furigana:'さとう めぐみ', course:'月1回コース', fee:1500, paidMonths:['2026/01','2026/02'], assocFee:true, insurance:true },
-  { id:'NFC005', name:'伊藤 はるか', furigana:'いとう はるか', course:'月2回コース', fee:2400, paidMonths:['2026/02','2026/03'], assocFee:true, insurance:true },
-  { id:'NFC006', name:'渡辺 こうた', furigana:'わたなべ こうた', course:'月2回コース', fee:2400, paidMonths:[], assocFee:false, insurance:false },
-];
+let MEMBERS = []; // GASから読み込む
 
 // GASから生徒リストを取得（起動時）
 async function loadMembersFromGAS() {
@@ -1255,9 +1248,14 @@ async function loadMembersFromGAS() {
     const data = await res.json();
     if (data && data.members && data.members.length > 0) {
       MEMBERS = data.members;
+      // 読み込み完了後にUIを更新
+      buildTable(); // 出席登録の入力テーブルを再構築
+      buildAiueoGrid(); // 五十音グリッドを再構築
       showToast(`✓ 生徒リスト ${MEMBERS.length}名 を読み込みました`);
     }
-  } catch(e) { /* デモデータで動作 */ }
+  } catch(e) {
+    showToast('⚠ 生徒リストの読み込みに失敗しました', true);
+  }
 }
 
 let todayAttendance = [];
