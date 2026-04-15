@@ -758,6 +758,30 @@
   .ml-badge-nonfc { background: rgba(255,107,107,0.12); color: var(--warn); border: 1px solid rgba(255,107,107,0.25); }
   .ml-nfc-id { font-family: 'DM Mono', monospace; font-size: 0.72rem; color: var(--text3); margin-top: 3px; }
 
+
+  .memo-textarea {
+    width: 100%;
+    min-height: 80px;
+    padding: 10px 12px;
+    background: var(--surface2, #1e2235);
+    border: 1px solid var(--border2, #2a2f45);
+    border-radius: 10px;
+    color: var(--text, #e8eaf6);
+    font-family: inherit;
+    font-size: 0.88rem;
+    line-height: 1.6;
+    outline: none;
+    resize: none;
+    overflow: hidden;
+    transition: border-color 0.2s;
+    white-space: pre-wrap;
+  }
+  .memo-textarea:focus {
+    border-color: var(--accent, #00e5ff);
+    box-shadow: 0 0 0 2px rgba(0,229,255,0.1);
+  }
+  .memo-textarea::placeholder { color: var(--text3, #4a5380); }
+
 </style>
 </head>
 <body>
@@ -1137,6 +1161,23 @@
         <div>
           <label style="font-size:0.7rem;font-weight:700;letter-spacing:0.08em;text-transform:uppercase;color:#4a5380;display:block;margin-bottom:5px;">小学校名</label>
           <input id="editSchool" type="text" placeholder="例: ○○小学校"
+            style="width:100%;padding:10px 12px;background:#1e2235;border:1px solid #2a2f45;border-radius:10px;color:#e8eaf6;font-family:inherit;font-size:0.9rem;outline:none;">
+        </div>
+      </div>
+      <div style="margin-bottom:12px;">
+        <label style="font-size:0.7rem;font-weight:700;letter-spacing:0.08em;text-transform:uppercase;color:#4a5380;display:block;margin-bottom:5px;">保護者名</label>
+        <input id="editParent" type="text" placeholder="例: 田中 一郎"
+          style="width:100%;padding:10px 12px;background:#1e2235;border:1px solid #2a2f45;border-radius:10px;color:#e8eaf6;font-family:inherit;font-size:0.9rem;outline:none;">
+      </div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:12px;">
+        <div>
+          <label style="font-size:0.7rem;font-weight:700;letter-spacing:0.08em;text-transform:uppercase;color:#4a5380;display:block;margin-bottom:5px;">メールアドレス</label>
+          <input id="editEmail" type="email" placeholder="例: xxx@gmail.com"
+            style="width:100%;padding:10px 12px;background:#1e2235;border:1px solid #2a2f45;border-radius:10px;color:#e8eaf6;font-family:inherit;font-size:0.9rem;outline:none;">
+        </div>
+        <div>
+          <label style="font-size:0.7rem;font-weight:700;letter-spacing:0.08em;text-transform:uppercase;color:#4a5380;display:block;margin-bottom:5px;">緊急連絡先</label>
+          <input id="editPhone" type="tel" placeholder="例: 090-0000-0000"
             style="width:100%;padding:10px 12px;background:#1e2235;border:1px solid #2a2f45;border-radius:10px;color:#e8eaf6;font-family:inherit;font-size:0.9rem;outline:none;">
         </div>
       </div>
@@ -1784,6 +1825,7 @@ function renderMlTab() {
             : `<span class="ml-badge ml-badge-nonfc">NFC未登録</span>`}
           ${isDuplicate ? `<span class="ml-badge" style="background:rgba(255,107,107,0.2);color:var(--warn);border:1px solid rgba(255,107,107,0.4);">⚠ 重複</span>` : ''}
         </div>
+        ${m.parent ? `<div style="font-size:0.7rem;color:var(--text3);margin-top:3px;">👤 ${m.parent}${m.phone?' · '+m.phone:''}</div>` : ''}
       </div>
       <div style="color:var(--text3);font-size:1rem;padding-left:8px;">›</div>
     </div>`;
@@ -1828,6 +1870,9 @@ function openEditModal(m) {
   document.getElementById('editSchool').value = m.school || '';
   document.getElementById('editNfcId').value = m.nfcId || '';
   document.getElementById('editCourse').value = m.course || '';
+  document.getElementById('editParent').value = m.parent || '';
+  document.getElementById('editEmail').value  = m.email || '';
+  document.getElementById('editPhone').value  = m.phone || '';
   const hideBtn = document.getElementById('hideToggleBtn');
   hideBtn.textContent = '🚫 非表示にする';
   hideBtn.style.background = 'rgba(255,107,107,0.12)';
@@ -1839,7 +1884,7 @@ function openEditModal(m) {
 function openAddModal() {
   editingMember = null;
   document.getElementById('editModalTitle').textContent = '新規メンバー追加';
-  ['editRowIndex','editMemberId','editName','editFurigana','editGrade','editAge','editSchool','editNfcId'].forEach(id => {
+  ['editRowIndex','editMemberId','editName','editFurigana','editGrade','editAge','editSchool','editNfcId','editParent','editEmail','editPhone'].forEach(id => {
     document.getElementById(id).value = '';
   });
   document.getElementById('editGender').value = '';
@@ -1876,6 +1921,9 @@ async function saveMember() {
       school:  document.getElementById('editSchool').value.trim(),
       nfcId:   document.getElementById('editNfcId').value.trim(),
       course:  document.getElementById('editCourse').value,
+      parent:  document.getElementById('editParent').value.trim(),
+      email:   document.getElementById('editEmail').value.trim(),
+      phone:   document.getElementById('editPhone').value.trim(),
     })});
     const d = await res.json();
     if (d.status === 'ok') {
@@ -1907,6 +1955,9 @@ async function addMemberSubmit() {
       school:  document.getElementById('editSchool').value.trim(),
       nfcId:   document.getElementById('editNfcId').value.trim(),
       course:  document.getElementById('editCourse').value,
+      parent:  document.getElementById('editParent').value.trim(),
+      email:   document.getElementById('editEmail').value.trim(),
+      phone:   document.getElementById('editPhone').value.trim(),
     })});
     const d = await res.json();
     if (d.status === 'ok') {
@@ -1937,6 +1988,12 @@ async function toggleHiddenMember() {
       renderMlTab();
     } else throw new Error(d.message);
   } catch(e) { showToast('⚠ 失敗: ' + e.message, true); }
+}
+
+
+function autoResizeTextarea(el) {
+  el.style.height = 'auto';
+  el.style.height = (el.scrollHeight) + 'px';
 }
 
 </script>
