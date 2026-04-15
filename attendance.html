@@ -1104,6 +1104,7 @@
       <button id="sort-age" class="ml-sort-btn" onclick="setMlSort('age')">年齢順</button>
       <button id="sort-gender" class="ml-sort-btn" onclick="setMlSort('gender')">性別順</button>
       <button id="sort-name" class="ml-sort-btn" onclick="setMlSort('name')">氏名順</button>
+      <button id="sort-id" class="ml-sort-btn" onclick="setMlSort('id')">登録順</button>
     </div>
 
     <!-- Count -->
@@ -1789,6 +1790,7 @@ function renderMlTab() {
       return aa !== ab ? aa - ab : (a.furigana || '').localeCompare(b.furigana || '', 'ja');
     }
     if (mlSortKey === 'name') return (a.name || '').localeCompare(b.name || '', 'ja');
+    if (mlSortKey === 'id') return (a.nfcId || '').localeCompare(b.nfcId || '');
     return 0;
   });
 
