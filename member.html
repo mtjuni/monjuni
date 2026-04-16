@@ -233,7 +233,10 @@ body{font-family:'Noto Sans JP',sans-serif;background:var(--bg);color:var(--tx);
 
 <!-- HERO -->
 <div class="hero">
-  <a href="attendance.html" class="hero-back">← 一覧へ</a>
+  <div style="position:absolute;top:calc(var(--st)+14px);left:16px;display:flex;gap:8px;z-index:10;">
+  <a href="index.html" style="background:rgba(255,255,255,0.06);border:1px solid var(--bd2);border-radius:20px;padding:6px 12px;color:var(--tx2);font-size:.75rem;backdrop-filter:blur(10px);text-decoration:none;">🏠 HOME</a>
+  <a href="attendance.html" style="background:rgba(255,255,255,0.06);border:1px solid var(--bd2);border-radius:20px;padding:6px 12px;color:var(--tx2);font-size:.75rem;backdrop-filter:blur(10px);text-decoration:none;">← 一覧へ</a>
+</div>
   <div class="avatar-wrap">
     <div class="avatar" id="hAvatar">?</div>
     <div class="hero-info">

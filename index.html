@@ -1,0 +1,133 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<title>Athletic Club Manager</title>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@300;400;500;700;900&family=Oswald:wght@400;600;700&display=swap" rel="stylesheet">
+<style>
+:root{--bg:#070810;--sur:#0d0f1c;--sur2:#141728;--bd:#1e2235;--bd2:#252b42;
+--cy:#00e5ff;--or:#ff6b35;--pu:#9b59ff;--gd:#ffd93d;--tl:#1dd1a1;
+--tx:#e8eaf6;--tx2:#7b85a8;--tx3:#3a4060;
+--st:env(safe-area-inset-top,0px);--sb:env(safe-area-inset-bottom,0px);}
+*{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent;}
+body{font-family:'Noto Sans JP',sans-serif;background:var(--bg);color:var(--tx);
+  min-height:100dvh;display:flex;flex-direction:column;align-items:center;justify-content:center;
+  padding:calc(var(--st)+20px) 20px calc(var(--sb)+20px);}
+body::before{content:'';position:fixed;inset:0;pointer-events:none;
+  background:radial-gradient(ellipse 70% 50% at 50% 0%,rgba(0,229,255,.08),transparent 60%);}
+.logo{font-family:'Oswald',sans-serif;font-size:1.8rem;font-weight:700;
+  letter-spacing:.15em;color:var(--cy);text-transform:uppercase;text-align:center;margin-bottom:6px;}
+.sub{font-size:.8rem;color:var(--tx3);text-align:center;margin-bottom:40px;letter-spacing:.08em;}
+.menu{display:grid;grid-template-columns:1fr 1fr;gap:12px;width:100%;max-width:400px;}
+.menu-btn{display:flex;flex-direction:column;align-items:center;justify-content:center;
+  gap:8px;padding:24px 16px;background:var(--sur);border:1px solid var(--bd2);
+  border-radius:16px;text-decoration:none;color:var(--tx);transition:all .2s;}
+.menu-btn:hover{transform:translateY(-2px);}
+.menu-btn.cy{border-color:rgba(0,229,255,.3);}
+.menu-btn.or{border-color:rgba(255,107,53,.3);}
+.menu-btn.pu{border-color:rgba(155,89,255,.3);}
+.menu-btn.tl{border-color:rgba(29,209,161,.3);}
+.menu-icon{font-size:2rem;}
+.menu-label{font-weight:700;font-size:.9rem;}
+.menu-desc{font-size:.68rem;color:var(--tx3);}
+.pub-section{margin-top:24px;width:100%;max-width:400px;}
+.pub-label{font-size:.68rem;color:var(--tx3);text-align:center;margin-bottom:8px;
+  letter-spacing:.06em;text-transform:uppercase;}
+.pub-btn{display:flex;align-items:center;justify-content:center;gap:8px;padding:14px;
+  background:var(--sur);border:1px solid rgba(0,229,255,.25);border-radius:12px;
+  text-decoration:none;color:var(--cy);font-weight:700;font-size:.9rem;}
+
+/* AUTH */
+#authOverlay{position:fixed;inset:0;background:#070810;z-index:9999;
+  display:flex;align-items:center;justify-content:center;padding:20px;}
+.auth-box{background:#0d0f1c;border:1px solid #252b42;border-radius:16px;
+  padding:32px 24px;width:100%;max-width:360px;text-align:center;}
+.auth-logo{font-size:2rem;margin-bottom:8px;}
+.auth-title{font-size:1.1rem;font-weight:700;color:#e8eaf6;margin-bottom:4px;}
+.auth-sub{font-size:.78rem;color:#7b85a8;margin-bottom:24px;}
+.auth-input{width:100%;padding:12px;background:#141728;border:1px solid #252b42;
+  border-radius:10px;color:#e8eaf6;font-family:inherit;font-size:1.1rem;
+  text-align:center;letter-spacing:.2em;outline:none;margin-bottom:12px;transition:border-color .2s;}
+.auth-input:focus{border-color:#00e5ff;}
+.auth-btn{width:100%;padding:12px;background:#00e5ff;color:#070810;border:none;
+  border-radius:10px;font-family:inherit;font-size:.95rem;font-weight:700;cursor:pointer;}
+.auth-btn:hover{background:#33eeff;}
+.auth-err{color:#ff4757;font-size:.8rem;margin-top:8px;display:none;}
+</style>
+</head>
+<body>
+
+<!-- AUTH OVERLAY -->
+<div id="authOverlay">
+  <div class="auth-box">
+    <div class="auth-logo">🔐</div>
+    <div class="auth-title">Athletic Club</div>
+    <div class="auth-sub">管理者パスワードを入力してください</div>
+    <input class="auth-input" type="password" id="authInput"
+      placeholder="••••" maxlength="20"
+      onkeydown="if(event.key==='Enter')checkAuth()">
+    <button class="auth-btn" onclick="checkAuth()">ログイン</button>
+    <div class="auth-err" id="authErr">パスワードが違います</div>
+  </div>
+</div>
+
+<div id="mainContent" style="display:none;width:100%;display:none;flex-direction:column;align-items:center;">
+  <div class="logo">⚡ Athletic Club</div>
+  <div class="sub">MONJUNI 管理システム</div>
+  <div class="menu">
+    <a href="attendance.html" class="menu-btn cy">
+      <div class="menu-icon">⚡</div>
+      <div class="menu-label">出席管理</div>
+      <div class="menu-desc">NFC・名前検索</div>
+    </a>
+    <a href="accounting.html" class="menu-btn or">
+      <div class="menu-icon">💴</div>
+      <div class="menu-label">会計管理</div>
+      <div class="menu-desc">月謝・支払い</div>
+    </a>
+    <a href="coach.html" class="menu-btn pu">
+      <div class="menu-icon">🏃</div>
+      <div class="menu-label">コーチ管理</div>
+      <div class="menu-desc">出退・統計</div>
+    </a>
+    <a href="performance.html" target="_blank" class="menu-btn tl">
+      <div class="menu-icon">📊</div>
+      <div class="menu-label">計測管理</div>
+      <div class="menu-desc">管理者用</div>
+    </a>
+  </div>
+  <div class="pub-section">
+    <div class="pub-label">公開ページ（パスワード不要）</div>
+    <a href="performance_public.html" target="_blank" class="pub-btn">⚡ 計測結果を見る・記録する</a>
+  </div>
+</div>
+
+<script>
+const AUTH_KEY = 'ac_auth';
+const AUTH_PASS = '1223';
+
+function checkAuth() {
+  const v = document.getElementById('authInput').value;
+  if (v === AUTH_PASS) {
+    sessionStorage.setItem(AUTH_KEY, '1');
+    document.getElementById('authOverlay').style.display = 'none';
+    document.getElementById('mainContent').style.display = 'flex';
+  } else {
+    document.getElementById('authErr').style.display = 'block';
+    document.getElementById('authInput').value = '';
+    document.getElementById('authInput').focus();
+  }
+}
+
+if (sessionStorage.getItem(AUTH_KEY)) {
+  document.getElementById('authOverlay').style.display = 'none';
+  document.getElementById('mainContent').style.display = 'flex';
+} else {
+  setTimeout(() => document.getElementById('authInput').focus(), 100);
+}
+</script>
+</body>
+</html>
