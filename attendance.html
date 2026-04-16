@@ -782,9 +782,52 @@
   }
   .memo-textarea::placeholder { color: var(--text3, #4a5380); }
 
+
+/* ── AUTH OVERLAY ── */
+#authOverlay{
+  position:fixed;inset:0;background:#070810;z-index:9999;
+  display:flex;align-items:center;justify-content:center;padding:20px;
+}
+.auth-box{
+  background:#0d0f1c;border:1px solid #252b42;border-radius:16px;
+  padding:32px 24px;width:100%;max-width:360px;text-align:center;
+}
+.auth-logo{font-size:2rem;margin-bottom:8px;}
+.auth-title{font-size:1.1rem;font-weight:700;color:#e8eaf6;margin-bottom:4px;}
+.auth-sub{font-size:.78rem;color:#7b85a8;margin-bottom:24px;}
+.auth-input{
+  width:100%;padding:12px;background:#141728;border:1px solid #252b42;
+  border-radius:10px;color:#e8eaf6;font-family:inherit;font-size:1.1rem;
+  text-align:center;letter-spacing:.2em;outline:none;margin-bottom:12px;
+  transition:border-color .2s;
+}
+.auth-input:focus{border-color:#00e5ff;}
+.auth-btn{
+  width:100%;padding:12px;background:#00e5ff;color:#070810;border:none;
+  border-radius:10px;font-family:inherit;font-size:.95rem;font-weight:700;
+  cursor:pointer;transition:all .2s;
+}
+.auth-btn:hover{background:#33eeff;}
+.auth-err{color:#ff4757;font-size:.8rem;margin-top:8px;display:none;}
+
 </style>
 </head>
 <body>
+
+<!-- AUTH OVERLAY -->
+<div id="authOverlay">
+  <div class="auth-box">
+    <div class="auth-logo">🔐</div>
+    <div class="auth-title">Athletic Club</div>
+    <div class="auth-sub">管理者パスワードを入力してください</div>
+    <input class="auth-input" type="password" id="authInput" 
+      placeholder="••••" maxlength="20"
+      onkeydown="if(event.key==='Enter')checkAuth()">
+    <button class="auth-btn" onclick="checkAuth()">ログイン</button>
+    <div class="auth-err" id="authErr">パスワードが違います</div>
+  </div>
+</div>
+
 
 <header class="app-header">
   <div class="app-title">⚡ 出席管理 <span>Athletic Club</span></div>
@@ -2087,6 +2130,32 @@ function updateNavButtons() {
   if (counter && _mlCurrentList.length > 0) {
     counter.textContent = `${_mlCurrentIndex + 1} / ${_mlCurrentList.length}`;
   }
+}
+
+
+
+// ── AUTH ──
+const AUTH_KEY = 'ac_auth';
+const AUTH_PASS = '1223';
+
+function checkAuth() {
+  const v = document.getElementById('authInput').value;
+  if (v === AUTH_PASS) {
+    sessionStorage.setItem(AUTH_KEY, '1');
+    document.getElementById('authOverlay').style.display = 'none';
+  } else {
+    document.getElementById('authErr').style.display = 'block';
+    document.getElementById('authInput').value = '';
+    document.getElementById('authInput').focus();
+  }
+}
+
+// 認証チェック
+if (!sessionStorage.getItem(AUTH_KEY)) {
+  // オーバーレイを表示（すでにHTML内にある）
+  document.getElementById('authInput').focus();
+} else {
+  document.getElementById('authOverlay').style.display = 'none';
 }
 
 </script>
