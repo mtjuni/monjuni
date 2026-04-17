@@ -356,8 +356,7 @@ body::before{content:'';position:fixed;inset:0;pointer-events:none;
 
 <script>
 const GAS='https://script.google.com/macros/s/AKfycbyVH4yXtC0PsG4gwbWITAnsMFUdwvMSij2hNsZ9z4bfRTRS0RxHzqvZZeaN3AVIEOte/exec';
-const STORAGE_KEY_COACHES='ac_coaches';
-const STORAGE_KEY_ATT='ac_coach_attendance';
+
 
 // 時間帯定義
 const TIME_START=720; // 12:00 (分)
@@ -370,8 +369,8 @@ let COACHES=[];
 let ATTENDANCE=[];
 
 // ── INIT ──
-function init(){
-  loadData();
+async function init(){
+  await loadData();
   buildTimeSels();
   document.getElementById('actDate').valueAsDate=new Date();
   // 統計の初期期間（今月）
@@ -383,14 +382,25 @@ function init(){
   populateCoachSel();
 }
 
-// ── DATA (localStorage) ──
-function loadData(){
-  try{COACHES=JSON.parse(localStorage.getItem(STORAGE_KEY_COACHES)||'[]');}catch(e){COACHES=[];}
-  try{ATTENDANCE=JSON.parse(localStorage.getItem(STORAGE_KEY_ATT)||'[]');}catch(e){ATTENDANCE=[];}
-}
-function saveData(){
-  localStorage.setItem(STORAGE_KEY_COACHES,JSON.stringify(COACHES));
-  localStorage.setItem(STORAGE_KEY_ATT,JSON.stringify(ATTENDANCE));
+// ── DATA (GASから読み込む) ──
+async function loadData(){
+  try {
+    const [cRes, lRes] = await Promise.all([
+      fetch(GAS + '?action=getCoaches'),
+      fetch(GAS + '?action=getCoachLog'),
+    ]);
+    const [cData, lData] = await Promise.all([cRes.json(), lRes.json()]);
+    if (cData.coaches) COACHES = cData.coaches.map(c => ({
+      ...c, baseFee: parseInt(c.baseFee) || 0
+    }));
+    if (lData.logs) ATTENDANCE = lData.logs.map(l => ({
+      ...l,
+      arrival: parseInt(l.arrival) || 0,
+      departure: l.departure ? parseInt(l.departure) : null,
+      isPrepTime: l.isPrepTime === 'true' || l.isPrepTime === true,
+      isFullDay: l.isFullDay === 'true' || l.isFullDay === true,
+    }));
+  } catch(e) { console.error('Load error:', e); }
 }
 
 // ── TIME SELECTS (5分刻み 12:00〜15:30) ──
@@ -483,7 +493,7 @@ function resetTimeInput(){
 }
 
 // ── SAVE ATTENDANCE ──
-function saveAttendance(){
+async function saveAttendance(){
   const date=document.getElementById('actDate').value;
   const coachId=document.getElementById('coachSel').value;
   const arr=document.getElementById('arrivalSel').value;
@@ -508,21 +518,24 @@ function saveAttendance(){
   const isFullDay=dep&&parseInt(dep)>=ACT_END; // 15:00以降まで参加
   const isPrepTime=parseInt(arr)<=PREP_END;     // 準備帯に到着
 
-  ATTENDANCE.push({
-    id:'ATT'+Date.now(),
-    coachId,coachName:coach.name,
-    date:dateStr,
-    arrival:parseInt(arr),
-    departure:dep?parseInt(dep):null,
-    memo,
-    isFullDay,
-    isPrepTime,
-    arrZone:getZoneLabel(arr).label,
-  });
-  saveData();
-  showT(`✓ ${coach.name}さんの記録を保存しました`);
-  resetTimeInput();
-  renderTodayRecords();
+  try {
+    const res = await fetch(GAS, { method: 'POST', body: JSON.stringify({
+      action: 'saveCoachLog',
+      coachId, coachName: coach.name,
+      date: dateStr,
+      arrival: parseInt(arr),
+      departure: dep ? parseInt(dep) : '',
+      memo, isFullDay, isPrepTime,
+      arrZone: getZoneLabel(arr).label,
+    })});
+    const d = await res.json();
+    if (d.status === 'ok') {
+      await loadData();
+      showT(`✓ ${coach.name}さんの記録を保存しました`);
+      resetTimeInput();
+      renderTodayRecords();
+    } else throw new Error(d.message);
+  } catch(e) { showT('⚠ 保存失敗: ' + e.message, true); }
 }
 
 // ── TODAY RECORDS ──
@@ -561,10 +574,14 @@ function renderTodayRecords(){
   }).join('');
 }
 
-function delAtt(id){
+async function delAtt(id){
   if(!confirm('この記録を削除しますか？'))return;
-  ATTENDANCE=ATTENDANCE.filter(a=>a.id!==id);
-  saveData();renderTodayRecords();showT('削除しました');
+  try {
+    await fetch(GAS, { method: 'POST', body: JSON.stringify({ action: 'deleteCoachLog', id }) });
+    await loadData();
+    renderTodayRecords();
+    showT('削除しました');
+  } catch(e) { showT('削除失敗', true); }
 }
 
 // ── STATS ──
@@ -637,20 +654,27 @@ function renderStats(){
 }
 
 // ── COACH REGISTER ──
-function addCoach(){
+async function addCoach(){
   const name=document.getElementById('newCoachName').value.trim();
   const furi=document.getElementById('newCoachFuri').value.trim();
   if(!name){showT('⚠ 氏名を入力してください',true);return;}
   if(COACHES.find(c=>c.name===name)){showT('⚠ 同じ名前のコーチが既に登録されています',true);return;}
   const fee = parseInt(document.getElementById('newCoachFee').value) || 0;
-  COACHES.push({id:'C'+Date.now(),name,furigana:furi,baseFee:fee});
-  saveData();
-  document.getElementById('newCoachName').value='';
-  document.getElementById('newCoachFuri').value='';
-  document.getElementById('newCoachFee').value='';
-  renderCoachList();
-  populateCoachSel();
-  showT(`✓ ${name}さんを登録しました`);
+  try {
+    const res = await fetch(GAS, { method: 'POST', body: JSON.stringify({
+      action: 'saveCoach', name, furigana: furi, baseFee: fee
+    })});
+    const d = await res.json();
+    if (d.status === 'ok') {
+      await loadData();
+      document.getElementById('newCoachName').value='';
+      document.getElementById('newCoachFuri').value='';
+      document.getElementById('newCoachFee').value='';
+      renderCoachList();
+      populateCoachSel();
+      showT(`✓ ${name}さんを登録しました`);
+    } else throw new Error(d.message);
+  } catch(e) { showT('⚠ 登録失敗: ' + e.message, true); }
 }
 
 function renderCoachList(){
@@ -674,12 +698,16 @@ function renderCoachList(){
     </div>`).join('');
 }
 
-function delCoach(id){
+async function delCoach(id){
   const c=COACHES.find(x=>x.id===id);
   if(!confirm(`${c?.name}を削除しますか？`))return;
-  COACHES=COACHES.filter(x=>x.id!==id);
-  saveData();renderCoachList();populateCoachSel();
-  showT('削除しました');
+  try {
+    await fetch(GAS, { method: 'POST', body: JSON.stringify({ action: 'deleteCoach', id }) });
+    await loadData();
+    renderCoachList();
+    populateCoachSel();
+    showT('削除しました');
+  } catch(e) { showT('削除失敗', true); }
 }
 
 // ── TABS ──
@@ -716,20 +744,28 @@ function closeEditModal() {
   document.getElementById('editModal').style.display = 'none';
 }
 
-function saveEditCoach() {
+async function saveEditCoach() {
   const id = document.getElementById('editCoachId').value;
   const name = document.getElementById('editCoachName').value.trim();
   if (!name) { showT('⚠ 氏名を入力してください', true); return; }
   const idx = COACHES.findIndex(c => c.id === id);
   if (idx === -1) return;
-  COACHES[idx].name = name;
-  COACHES[idx].furigana = document.getElementById('editCoachFuri').value.trim();
-  COACHES[idx].baseFee = parseInt(document.getElementById('editCoachFee').value) || 0;
-  saveData();
-  renderCoachList();
-  populateCoachSel();
-  closeEditModal();
-  showT('✓ 更新しました');
+  try {
+    const res = await fetch(GAS, { method: 'POST', body: JSON.stringify({
+      action: 'saveCoach', id,
+      name,
+      furigana: document.getElementById('editCoachFuri').value.trim(),
+      baseFee: parseInt(document.getElementById('editCoachFee').value) || 0,
+    })});
+    const d = await res.json();
+    if (d.status === 'ok') {
+      await loadData();
+      renderCoachList();
+      populateCoachSel();
+      closeEditModal();
+      showT('✓ 更新しました');
+    } else throw new Error(d.message);
+  } catch(e) { showT('⚠ 更新失敗: ' + e.message, true); }
 }
 
 
