@@ -161,6 +161,65 @@ body{font-family:'Noto Sans JP',sans-serif;background:var(--bg);color:var(--tx);
 .unpaid-title{font-size:.72rem;font-weight:700;color:var(--rd);margin-bottom:4px;}
 .unpaid-months{font-family:'DM Mono',monospace;font-size:.72rem;color:var(--tx2);line-height:1.8;}
 
+/* ATTENDANCE TODAY BTN */
+.att-today-bar{
+  padding:0 20px 16px;
+}
+.att-today-btn{
+  width:100%;padding:13px;border:none;border-radius:var(--rs);
+  background:var(--tl);color:var(--bg);
+  font-family:inherit;font-size:.9rem;font-weight:700;cursor:pointer;
+  transition:all .2s;box-shadow:0 0 16px rgba(29,209,161,.25);
+  display:flex;align-items:center;justify-content:center;gap:8px;
+}
+.att-today-btn:hover{background:#3df5c0;}
+.att-today-btn:disabled{background:var(--tx3);color:var(--sur);cursor:not-allowed;box-shadow:none;}
+.att-today-btn.done{background:rgba(29,209,161,.15);color:var(--tl);border:1px solid rgba(29,209,161,.3);box-shadow:none;cursor:default;}
+
+/* FACE PHOTO */
+.face-section{
+  background:var(--sur);border:1px solid var(--bd2);border-radius:var(--r);
+  padding:14px;margin-bottom:10px;
+}
+.face-top{display:flex;align-items:center;gap:14px;margin-bottom:12px;}
+.face-img-wrap{position:relative;flex-shrink:0;}
+.face-img{
+  width:72px;height:72px;border-radius:50%;object-fit:cover;
+  border:2px solid var(--cyan);display:none;
+  box-shadow:0 0 14px rgba(0,229,255,.25);
+}
+.face-img.show{display:block;}
+.face-none{
+  width:72px;height:72px;border-radius:50%;
+  background:var(--sur2);border:2px dashed var(--bd2);
+  display:flex;align-items:center;justify-content:center;
+  color:var(--tx3);font-size:1.6rem;
+}
+.face-info{flex:1;}
+.face-status{font-size:.78rem;font-weight:600;color:var(--tx2);margin-bottom:4px;}
+.face-date{font-size:.65rem;color:var(--tx3);}
+.face-cam-wrap{
+  position:relative;border-radius:var(--rs);overflow:hidden;
+  background:var(--sur2);border:1px solid var(--bd2);margin-bottom:8px;
+  display:none;
+}
+.face-cam-wrap.show{display:block;}
+.face-video{width:100%;max-height:200px;object-fit:cover;transform:scaleX(-1);display:block;}
+.face-flash{position:absolute;inset:0;background:white;opacity:0;pointer-events:none;transition:opacity .06s;}
+.face-flash.go{opacity:.7;}
+.face-btns{display:flex;gap:8px;flex-wrap:wrap;}
+.face-btn{
+  flex:1;padding:9px 12px;border:1px solid var(--bd2);border-radius:var(--rs);
+  background:var(--sur2);color:var(--tx2);font-family:inherit;font-size:.78rem;
+  font-weight:600;cursor:pointer;transition:all .2s;
+}
+.face-btn:hover{border-color:var(--cyan);color:var(--cyan);}
+.face-btn.primary{background:var(--cyan);border-color:var(--cyan);color:var(--bg);}
+.face-btn.primary:hover{background:#33eeff;}
+.face-btn.shoot{background:var(--tl);border-color:var(--tl);color:var(--bg);}
+.face-btn.shoot:hover{background:#3df5c0;}
+.face-btn:disabled{opacity:.35;cursor:not-allowed;}
+
 /* TOAST */
 .toast{position:fixed;bottom:calc(var(--sb)+24px);left:50%;
   transform:translateX(-50%) translateY(20px);
@@ -247,6 +306,13 @@ body{font-family:'Noto Sans JP',sans-serif;background:var(--bg);color:var(--tx);
   </div>
 </div>
 
+<!-- 本日の出席登録 -->
+<div class="att-today-bar">
+  <button class="att-today-btn" id="attTodayBtn" onclick="registerToday()">
+    <span>✓</span> 本日の出席をつける
+  </button>
+</div>
+
 <!-- CONTACT -->
 <div class="contact-bar" id="contactBar"></div>
 
@@ -288,6 +354,70 @@ body{font-family:'Noto Sans JP',sans-serif;background:var(--bg);color:var(--tx);
     <div class="stats-row" id="perfStats"></div>
     <div id="perfTrend"></div>
     <div id="perfHistory"></div>
+  </div>
+
+  <!-- 顔写真 -->
+  <div class="section" id="faceSection">
+    <div class="sec-title"><span>📷</span> 顔写真</div>
+    <div class="face-section">
+      <div class="face-top">
+        <div class="face-img-wrap">
+          <img class="face-img" id="faceImg" src="" alt="顔写真">
+          <div class="face-none" id="faceNone">👤</div>
+        </div>
+        <div class="face-info">
+          <div class="face-status" id="faceStatus">未登録</div>
+          <div class="face-date" id="faceDate"></div>
+        </div>
+      </div>
+      <div class="face-cam-wrap" id="faceCamWrap">
+        <video class="face-video" id="faceVideo" autoplay playsinline muted></video>
+        <div class="face-flash" id="faceFlash"></div>
+      </div>
+      <div class="face-btns">
+        <button class="face-btn" id="faceCamBtn" onclick="toggleFaceCam()">📷 撮影して登録</button>
+        <button class="face-btn shoot" id="faceShootBtn" onclick="doFaceShoot()" style="display:none;">📸 シャッター</button>
+        <button class="face-btn" id="faceCancelBtn" onclick="cancelFaceCam()" style="display:none;">キャンセル</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ビブス管理 -->
+  <div class="section" id="bibSection">
+    <div class="sec-title"><span>🎽</span> ビブス管理</div>
+    <div class="bib-section">
+      <div class="bib-status">
+        <div class="bib-badge none" id="bibBadge">🎽 未貸出</div>
+      </div>
+      <div class="bib-form">
+        <div>
+          <div class="bib-lbl">色</div>
+          <select class="bib-sel" id="bibColor">
+            <option value="">— 選択 —</option>
+            <option value="赤">🔴 赤</option>
+            <option value="青">🔵 青</option>
+            <option value="黄">🟡 黄</option>
+            <option value="緑">🟢 緑</option>
+            <option value="白">⚪ 白</option>
+            <option value="黒">⚫ 黒</option>
+            <option value="橙">🟠 橙</option>
+            <option value="紫">🟣 紫</option>
+            <option value="ピンク">🩷 ピンク</option>
+            <option value="水色">🩵 水色</option>
+          </select>
+        </div>
+        <div>
+          <div class="bib-lbl">番号</div>
+          <select class="bib-sel" id="bibNumber">
+            <option value="">— 選択 —</option>
+            ${Array.from({length:30},(_,i)=>`<option value="${i+1}">${i+1}</option>`).join('')}
+          </select>
+        </div>
+        <button class="bib-save" onclick="saveBib()">貸出登録</button>
+      </div>
+      <button class="bib-return" id="bibReturnBtn" style="display:none;" onclick="returnBib()">✓ 返却済みにする</button>
+      <div class="bib-history" id="bibHistory"></div>
+    </div>
   </div>
 
   <!-- メモ -->
@@ -338,6 +468,9 @@ async function init() {
 
     renderAll();
     loadMemo(id);
+    loadBib();
+    renderFacePhoto();
+    checkTodayAttendance();
 
     document.getElementById('loadingScreen').style.display = 'none';
     document.getElementById('mainContent').style.display = '';
@@ -359,7 +492,13 @@ function renderAll() {
 // ── HERO ──
 function renderHero() {
   const m = MEMBER;
-  document.getElementById('hAvatar').textContent = (m.name || '?')[0];
+  // アバター：顔写真があれば表示
+  const av = document.getElementById('hAvatar');
+  if (m.facePhoto) {
+    av.innerHTML = `<img src="${m.facePhoto}" style="width:100%;height:100%;object-fit:cover;border-radius:50%;">`;
+  } else {
+    av.textContent = (m.name || '?')[0];
+  }
   document.getElementById('hFuri').textContent = m.furigana || '—';
   document.getElementById('hName').textContent = m.name || '—';
 
@@ -605,6 +744,223 @@ function showToast(msg, err=false) {
   t.style.color = err ? '#fff' : 'var(--bg)';
   t.classList.add('show');
   setTimeout(() => t.classList.remove('show'), 3000);
+}
+
+
+// ── BIBS ──
+const BIB_COLORS = {'赤':'#e74c3c','青':'#3498db','黄':'#f1c40f','緑':'#2ecc71',
+  '白':'#ecf0f1','黒':'#2c3e50','橙':'#e67e22','紫':'#9b59b6','ピンク':'#ff6eb4','水色':'#5dade2'};
+
+let BIB_DATA = null; // { color, number, lentDate, history:[] }
+
+async function loadBib() {
+  try {
+    const d = await fetch(GAS + '?action=getBib&memberId=' + encodeURIComponent(MEMBER.id)).then(r=>r.json());
+    if (d.status === 'ok') { BIB_DATA = d.bib || null; renderBib(); }
+  } catch(e) { renderBib(); }
+}
+
+function renderBib() {
+  const badge = document.getElementById('bibBadge');
+  const returnBtn = document.getElementById('bibReturnBtn');
+  const hist = document.getElementById('bibHistory');
+
+  if (BIB_DATA && BIB_DATA.color && BIB_DATA.number && !BIB_DATA.returned) {
+    const dot = BIB_COLORS[BIB_DATA.color] || '#888';
+    badge.className = 'bib-badge active';
+    badge.innerHTML = `<div class="bib-color-dot" style="background:${dot};"></div>🎽 ${BIB_DATA.color} #${BIB_DATA.number} 貸出中`;
+    document.getElementById('bibColor').value = BIB_DATA.color;
+    document.getElementById('bibNumber').value = BIB_DATA.number;
+    returnBtn.style.display = '';
+  } else {
+    badge.className = 'bib-badge none';
+    badge.textContent = '🎽 未貸出';
+    returnBtn.style.display = 'none';
+  }
+
+  // 履歴
+  const history = BIB_DATA?.history || [];
+  if (history.length) {
+    hist.innerHTML = '<div style="margin-bottom:6px;font-size:.65rem;color:var(--tx3);letter-spacing:.05em;text-transform:uppercase;">貸出履歴</div>' +
+      history.slice(0,5).map(h => `<div class="bib-hist-row">
+        <span>${h.color} #${h.number}</span>
+        <span>${h.lentDate} → ${h.returnDate || '貸出中'}</span>
+      </div>`).join('');
+  } else {
+    hist.innerHTML = '';
+  }
+}
+
+async function saveBib() {
+  const color = document.getElementById('bibColor').value;
+  const number = document.getElementById('bibNumber').value;
+  if (!color || !number) { showToast('色と番号を選択してください', true); return; }
+  const today = new Date().toISOString().slice(0,10);
+  try {
+    const d = await fetch(GAS, { method:'POST', body: JSON.stringify({
+      action:'saveBib', memberId:MEMBER.id, memberName:MEMBER.name,
+      color, number, lentDate:today
+    })}).then(r=>r.json());
+    if (d.status === 'ok') {
+      BIB_DATA = { color, number, lentDate:today, history: BIB_DATA?.history || [] };
+      if (!BIB_DATA.history.find(h=>h.color===color&&h.number==number&&!h.returnDate)) {
+        BIB_DATA.history.unshift({ color, number, lentDate:today, returnDate:null });
+      }
+      renderBib(); showToast('ビブスを登録しました');
+    }
+  } catch(e) { showToast('保存に失敗しました', true); }
+}
+
+async function returnBib() {
+  if (!confirm('ビブスを返却済みにしますか？')) return;
+  const today = new Date().toISOString().slice(0,10);
+  try {
+    const d = await fetch(GAS, { method:'POST', body: JSON.stringify({
+      action:'returnBib', memberId:MEMBER.id, returnDate:today
+    })}).then(r=>r.json());
+    if (d.status === 'ok') {
+      if (BIB_DATA?.history?.[0]) BIB_DATA.history[0].returnDate = today;
+      BIB_DATA = { ...BIB_DATA, returned:true };
+      renderBib(); showToast('返却を記録しました');
+    }
+  } catch(e) { showToast('保存に失敗しました', true); }
+}
+
+// ── 本日の出席登録 ──
+function todayStr() {
+  const d = new Date();
+  return `${d.getFullYear()}/${String(d.getMonth()+1).padStart(2,'0')}/${String(d.getDate()).padStart(2,'0')}`;
+}
+
+function checkTodayAttendance() {
+  const today = todayStr();
+  const btn = document.getElementById('attTodayBtn');
+  const alreadyIn = ATTENDANCE.some(a => (a.date||'').startsWith(today.replace(/\//g,'-')) || (a.date||'').startsWith(today));
+  if (alreadyIn) {
+    btn.textContent = '✓ 本日の出席登録済み';
+    btn.className = 'att-today-btn done';
+    btn.disabled = true;
+  }
+}
+
+async function registerToday() {
+  const btn = document.getElementById('attTodayBtn');
+  btn.disabled = true;
+  btn.textContent = '登録中...';
+  const today = todayStr();
+  const now = new Date();
+  const time = `${String(now.getHours()).padStart(2,'0')}:${String(now.getMinutes()).padStart(2,'0')}`;
+  try {
+    const d = await fetch(GAS, { method:'POST', body: JSON.stringify({
+      action: 'attendance',
+      nfcId: MEMBER.nfcId || MEMBER.id,
+      memberId: MEMBER.id,
+      memberName: MEMBER.name,
+      class: '通常',
+      date: today,
+      time
+    })}).then(r => r.json());
+    if (d.status === 'ok' || d.status === 'success') {
+      ATTENDANCE.push({ memberId: MEMBER.id, date: today, time });
+      btn.textContent = '✓ 本日の出席登録済み';
+      btn.className = 'att-today-btn done';
+      btn.disabled = true;
+      showToast('本日の出席を登録しました');
+    } else {
+      btn.disabled = false;
+      btn.textContent = '✓ 本日の出席をつける';
+      showToast('登録に失敗しました', true);
+    }
+  } catch(e) {
+    btn.disabled = false;
+    btn.textContent = '✓ 本日の出席をつける';
+    showToast('通信エラー', true);
+  }
+}
+
+// ── 顔写真 ──
+let faceCamStream = null;
+
+function renderFacePhoto() {
+  const m = MEMBER;
+  if (m.facePhoto) {
+    document.getElementById('faceImg').src = m.facePhoto;
+    document.getElementById('faceImg').classList.add('show');
+    document.getElementById('faceNone').style.display = 'none';
+    document.getElementById('faceStatus').textContent = '登録済み';
+    document.getElementById('faceDate').textContent = m.facePhotoDate ? '撮影日: ' + m.facePhotoDate : '';
+    document.getElementById('faceCamBtn').textContent = '📷 写真を更新する';
+  } else {
+    document.getElementById('faceImg').classList.remove('show');
+    document.getElementById('faceNone').style.display = 'flex';
+    document.getElementById('faceStatus').textContent = '未登録';
+    document.getElementById('faceDate').textContent = 'カメラで撮影して登録してください';
+    document.getElementById('faceCamBtn').textContent = '📷 撮影して登録';
+  }
+}
+
+async function toggleFaceCam() {
+  const wrap = document.getElementById('faceCamWrap');
+  if (faceCamStream) { cancelFaceCam(); return; }
+  try {
+    faceCamStream = await navigator.mediaDevices.getUserMedia({
+      video: { width:{ideal:640}, height:{ideal:480}, facingMode:'user' }, audio:false
+    });
+    document.getElementById('faceVideo').srcObject = faceCamStream;
+    wrap.classList.add('show');
+    document.getElementById('faceCamBtn').style.display = 'none';
+    document.getElementById('faceShootBtn').style.display = '';
+    document.getElementById('faceCancelBtn').style.display = '';
+  } catch(e) {
+    showToast('カメラにアクセスできません', true);
+  }
+}
+
+function cancelFaceCam() {
+  if (faceCamStream) { faceCamStream.getTracks().forEach(t=>t.stop()); faceCamStream = null; }
+  document.getElementById('faceCamWrap').classList.remove('show');
+  document.getElementById('faceCamBtn').style.display = '';
+  document.getElementById('faceShootBtn').style.display = 'none';
+  document.getElementById('faceCancelBtn').style.display = 'none';
+}
+
+async function doFaceShoot() {
+  const video = document.getElementById('faceVideo');
+  // フラッシュ
+  const fl = document.getElementById('faceFlash');
+  fl.classList.add('go'); setTimeout(()=>fl.classList.remove('go'), 140);
+  // 撮影
+  const canvas = document.createElement('canvas');
+  canvas.width = 320; canvas.height = 240;
+  const ctx = canvas.getContext('2d');
+  ctx.translate(320, 0); ctx.scale(-1, 1);
+  ctx.drawImage(video, 0, 0, 320, 240);
+  const photo = canvas.toDataURL('image/jpeg', 0.75);
+
+  // GASに保存
+  try {
+    const today = todayStr();
+    const d = await fetch(GAS, { method:'POST', body: JSON.stringify({
+      action: 'saveFacePhoto',
+      memberId: MEMBER.id,
+      facePhoto: photo,
+      facePhotoDate: today
+    })}).then(r=>r.json());
+    if (d.status === 'ok' || d.status === 'success') {
+      MEMBER.facePhoto = photo;
+      MEMBER.facePhotoDate = todayStr();
+      renderFacePhoto();
+      // アバターも更新
+      document.getElementById('hAvatar').innerHTML =
+        `<img src="${photo}" style="width:100%;height:100%;object-fit:cover;border-radius:50%;">`;
+      cancelFaceCam();
+      showToast('顔写真を登録しました');
+    } else {
+      showToast('保存に失敗しました', true);
+    }
+  } catch(e) {
+    showToast('通信エラー', true);
+  }
 }
 
 init();
