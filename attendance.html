@@ -1431,11 +1431,8 @@ function sendToGAS(data) {
 function onSearch(q) {
   const container = document.getElementById('searchResults');
   if (!q.trim()) { container.classList.remove('show'); return; }
-  const ql = q.toLowerCase();
   const results = MEMBERS.filter(m =>
-    (m.name    || '').toLowerCase().includes(ql) ||
-    (m.furigana|| '').toLowerCase().includes(ql) ||
-    (m.nfcId   || '').toLowerCase().includes(ql)
+    m.name.includes(q) || m.furigana.includes(q) || m.id.toLowerCase().includes(q.toLowerCase())
   );
   if (!results.length) { container.classList.remove('show'); return; }
   container.innerHTML = results.map(m => `
@@ -1460,22 +1457,64 @@ function selectFromSearch(id) {
 }
 
 // ── TODAY ──
-function renderTodayList() {
+// GASから当日出席を取得してリスト表示
+async function renderTodayList() {
   const now = new Date();
-  document.getElementById('todayDate').textContent = `${now.getFullYear()}年${now.getMonth()+1}月${now.getDate()}日 (${['日','月','火','水','木','金','土'][now.getDay()]})`;
-  document.getElementById('todayCount').textContent = todayAttendance.length + '名';
+  const todayISO = now.toISOString().slice(0, 10); // YYYY-MM-DD
+  document.getElementById('todayDate').textContent =
+    `${now.getFullYear()}年${now.getMonth()+1}月${now.getDate()}日 (${['日','月','火','水','木','金','土'][now.getDay()]})`;
+
   const list = document.getElementById('attendanceList');
-  if (!todayAttendance.length) {
+  list.innerHTML = '<div style="text-align:center;padding:20px;color:var(--text3);font-size:.85rem;">読み込み中...</div>';
+
+  // GASから今日の出席を取得
+  let gasRows = [];
+  try {
+    const res  = await fetch(GAS_URL + '?action=getAttendance&date=' + todayISO);
+    const data = await res.json();
+    gasRows = data.attendance || [];
+  } catch(e) {
+    console.warn('getAttendance error:', e);
+  }
+
+  // ローカルの今日分とマージ（GASにない分だけ追加）
+  const gasIds = new Set(gasRows.map(r => r.id).filter(Boolean));
+  const localRows = todayAttendance.map(a => ({
+    id:         '__local__',
+    memberName: a.member?.name || '—',
+    class:      a.class || '通常',
+    time:       a.time  || '',
+    _local:     true,
+  }));
+
+  // GAS行を表示用に整形
+  const allRows = [
+    ...gasRows.map(r => ({
+      id:         r.id || '',
+      memberName: r.memberName || r.memberId || '—',
+      class:      r.class || '通常',
+      time:       r.time  || '',
+      _local:     false,
+    })),
+    ...localRows,
+  ];
+
+  // 時刻でソート（新しい順）
+  allRows.sort((a, b) => b.time.localeCompare(a.time));
+
+  document.getElementById('todayCount').textContent = allRows.length + '名';
+
+  if (!allRows.length) {
     list.innerHTML = '<div class="empty-state"><div class="empty-icon">📋</div><p>まだ出席者がいません</p></div>';
     return;
   }
-  list.innerHTML = todayAttendance.map((a, i) => `
+
+  list.innerHTML = allRows.map((r, i) => `
     <div class="attendance-item" id="att-${i}">
-      <span class="att-time">${a.time}</span>
-      <div class="member-avatar" style="width:34px;height:34px;font-size:1rem;">${a.member.name[0]}</div>
-      <span class="att-name">${a.member.name}</span>
-      <span class="att-class">${a.class}</span>
-      <button class="att-undo" onclick="undoAttendance(${i})" title="取消">✕</button>
+      <span class="att-time">${r.time}</span>
+      <div class="member-avatar" style="width:34px;height:34px;font-size:1rem;">${(r.memberName||'?')[0]}</div>
+      <span class="att-name">${r.memberName}</span>
+      <span class="att-class">${r.class}</span>
     </div>
   `).join('');
 }
@@ -1685,7 +1724,6 @@ async function renderStats() {
   const { year, month, key } = getStatsMonth(statsMonthOffset);
   document.getElementById('statsMonthLabel').textContent = `${year}年 ${month}月`;
 
-  // 今月の出席データ（GAS全件 + ローカル）
   const allAttendance = await getAttendanceHistory();
   const thisMonthAtt = allAttendance.filter(a => a.dateKey && a.dateKey.startsWith(key));
   const uniqueToday = new Set(thisMonthAtt.map(a => a.memberId || a.memberName));
@@ -1746,43 +1784,39 @@ async function renderStats() {
   }).join('') || '<tr><td colspan="4" style="text-align:center;color:var(--text3);padding:16px;">データなし</td></tr>';
 }
 
-// 出席履歴 — GASから全件取得 + ローカルマージ
-let _attCache = null;
-let _attCacheDay = '';
-
+// 出席履歴 — GAS全件取得 + ローカルマージ
+let _attCache = null, _attCacheDay = '';
 async function getAttendanceHistory() {
   const now = new Date();
-  const todayFull = `${now.getFullYear()}/${String(now.getMonth()+1).padStart(2,'0')}/${String(now.getDate()).padStart(2,'0')}`;
-  const todayMo   = todayFull.slice(0, 7); // YYYY/MM
+  const todayISO  = now.toISOString().slice(0, 10);           // YYYY-MM-DD
+  const todaySlash = todayISO.replace(/-/g, '/');              // YYYY/MM/DD
+  const todayMo    = todaySlash.slice(0, 7);                   // YYYY/MM
 
-  // ローカル今日分（常にマージ）
   const localRows = todayAttendance.map(a => ({
     memberId:   a.member?.id   || '',
     memberName: a.member?.name || '',
-    dateKey: todayFull,
-    date:    todayMo,
+    dateKey:    todaySlash,
+    date:       todayMo,
   }));
 
-  // 同日はキャッシュ使用
-  if (_attCacheDay === todayFull && _attCache) {
+  if (_attCacheDay === todayISO && _attCache) {
     return [..._attCache, ...localRows];
   }
 
   try {
     const res  = await fetch(GAS_URL + '?action=getAttendance');
     const data = await res.json();
-    // GASのdateは YYYY-MM-DD → YYYY/MM/DD に統一
     const rows = (data.attendance || []).map(a => {
-      const d = (a.date || '').replace(/-/g, '/').slice(0, 10); // YYYY/MM/DD
+      const d = (a.date || '').slice(0, 10).replace(/-/g, '/'); // YYYY/MM/DD
       return {
         memberId:   a.memberId   || '',
         memberName: a.memberName || '',
-        dateKey: d,
-        date:    d.slice(0, 7),
+        dateKey:    d,
+        date:       d.slice(0, 7),
       };
     });
     _attCache    = rows;
-    _attCacheDay = todayFull;
+    _attCacheDay = todayISO;
     return [...rows, ...localRows];
   } catch(e) {
     console.warn('getAttendanceHistory error:', e);
