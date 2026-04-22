@@ -1431,8 +1431,11 @@ function sendToGAS(data) {
 function onSearch(q) {
   const container = document.getElementById('searchResults');
   if (!q.trim()) { container.classList.remove('show'); return; }
+  const ql = q.toLowerCase();
   const results = MEMBERS.filter(m =>
-    m.name.includes(q) || m.furigana.includes(q) || m.id.toLowerCase().includes(q.toLowerCase())
+    (m.name    || '').toLowerCase().includes(ql) ||
+    (m.furigana|| '').toLowerCase().includes(ql) ||
+    (m.nfcId   || '').toLowerCase().includes(ql)
   );
   if (!results.length) { container.classList.remove('show'); return; }
   container.innerHTML = results.map(m => `
@@ -1674,15 +1677,15 @@ function getStatsMonth(offset) {
 
 function shiftStatsMonth(delta) {
   statsMonthOffset += delta;
-  if (statsMonthOffset > 0) statsMonthOffset = 0;
-  renderStats(); // async だが await 不要（UI更新は非同期で問題なし）
+  if (statsMonthOffset > 0) statsMonthOffset = 0; // 未来は見ない
+  renderStats();
 }
 
 async function renderStats() {
   const { year, month, key } = getStatsMonth(statsMonthOffset);
   document.getElementById('statsMonthLabel').textContent = `${year}年 ${month}月`;
 
-  // 今月の出席データ（GAS + ローカル）
+  // 今月の出席データ（GAS全件 + ローカル）
   const allAttendance = await getAttendanceHistory();
   const thisMonthAtt = allAttendance.filter(a => a.dateKey && a.dateKey.startsWith(key));
   const uniqueToday = new Set(thisMonthAtt.map(a => a.memberId || a.memberName));
@@ -1743,58 +1746,47 @@ async function renderStats() {
   }).join('') || '<tr><td colspan="4" style="text-align:center;color:var(--text3);padding:16px;">データなし</td></tr>';
 }
 
-// 出席履歴キャッシュ（GASから取得 + ローカルマージ）
+// 出席履歴 — GASから全件取得 + ローカルマージ
 let _attCache = null;
-let _attCacheDate = '';
+let _attCacheDay = '';
 
 async function getAttendanceHistory() {
   const now = new Date();
   const todayFull = `${now.getFullYear()}/${String(now.getMonth()+1).padStart(2,'0')}/${String(now.getDate()).padStart(2,'0')}`;
-  const todayMo   = todayFull.slice(0, 7);
+  const todayMo   = todayFull.slice(0, 7); // YYYY/MM
 
-  // 同日内はキャッシュ使用（ローカル追加分はマージ）
-  if (_attCacheDate === todayMo && _attCache) {
-    const local = todayAttendance.map(a => ({
-      memberId:   a.member?.id   || '',
-      memberName: a.member?.name || '',
-      dateKey:    todayFull,
-      date:       todayMo,
-    }));
-    return [..._attCache, ...local];
+  // ローカル今日分（常にマージ）
+  const localRows = todayAttendance.map(a => ({
+    memberId:   a.member?.id   || '',
+    memberName: a.member?.name || '',
+    dateKey: todayFull,
+    date:    todayMo,
+  }));
+
+  // 同日はキャッシュ使用
+  if (_attCacheDay === todayFull && _attCache) {
+    return [..._attCache, ...localRows];
   }
 
   try {
     const res  = await fetch(GAS_URL + '?action=getAttendance');
     const data = await res.json();
+    // GASのdateは YYYY-MM-DD → YYYY/MM/DD に統一
     const rows = (data.attendance || []).map(a => {
-      // GASのdateは YYYY-MM-DD 形式
-      const dateSlash = (a.date || '').replace(/-/g, '/');  // → YYYY/MM/DD
+      const d = (a.date || '').replace(/-/g, '/').slice(0, 10); // YYYY/MM/DD
       return {
         memberId:   a.memberId   || '',
         memberName: a.memberName || '',
-        dateKey:    dateSlash,                     // YYYY/MM/DD
-        date:       dateSlash.slice(0, 7),         // YYYY/MM
+        dateKey: d,
+        date:    d.slice(0, 7),
       };
     });
-    _attCache = rows;
-    _attCacheDate = todayMo;
-
-    // ローカルの今日分もマージ
-    const local = todayAttendance.map(a => ({
-      memberId:   a.member?.id   || '',
-      memberName: a.member?.name || '',
-      dateKey:    todayFull,
-      date:       todayMo,
-    }));
-    return [...rows, ...local];
+    _attCache    = rows;
+    _attCacheDay = todayFull;
+    return [...rows, ...localRows];
   } catch(e) {
-    console.warn('getAttendanceHistory fetch error:', e);
-    return todayAttendance.map(a => ({
-      memberId:   a.member?.id   || '',
-      memberName: a.member?.name || '',
-      dateKey:    todayFull,
-      date:       todayMo,
-    }));
+    console.warn('getAttendanceHistory error:', e);
+    return localRows;
   }
 }
 

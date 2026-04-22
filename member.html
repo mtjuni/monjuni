@@ -200,35 +200,12 @@ body{font-family:'Noto Sans JP',sans-serif;background:var(--bg);color:var(--tx);
 .face-date{font-size:.65rem;color:var(--tx3);margin-bottom:10px;}
 .face-cam-wrap{
   position:relative;border-radius:var(--rs);overflow:hidden;
-  background:#000;margin-bottom:8px;
+  background:#000;border:1px solid var(--bd2);margin-bottom:8px;
   display:none;
 }
 .face-cam-wrap.show{display:block;}
-/* ビデオは常にコンテナ全体を埋める。縦横比はデバイスに任せる */
-.face-video{
-  width:100%;height:auto;max-height:60dvh;
-  object-fit:cover;transform:scaleX(-1);display:block;
-}
-/* 顔の収まる正方形ガイド枠 */
-.face-guide{
-  position:absolute;top:50%;left:50%;
-  width:min(60%,200px);height:min(60%,200px);
-  transform:translate(-50%,-50%);
-  border:2px solid rgba(0,229,255,0.85);
-  border-radius:8px;pointer-events:none;
-  box-shadow:0 0 0 2000px rgba(0,0,0,0.35);
-}
-.face-guide::before,.face-guide::after{
-  content:'';position:absolute;width:18px;height:18px;
-  border-color:var(--cyan);border-style:solid;
-}
-.face-guide::before{top:-2px;left:-2px;border-width:3px 0 0 3px;border-radius:4px 0 0 0;}
-.face-guide::after{bottom:-2px;right:-2px;border-width:0 3px 3px 0;border-radius:0 0 4px 0;}
-.face-guide-label{
-  position:absolute;bottom:-26px;left:50%;transform:translateX(-50%);
-  font-size:.65rem;color:rgba(0,229,255,0.85);white-space:nowrap;
-  background:rgba(0,0,0,.5);padding:2px 8px;border-radius:6px;
-}
+/* デバイス任せで表示。max-heightでページが溢れないようにするだけ */
+.face-video{width:100%;max-height:55dvh;object-fit:contain;display:block;}
 .face-flash{position:absolute;inset:0;background:white;opacity:0;pointer-events:none;transition:opacity .06s;}
 .face-flash.go{opacity:.7;}
 .face-btns{display:flex;gap:8px;flex-wrap:wrap;}
@@ -395,9 +372,6 @@ body{font-family:'Noto Sans JP',sans-serif;background:var(--bg);color:var(--tx);
       </div>
       <div class="face-cam-wrap" id="faceCamWrap">
         <video class="face-video" id="faceVideo" autoplay playsinline muted></video>
-        <div class="face-guide">
-          <span class="face-guide-label">顔をここに合わせてください</span>
-        </div>
         <div class="face-flash" id="faceFlash"></div>
       </div>
       <div class="face-btns" id="faceShootBtns" style="display:none;">
@@ -872,8 +846,9 @@ async function registerToday() {
   const btn = document.getElementById('attTodayBtn');
   btn.disabled = true;
   btn.textContent = '登録中...';
-  const today = todayStr();
   const now = new Date();
+  // GASのrecordAttendanceはISO形式(YYYY-MM-DD)で保存するので合わせる
+  const todayISO = now.toISOString().slice(0, 10); // YYYY-MM-DD
   const time = `${String(now.getHours()).padStart(2,'0')}:${String(now.getMinutes()).padStart(2,'0')}`;
   try {
     const d = await fetch(GAS, { method:'POST', body: JSON.stringify({
@@ -882,11 +857,11 @@ async function registerToday() {
       memberId: MEMBER.id,
       memberName: MEMBER.name,
       class: '通常',
-      date: today,
+      date: todayISO,
       time
     })}).then(r => r.json());
     if (d.status === 'ok' || d.status === 'success') {
-      ATTENDANCE.push({ memberId: MEMBER.id, date: today, time });
+      ATTENDANCE.push({ memberId: MEMBER.id, date: todayISO, time });
       btn.textContent = '✓ 本日の出席登録済み';
       btn.className = 'att-today-btn done';
       btn.disabled = true;
@@ -951,118 +926,95 @@ async function doFaceShoot() {
   const video = document.getElementById('faceVideo');
   // フラッシュ
   const fl = document.getElementById('faceFlash');
-  fl.classList.add('go'); setTimeout(()=>fl.classList.remove('go'), 140);
+  fl.classList.add('go'); setTimeout(() => fl.classList.remove('go'), 140);
 
-  // ガイド枠のサイズ・位置に合わせてクロップ撮影
-  const guide = document.querySelector('.face-guide');
-  const vRect = video.getBoundingClientRect();
-  const gRect = guide ? guide.getBoundingClientRect() : null;
+  // ビデオの実サイズで中央正方形クロップ（変換なし・歪みなし）
+  const vw = video.videoWidth  || 640;
+  const vh = video.videoHeight || 480;
+  const side = Math.min(vw, vh);
+  const ox = Math.round((vw - side) / 2);
+  const oy = Math.round((vh - side) / 2);
 
+  const SIZE = 400; // 出力サイズ（正方形）
   const canvas = document.createElement('canvas');
-  const OUTPUT_SIZE = 320; // 正方形で出力
-  canvas.width = OUTPUT_SIZE;
-  canvas.height = OUTPUT_SIZE;
+  canvas.width = SIZE; canvas.height = SIZE;
   const ctx = canvas.getContext('2d');
-
-  if (gRect && vRect.width > 0) {
-    // ガイド枠に対応するビデオ上の座標を計算（mirror補正込み）
-    const scaleX = video.videoWidth  / vRect.width;
-    const scaleY = video.videoHeight / vRect.height;
-    // video は scaleX(-1) で鏡像なので左右反転
-    const gLeft  = vRect.right - gRect.right;  // mirror補正
-    const gTop   = gRect.top - vRect.top;
-    const gW     = gRect.width;
-    const gH     = gRect.height;
-    const sx = gLeft  * scaleX;
-    const sy = gTop   * scaleY;
-    const sw = gW     * scaleX;
-    const sh = gH     * scaleY;
-    ctx.drawImage(video, sx, sy, sw, sh, 0, 0, OUTPUT_SIZE, OUTPUT_SIZE);
-  } else {
-    // フォールバック: 全体を正方形にトリミング
-    const side = Math.min(video.videoWidth, video.videoHeight);
-    const ox = (video.videoWidth  - side) / 2;
-    const oy = (video.videoHeight - side) / 2;
-    ctx.translate(OUTPUT_SIZE, 0); ctx.scale(-1, 1);
-    ctx.drawImage(video, ox, oy, side, side, 0, 0, OUTPUT_SIZE, OUTPUT_SIZE);
-  }
-
+  // 余計な変換なし：ビデオ中央をそのまま切り出す
+  ctx.drawImage(video, ox, oy, side, side, 0, 0, SIZE, SIZE);
   const photo = canvas.toDataURL('image/jpeg', 0.82);
 
-  // カメラを停止してプレビュー表示（登録は確認後）
+  // カメラ停止 → プレビュー確認
   cancelFaceCam();
   showPhotoPreview(photo);
 }
 
+// プレビュー表示（「撮り直す」「登録する」の2択）
 function showPhotoPreview(photo) {
   const old = document.getElementById('facePreviewWrap');
   if (old) old.remove();
+
   const wrap = document.createElement('div');
   wrap.id = 'facePreviewWrap';
-  wrap.style.cssText = 'margin-top:8px;';
+  wrap.style.cssText = 'margin-top:10px;';
   wrap.innerHTML = `
     <div style="display:flex;justify-content:center;margin-bottom:10px;">
-      <div style="position:relative;border-radius:10px;overflow:hidden;
-        width:160px;height:160px;border:2px solid var(--cyan);
-        box-shadow:0 0 16px rgba(0,229,255,0.2);">
+      <div style="width:160px;height:160px;border-radius:10px;overflow:hidden;
+        border:2px solid var(--cyan);box-shadow:0 0 16px rgba(0,229,255,.2);flex-shrink:0;">
         <img src="${photo}" style="width:100%;height:100%;object-fit:cover;display:block;">
-        <div style="position:absolute;top:5px;left:5px;background:rgba(0,0,0,.65);
-          border-radius:5px;padding:2px 7px;font-size:.6rem;color:#fff;">プレビュー</div>
       </div>
     </div>
     <div style="display:flex;gap:8px;">
       <button class="face-btn" onclick="retakeFacePhoto()">🔄 撮り直す</button>
-      <button class="face-btn shoot" id="faceRegisterBtn"
-        onclick="saveFacePhotoToGAS(this)">✓ これで登録する</button>
+      <button class="face-btn shoot" id="faceRegBtn">✓ この写真で登録する</button>
     </div>
   `;
-  wrap._photo = photo; // ボタンからアクセス用
   document.getElementById('faceSection').querySelector('.face-section').appendChild(wrap);
+
+  // 登録ボタンにphotoを直接紐付け（onclick属性の文字列エスケープ問題を回避）
+  document.getElementById('faceRegBtn').onclick = () => saveFacePhotoToGAS(photo);
 }
 
 function retakeFacePhoto() {
   const old = document.getElementById('facePreviewWrap');
   if (old) old.remove();
-  toggleFaceCam(); // カメラを再起動
+  toggleFaceCam();
 }
 
-async function saveFacePhotoToGAS(btn) {
-  const wrap = document.getElementById('facePreviewWrap');
-  const photo = wrap ? wrap._photo : null;
-  if (!photo) { showToast('写真データがありません', true); return; }
-
-  btn.disabled = true;
-  btn.textContent = '保存中...';
+async function saveFacePhotoToGAS(photo) {
+  const btn = document.getElementById('faceRegBtn');
+  if (btn) { btn.disabled = true; btn.textContent = '保存中...'; }
 
   const today = todayStr();
-  let saved = false;
+  let gasOk = false;
 
   try {
-    const res = await fetch(GAS, { method:'POST', body: JSON.stringify({
-      action: 'saveFacePhoto',
-      memberId: MEMBER.id,
-      facePhoto: photo,
-      facePhotoDate: today
-    })});
+    const res = await fetch(GAS, {
+      method: 'POST',
+      body: JSON.stringify({
+        action: 'saveFacePhoto',
+        memberId: MEMBER.id,
+        facePhoto: photo,
+        facePhotoDate: today,
+      })
+    });
     const d = await res.json();
-    if (d.status === 'ok' || d.status === 'success') {
-      saved = true;
-    } else {
-      console.warn('saveFacePhoto GAS error:', d.message);
-    }
+    gasOk = (d.status === 'ok' || d.status === 'success');
+    if (!gasOk) console.warn('saveFacePhoto GAS error:', d.message);
   } catch(e) {
-    console.warn('saveFacePhoto fetch error:', e);
+    console.warn('saveFacePhoto fetch error:', e.message);
   }
 
-  // GAS成否に関わらずローカルに反映（UIは必ず更新）
-  MEMBER.facePhoto = photo;
+  // GAS成否に関わらずUIに即反映
+  MEMBER.facePhoto     = photo;
   MEMBER.facePhotoDate = today;
   renderFacePhoto();
   document.getElementById('hAvatar').innerHTML =
     `<img src="${photo}" style="width:100%;height:100%;object-fit:cover;border-radius:50%;">`;
-  if (wrap) wrap.remove();
 
-  showToast(saved ? '✓ 顔写真を登録しました' : '✓ 写真を保存しました（GAS要デプロイ）');
+  const prev = document.getElementById('facePreviewWrap');
+  if (prev) prev.remove();
+
+  showToast(gasOk ? '✓ 顔写真を登録しました' : '✓ 写真を表示しました（GAS要再デプロイ）');
 }
 
 init();
