@@ -3,857 +3,481 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-<title>出席登録 — Athletic Club</title>
-<link href="https://fonts.googleapis.com/css2?family=Rajdhani:wght@400;500;600;700&family=Noto+Sans+JP:wght@300;400;500;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<title>NFC出席登録 — Athletic Club</title>
+<link href="https://fonts.googleapis.com/css2?family=Rajdhani:wght@500;600;700&family=Noto+Sans+JP:wght@300;400;500;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/face-api.js@0.22.2/dist/face-api.min.js"></script>
 <style>
-:root {
-  --bg: #060a0f;
-  --surface: #0c1420;
-  --surface2: #111d2e;
-  --surface3: #162236;
-  --border: #1a2d45;
-  --border2: #1f3555;
-  --accent: #00d4ff;
-  --accent2: #0099cc;
-  --green: #00e676;
-  --amber: #ffab00;
-  --red: #ff3d57;
-  --text: #dce8f5;
-  --text2: #6b8aaa;
-  --text3: #2d4a66;
-  --r: 12px;
+:root{
+  --bg:#060a0f;--sur:#0c1420;--sur2:#111d2e;--sur3:#162236;
+  --bd:#1a2d45;--bd2:#1f3555;
+  --cy:#00d4ff;--gn:#00e676;--am:#ffab00;--rd:#ff3d57;--pu:#9b59ff;
+  --tx:#dce8f5;--tx2:#6b8aaa;--tx3:#2d4a66;
+  --r:12px;
 }
 *{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent;}
-body{
-  font-family:'Noto Sans JP',sans-serif;
-  background:var(--bg);
-  color:var(--text);
-  min-height:100dvh;
-  overflow:hidden;
-  position:relative;
-}
-
-/* grid bg */
-body::before{
-  content:'';position:fixed;inset:0;pointer-events:none;z-index:0;
-  background-image:
-    linear-gradient(rgba(0,212,255,0.04) 1px,transparent 1px),
-    linear-gradient(90deg,rgba(0,212,255,0.04) 1px,transparent 1px);
-  background-size:40px 40px;
-}
-body::after{
-  content:'';position:fixed;inset:0;pointer-events:none;z-index:0;
-  background:radial-gradient(ellipse 60% 50% at 50% 0%,rgba(0,212,255,0.07) 0%,transparent 70%);
-}
-
-/* ── HEADER ── */
-.hdr{
-  position:fixed;top:0;left:0;right:0;z-index:100;
-  background:rgba(6,10,15,0.92);
-  backdrop-filter:blur(20px);
-  border-bottom:1px solid var(--border);
-  padding:0 28px;
-  height:56px;
-  display:flex;align-items:center;justify-content:space-between;
-}
-.hdr-title{
-  font-family:'Rajdhani',sans-serif;
-  font-size:1.2rem;font-weight:700;letter-spacing:0.15em;
-  color:var(--accent);text-transform:uppercase;
-  display:flex;align-items:center;gap:10px;
-}
-.hdr-title::before{
-  content:'';width:8px;height:8px;border-radius:50%;
-  background:var(--green);
-  box-shadow:0 0 10px var(--green);
-  animation:pulse 2s infinite;
-}
-@keyframes pulse{0%,100%{opacity:1;transform:scale(1);}50%{opacity:.5;transform:scale(0.8);}}
-.hdr-right{display:flex;align-items:center;gap:16px;}
-.status-chip{
-  font-family:'JetBrains Mono',monospace;
-  font-size:0.72rem;color:var(--text2);
-  background:var(--surface);border:1px solid var(--border);
-  padding:4px 12px;border-radius:20px;
-}
-.today-count{
-  font-family:'Rajdhani',sans-serif;
-  font-size:1rem;font-weight:700;color:var(--accent);
-}
-
-/* ── MAIN LAYOUT ── */
-.app{
-  position:fixed;inset:56px 0 0;
-  display:grid;
-  grid-template-columns:1fr 380px;
-  gap:0;
-  z-index:1;
-}
-
-/* ── LEFT: CAMERA ZONE ── */
-.cam-zone{
-  position:relative;
-  display:flex;flex-direction:column;
-  padding:20px;
-  background:var(--bg);
-  border-right:1px solid var(--border);
-}
-.cam-label{
-  font-family:'Rajdhani',sans-serif;
-  font-size:0.7rem;font-weight:600;letter-spacing:0.15em;
-  color:var(--text3);text-transform:uppercase;
-  margin-bottom:12px;
-}
-.cam-wrap{
-  position:relative;flex:1;
-  background:var(--surface);
-  border:1px solid var(--border2);
-  border-radius:var(--r);
-  overflow:hidden;
-  min-height:0;
-}
-video#camVideo{
-  width:100%;height:100%;
-  object-fit:cover;
-  display:block;
-  transform:scaleX(-1); /* mirror for selfie feel */
-}
-.cam-placeholder{
-  position:absolute;inset:0;
-  display:flex;flex-direction:column;align-items:center;justify-content:center;
-  gap:12px;color:var(--text3);
-}
-.cam-placeholder .cam-icon{font-size:3rem;opacity:.4;}
-.cam-placeholder p{font-size:.82rem;text-align:center;line-height:1.5;max-width:200px;}
-
-/* scan overlay — corners */
-.scan-corners{
-  position:absolute;inset:16px;pointer-events:none;
-  opacity:0;transition:opacity .3s;
-}
-.scan-corners.active{opacity:1;}
-.scan-corners::before,.scan-corners::after{
-  content:'';position:absolute;
-  width:28px;height:28px;
-  border-color:var(--accent);border-style:solid;
-}
-.scan-corners::before{top:0;left:0;border-width:2px 0 0 2px;}
-.scan-corners::after{top:0;right:0;border-width:2px 2px 0 0;}
-.scan-corners-b::before,.scan-corners-b::after{
-  content:'';position:absolute;
-  width:28px;height:28px;
-  border-color:var(--accent);border-style:solid;
-}
-.scan-corners-b::before{bottom:0;left:0;border-width:0 0 2px 2px;}
-.scan-corners-b::after{bottom:0;right:0;border-width:0 2px 2px 0;}
-
-/* flash effect */
-.cam-flash{
-  position:absolute;inset:0;
-  background:white;opacity:0;pointer-events:none;
-  transition:opacity .05s;
-}
-.cam-flash.flash{opacity:.8;}
-
-/* cam controls */
-.cam-controls{
-  display:flex;gap:8px;margin-top:12px;
-}
-.cam-btn{
-  flex:1;padding:10px;border:1px solid var(--border2);border-radius:8px;
-  background:var(--surface2);color:var(--text2);
-  font-family:'Noto Sans JP',sans-serif;font-size:.8rem;font-weight:500;
-  cursor:pointer;transition:all .2s;
-}
-.cam-btn:hover{border-color:var(--accent);color:var(--accent);}
-.cam-btn.active{border-color:var(--green);color:var(--green);background:rgba(0,230,118,.08);}
-.cam-btn.primary{background:var(--accent);border-color:var(--accent);color:var(--bg);font-weight:700;}
-.cam-btn.primary:hover{background:#33ddff;}
-.cam-btn:disabled{opacity:.35;cursor:not-allowed;}
-
-/* ── RIGHT: NFC + LOG PANEL ── */
-.right-panel{
-  display:flex;flex-direction:column;
-  background:var(--surface);
-  overflow:hidden;
-}
-
-/* NFC INPUT ZONE */
-.nfc-zone{
-  padding:20px;
-  border-bottom:1px solid var(--border);
-}
-.nfc-label{
-  font-family:'Rajdhani',sans-serif;
-  font-size:.7rem;font-weight:600;letter-spacing:.15em;
-  color:var(--text3);text-transform:uppercase;
-  margin-bottom:10px;
-}
-.nfc-status{
-  position:relative;
-  background:var(--surface2);
-  border:2px solid var(--border2);
-  border-radius:var(--r);
-  padding:18px 20px;
-  cursor:pointer;
-  transition:border-color .3s;
-  min-height:80px;
-  display:flex;flex-direction:column;justify-content:center;
-  overflow:hidden;
-}
-.nfc-status:focus-within{border-color:var(--accent);}
-.nfc-status.ready{border-color:var(--accent);box-shadow:0 0 20px rgba(0,212,255,.1);}
-.nfc-status.scanning{border-color:var(--amber);animation:borderPulse 1s infinite;}
-.nfc-status.success{border-color:var(--green);}
-.nfc-status.error{border-color:var(--red);}
-@keyframes borderPulse{0%,100%{box-shadow:0 0 0 0 rgba(255,171,0,.4);}50%{box-shadow:0 0 0 6px rgba(255,171,0,0);}}
-
-.nfc-status-icon{
-  font-size:1.4rem;margin-bottom:4px;
-}
-.nfc-status-text{
-  font-family:'JetBrains Mono',monospace;
-  font-size:.75rem;color:var(--text2);
-}
-.nfc-status-sub{
-  font-size:.68rem;color:var(--text3);margin-top:2px;
-}
-#nfcInput{
-  position:absolute;inset:0;opacity:0;cursor:pointer;
-  width:100%;height:100%;
-}
-
-/* wave animation */
-.nfc-wave{
-  position:absolute;inset:0;pointer-events:none;
-  display:flex;align-items:center;justify-content:flex-end;
-  padding-right:16px;opacity:.3;
-}
-.nfc-wave svg{width:48px;height:48px;}
-
-/* MEMBER CARD */
-.member-card{
-  margin-top:12px;
-  background:var(--surface3);
-  border:1px solid var(--border2);
-  border-radius:var(--r);
-  padding:14px 16px;
-  display:none;
-  animation:slideIn .25s ease;
-}
-.member-card.show{display:block;}
-@keyframes slideIn{from{opacity:0;transform:translateY(-6px);}to{opacity:1;transform:translateY(0);}}
-.mc-top{display:flex;align-items:center;gap:12px;margin-bottom:10px;}
-.mc-avatar{
-  width:46px;height:46px;border-radius:50%;
-  background:linear-gradient(135deg,var(--accent),#0066aa);
-  display:flex;align-items:center;justify-content:center;
-  font-family:'Rajdhani',sans-serif;font-size:1.3rem;font-weight:700;color:var(--bg);
-  flex-shrink:0;
-  box-shadow:0 0 16px rgba(0,212,255,.25);
-}
-.mc-name{font-weight:700;font-size:.95rem;}
-.mc-sub{font-size:.72rem;color:var(--text2);margin-top:1px;}
-.mc-badges{display:flex;gap:6px;flex-wrap:wrap;}
-.badge{
-  font-size:.62rem;font-weight:700;letter-spacing:.05em;
-  padding:2px 8px;border-radius:10px;
-  font-family:'Rajdhani',sans-serif;
-}
-.badge.course{background:rgba(0,212,255,.15);color:var(--accent);border:1px solid rgba(0,212,255,.2);}
-.badge.grade{background:rgba(0,230,118,.12);color:var(--green);border:1px solid rgba(0,230,118,.2);}
-.badge.already{background:rgba(255,171,0,.12);color:var(--amber);border:1px solid rgba(255,171,0,.2);}
-
-/* REGISTER BTN */
-.reg-btn{
-  width:100%;margin-top:10px;padding:13px;
-  background:var(--green);color:var(--bg);
-  border:none;border-radius:8px;
-  font-family:'Rajdhani',sans-serif;font-size:1rem;font-weight:700;
-  letter-spacing:.08em;cursor:pointer;
-  transition:all .2s;
-  box-shadow:0 0 20px rgba(0,230,118,.3);
-}
-.reg-btn:hover{background:#33ff99;box-shadow:0 0 28px rgba(0,230,118,.5);}
-.reg-btn:disabled{background:var(--text3);color:var(--surface);cursor:not-allowed;box-shadow:none;}
-.reg-btn.already{background:var(--amber);box-shadow:0 0 20px rgba(255,171,0,.3);}
-.reg-btn.already:hover{background:#ffc133;}
-
-/* ── LOG ── */
-.log-section{flex:1;overflow:hidden;display:flex;flex-direction:column;}
-.log-header{
-  padding:14px 20px 10px;
-  display:flex;align-items:center;justify-content:space-between;
-  border-bottom:1px solid var(--border);
-  flex-shrink:0;
-}
-.log-title{
-  font-family:'Rajdhani',sans-serif;
-  font-size:.7rem;font-weight:600;letter-spacing:.15em;
-  color:var(--text3);text-transform:uppercase;
-}
-.log-count{
-  font-family:'JetBrains Mono',monospace;
-  font-size:.7rem;color:var(--accent);
-}
-.log-list{
-  flex:1;overflow-y:auto;padding:8px 12px;
-  scrollbar-width:thin;scrollbar-color:var(--border2) transparent;
-}
-.log-item{
-  display:grid;grid-template-columns:auto 1fr auto;align-items:center;gap:10px;
-  padding:9px 10px;border-radius:8px;margin-bottom:4px;
-  background:var(--surface2);
-  animation:fadeIn .3s ease;
-  cursor:default;
-}
-@keyframes fadeIn{from{opacity:0;transform:translateX(8px);}to{opacity:1;transform:translateX(0);}}
-.log-item:first-child{background:rgba(0,230,118,.06);border:1px solid rgba(0,230,118,.1);}
-.log-avatar{
-  width:30px;height:30px;border-radius:50%;
-  background:linear-gradient(135deg,var(--surface3),var(--border2));
-  display:flex;align-items:center;justify-content:center;
-  font-size:.8rem;font-weight:700;color:var(--text2);flex-shrink:0;
-}
-.log-item:first-child .log-avatar{
-  background:linear-gradient(135deg,var(--accent),#0066aa);
-  color:var(--bg);
-}
-.log-name{font-size:.82rem;font-weight:600;}
-.log-meta{font-size:.65rem;color:var(--text2);}
-.log-time{
-  font-family:'JetBrains Mono',monospace;
-  font-size:.65rem;color:var(--text3);
-  white-space:nowrap;
-}
-.log-face{
-  width:30px;height:30px;border-radius:50%;object-fit:cover;
-  border:1px solid var(--border2);cursor:pointer;
-}
-
-/* ── TOAST ── */
-.toast{
-  position:fixed;bottom:24px;left:50%;
-  transform:translateX(-50%) translateY(20px);
-  background:var(--green);color:var(--bg);
-  padding:10px 22px;border-radius:20px;
-  font-size:.82rem;font-weight:700;
-  opacity:0;transition:all .3s;z-index:999;
-  white-space:nowrap;pointer-events:none;
-  box-shadow:0 0 20px rgba(0,230,118,.5);
-}
-.toast.show{opacity:1;transform:translateX(-50%) translateY(0);}
-.toast.err{background:var(--red);box-shadow:0 0 20px rgba(255,61,87,.5);}
-.toast.warn{background:var(--amber);box-shadow:0 0 20px rgba(255,171,0,.4);}
-
-/* ── FACE LIGHTBOX ── */
-.lbx{
-  display:none;position:fixed;inset:0;background:rgba(0,0,0,.88);
-  z-index:999;align-items:center;justify-content:center;cursor:zoom-out;
-}
+body{font-family:'Noto Sans JP',sans-serif;background:var(--bg);color:var(--tx);min-height:100dvh;overflow:hidden;}
+body::before{content:'';position:fixed;inset:0;pointer-events:none;z-index:0;
+  background-image:linear-gradient(rgba(0,212,255,.03) 1px,transparent 1px),linear-gradient(90deg,rgba(0,212,255,.03) 1px,transparent 1px);
+  background-size:44px 44px;}
+.hdr{position:fixed;top:0;left:0;right:0;z-index:100;height:52px;
+  background:rgba(6,10,15,.95);backdrop-filter:blur(20px);border-bottom:1px solid var(--bd);
+  padding:0 20px;display:flex;align-items:center;justify-content:space-between;}
+.hdr-title{font-family:'Rajdhani',sans-serif;font-size:1.1rem;font-weight:700;
+  letter-spacing:.12em;color:var(--cy);text-transform:uppercase;display:flex;align-items:center;gap:8px;}
+.live-dot{width:7px;height:7px;border-radius:50%;background:var(--gn);box-shadow:0 0 8px var(--gn);animation:blink 2s infinite;}
+@keyframes blink{0%,100%{opacity:1;}50%{opacity:.3;}}
+.hdr-right{display:flex;align-items:center;gap:12px;}
+.hdr-stat{font-family:'JetBrains Mono',monospace;font-size:.72rem;color:var(--tx2);background:var(--sur);border:1px solid var(--bd);padding:3px 10px;border-radius:16px;}
+.hdr-count{font-family:'Rajdhani',sans-serif;font-size:.95rem;font-weight:700;color:var(--cy);}
+.hdr-back{font-size:.75rem;color:var(--tx2);text-decoration:none;background:var(--sur);border:1px solid var(--bd);padding:4px 12px;border-radius:16px;transition:all .2s;}
+.hdr-back:hover{color:var(--cy);border-color:var(--cy);}
+.app{position:fixed;inset:52px 0 0;display:grid;grid-template-columns:1fr 360px;z-index:1;}
+.cam-side{display:flex;flex-direction:column;padding:14px;gap:12px;background:var(--bg);border-right:1px solid var(--bd);overflow:hidden;}
+.cam-mini{position:relative;width:180px;height:135px;background:var(--sur);border:1px solid var(--bd2);border-radius:var(--r);overflow:hidden;flex-shrink:0;align-self:flex-start;}
+video#camVideo{width:100%;height:100%;object-fit:cover;transform:scaleX(-1);display:block;}
+canvas#faceCanvas{position:absolute;inset:0;width:100%;height:100%;transform:scaleX(-1);pointer-events:none;}
+.cam-mini-status{position:absolute;bottom:0;left:0;right:0;background:rgba(6,10,15,.8);font-size:.58rem;color:var(--tx2);padding:3px 7px;font-family:'JetBrains Mono',monospace;display:flex;align-items:center;gap:5px;}
+.face-dot{width:5px;height:5px;border-radius:50%;background:var(--tx3);transition:background .3s;}
+.face-dot.on{background:var(--gn);box-shadow:0 0 6px var(--gn);}
+.cam-ph{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;color:var(--tx3);font-size:.68rem;}
+.cam-ph span{font-size:1.4rem;}
+.nfc-area{flex:1;display:flex;flex-direction:column;justify-content:center;align-items:center;gap:14px;position:relative;}
+.nfc-ring{width:150px;height:150px;border-radius:50%;border:2px solid var(--bd2);display:flex;align-items:center;justify-content:center;position:relative;transition:border-color .4s,box-shadow .4s;}
+.nfc-ring::before{content:'';position:absolute;inset:-6px;border-radius:50%;border:1px solid rgba(0,212,255,.12);}
+.nfc-ring.ready{border-color:var(--cy);box-shadow:0 0 22px rgba(0,212,255,.14);}
+.nfc-ring.scanning{border-color:var(--am);box-shadow:0 0 22px rgba(255,171,0,.2);animation:sp 1s infinite;}
+.nfc-ring.found{border-color:var(--gn);box-shadow:0 0 28px rgba(0,230,118,.22);}
+.nfc-ring.unknown{border-color:var(--rd);box-shadow:0 0 22px rgba(255,61,87,.2);}
+@keyframes sp{0%,100%{transform:scale(1);}50%{transform:scale(1.03);}}
+.nfc-inner{text-align:center;}
+.nfc-icon{font-size:2.2rem;margin-bottom:5px;}
+.nfc-txt{font-family:'Rajdhani',sans-serif;font-size:.78rem;font-weight:600;letter-spacing:.08em;color:var(--tx2);text-transform:uppercase;}
+.nfc-sub{font-size:.63rem;color:var(--tx3);margin-top:2px;}
+.found-card{position:absolute;inset:0;display:none;flex-direction:column;align-items:center;justify-content:center;gap:10px;padding:14px;animation:popIn .25s ease;}
+.found-card.show{display:flex;}
+@keyframes popIn{from{opacity:0;transform:scale(.92);}to{opacity:1;transform:scale(1);}}
+.fc-av{width:60px;height:60px;border-radius:50%;background:linear-gradient(135deg,var(--cy),#0066aa);display:flex;align-items:center;justify-content:center;font-family:'Rajdhani',sans-serif;font-size:1.7rem;font-weight:700;color:var(--bg);box-shadow:0 0 18px rgba(0,212,255,.3);position:relative;overflow:hidden;}
+.fc-avimg{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;border-radius:50%;}
+.fc-name{font-weight:700;font-size:1.05rem;text-align:center;}
+.fc-sub{font-size:.7rem;color:var(--tx2);text-align:center;}
+.fc-badges{display:flex;gap:5px;flex-wrap:wrap;justify-content:center;}
+.bdg{font-size:.6rem;font-weight:700;padding:2px 8px;border-radius:10px;font-family:'Rajdhani',sans-serif;}
+.bdg.co{background:rgba(0,212,255,.15);color:var(--cy);border:1px solid rgba(0,212,255,.2);}
+.bdg.gr{background:rgba(0,230,118,.12);color:var(--gn);border:1px solid rgba(0,230,118,.2);}
+.bdg.dp{background:rgba(255,171,0,.12);color:var(--am);border:1px solid rgba(255,171,0,.2);}
+.bdg.bi{background:rgba(155,89,255,.15);color:var(--pu);border:1px solid rgba(155,89,255,.2);}
+.shot-prev{width:48px;height:48px;border-radius:50%;object-fit:cover;border:2px solid var(--gn);display:none;box-shadow:0 0 10px rgba(0,230,118,.3);}
+.shot-prev.show{display:block;}
+.reg-btn{padding:11px 28px;border:none;border-radius:22px;background:var(--gn);color:var(--bg);font-family:'Rajdhani',sans-serif;font-size:.95rem;font-weight:700;letter-spacing:.06em;cursor:pointer;transition:all .2s;box-shadow:0 0 16px rgba(0,230,118,.28);}
+.reg-btn:hover{background:#33ff99;}
+.reg-btn:disabled{background:var(--tx3);color:var(--sur);cursor:not-allowed;box-shadow:none;}
+.reg-btn.dp{background:var(--am);box-shadow:0 0 16px rgba(255,171,0,.28);}
+.reg-btn.dp:hover{background:#ffc133;}
+.cam-bottom{display:flex;gap:7px;flex-wrap:wrap;}
+.cbtn{padding:7px 13px;border:1px solid var(--bd2);border-radius:8px;background:var(--sur2);color:var(--tx2);font-family:'Noto Sans JP',sans-serif;font-size:.73rem;cursor:pointer;transition:all .2s;}
+.cbtn:hover{border-color:var(--cy);color:var(--cy);}
+.cbtn.on{border-color:var(--gn);color:var(--gn);background:rgba(0,230,118,.06);}
+.cbtn:disabled{opacity:.35;cursor:not-allowed;}
+.right-panel{display:flex;flex-direction:column;background:var(--sur);overflow:hidden;}
+.sw{padding:10px 12px;border-bottom:1px solid var(--bd);}
+.si{width:100%;padding:8px 12px;background:var(--sur2);border:1px solid var(--bd2);border-radius:8px;color:var(--tx);font-family:'Noto Sans JP',sans-serif;font-size:.78rem;outline:none;transition:border-color .2s;}
+.si:focus{border-color:var(--cy);}
+.si::placeholder{color:var(--tx3);}
+.sr{background:var(--sur3);border:1px solid var(--bd2);border-radius:8px;margin-top:5px;display:none;overflow:hidden;}
+.sr.open{display:block;}
+.sri{padding:8px 12px;cursor:pointer;transition:background .15s;display:flex;align-items:center;gap:8px;border-bottom:1px solid var(--bd);font-size:.78rem;}
+.sri:last-child{border-bottom:none;}
+.sri:hover{background:var(--sur2);}
+.sriv{width:24px;height:24px;border-radius:50%;background:var(--bd2);display:flex;align-items:center;justify-content:center;font-size:.7rem;font-weight:700;flex-shrink:0;}
+.log-hdr{padding:9px 14px 7px;display:flex;align-items:center;justify-content:space-between;border-bottom:1px solid var(--bd);flex-shrink:0;}
+.log-title{font-family:'Rajdhani',sans-serif;font-size:.67rem;font-weight:600;letter-spacing:.12em;color:var(--tx3);text-transform:uppercase;}
+.log-n{font-family:'JetBrains Mono',monospace;font-size:.68rem;color:var(--cy);}
+.log-list{flex:1;overflow-y:auto;padding:5px 9px;scrollbar-width:thin;scrollbar-color:var(--bd2) transparent;}
+.li{display:grid;grid-template-columns:auto 1fr auto;align-items:center;gap:7px;padding:7px 8px;border-radius:8px;margin-bottom:3px;background:var(--sur2);animation:slog .25s ease;}
+@keyframes slog{from{opacity:0;transform:translateX(5px);}to{opacity:1;transform:translateX(0);}}
+.li:first-child{background:rgba(0,230,118,.06);border:1px solid rgba(0,230,118,.1);}
+.liav{width:27px;height:27px;border-radius:50%;background:var(--bd2);display:flex;align-items:center;justify-content:center;font-size:.73rem;font-weight:700;flex-shrink:0;overflow:hidden;}
+.liav img{width:100%;height:100%;object-fit:cover;border-radius:50%;}
+.li:first-child .liav{background:linear-gradient(135deg,var(--cy),#0066aa);color:var(--bg);}
+.linm{font-size:.78rem;font-weight:600;}
+.limt{font-size:.6rem;color:var(--tx2);}
+.lir{display:flex;align-items:center;gap:5px;}
+.litm{font-family:'JetBrains Mono',monospace;font-size:.6rem;color:var(--tx3);}
+.liface{width:24px;height:24px;border-radius:50%;object-fit:cover;border:1px solid var(--bd2);cursor:pointer;}
+.lidel{width:17px;height:17px;border-radius:50%;background:rgba(255,61,87,.14);border:1px solid rgba(255,61,87,.3);color:var(--rd);font-size:.58rem;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:all .2s;flex-shrink:0;}
+.lidel:hover{background:rgba(255,61,87,.3);}
+#nfcInput{position:fixed;left:-9999px;top:0;width:1px;height:1px;opacity:0;}
+.flash{position:fixed;inset:0;background:white;opacity:0;pointer-events:none;z-index:500;transition:opacity .06s;}
+.flash.go{opacity:.65;}
+.lbx{display:none;position:fixed;inset:0;background:rgba(0,0,0,.9);z-index:999;align-items:center;justify-content:center;cursor:zoom-out;}
 .lbx.open{display:flex;}
-.lbx img{max-width:80vw;max-height:80vh;border-radius:12px;border:1px solid var(--border2);}
-
-/* manual search */
-.manual-wrap{padding:12px 20px;border-bottom:1px solid var(--border);}
-.manual-inp{
-  width:100%;padding:9px 14px;
-  background:var(--surface2);border:1px solid var(--border2);
-  border-radius:8px;color:var(--text);
-  font-family:'Noto Sans JP',sans-serif;font-size:.82rem;outline:none;
-  transition:border-color .2s;
-}
-.manual-inp:focus{border-color:var(--accent);}
-.manual-inp::placeholder{color:var(--text3);}
-.manual-results{
-  background:var(--surface3);border:1px solid var(--border2);
-  border-radius:8px;margin-top:6px;display:none;overflow:hidden;
-}
-.manual-results.show{display:block;}
-.manual-result-item{
-  padding:9px 14px;cursor:pointer;transition:background .15s;
-  display:flex;align-items:center;gap:8px;
-  border-bottom:1px solid var(--border);font-size:.82rem;
-}
-.manual-result-item:last-child{border-bottom:none;}
-.manual-result-item:hover{background:var(--surface2);}
-
-/* responsive */
-@media(max-width:700px){
-  .app{grid-template-columns:1fr;grid-template-rows:1fr auto;}
-  .cam-zone{min-height:260px;}
-  .right-panel{max-height:50dvh;}
+.lbx img{max-width:80vw;max-height:80vh;border-radius:12px;}
+.toast{position:fixed;bottom:18px;left:50%;transform:translateX(-50%) translateY(14px);background:var(--gn);color:var(--bg);padding:8px 18px;border-radius:16px;font-size:.78rem;font-weight:700;opacity:0;transition:all .3s;z-index:998;white-space:nowrap;pointer-events:none;}
+.toast.show{opacity:1;transform:translateX(-50%) translateY(0);}
+.toast.err{background:var(--rd);}
+.toast.warn{background:var(--am);}
+.lbar{position:fixed;top:52px;left:0;right:0;height:2px;background:linear-gradient(90deg,transparent,var(--cy),transparent);animation:lb 1.5s infinite;z-index:200;display:none;}
+.lbar.show{display:block;}
+@keyframes lb{0%{transform:translateX(-100%);}100%{transform:translateX(100%);}}
+@media(max-width:640px){
+  .app{grid-template-columns:1fr;grid-template-rows:auto 1fr;}
+  .cam-side{flex-direction:row;flex-wrap:wrap;padding:8px;gap:8px;max-height:190px;}
+  .nfc-ring{width:90px;height:90px;}
+  .nfc-icon{font-size:1.5rem;}
+  .right-panel{overflow-y:auto;}
 }
 </style>
 </head>
 <body>
-
+<div class="lbar" id="lbar"></div>
 <header class="hdr">
-  <div class="hdr-title">⚡ NFC出席登録</div>
+  <div class="hdr-title"><div class="live-dot"></div>NFC出席登録</div>
   <div class="hdr-right">
-    <div class="status-chip" id="memberCount">会員 読込中...</div>
-    <div class="today-count">本日 <span id="todayCount">0</span>名</div>
+    <div class="hdr-stat" id="mstat">読込中...</div>
+    <div class="hdr-count">本日 <span id="todayN">0</span>名</div>
+    <a href="index.html" class="hdr-back">← HOME</a>
   </div>
 </header>
-
+<input type="text" id="nfcInput" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" oninput="onNfcIn(this.value)" onkeydown="onNfcKey(event)">
 <div class="app">
-
-  <!-- ── 左：カメラ ── -->
-  <div class="cam-zone">
-    <div class="cam-label">📷 カメラ — 顔写真撮影</div>
-    <div class="cam-wrap" id="camWrap">
+  <div class="cam-side">
+    <div class="cam-mini">
       <video id="camVideo" autoplay playsinline muted></video>
-      <div class="cam-placeholder" id="camPlaceholder">
-        <div class="cam-icon">🎥</div>
-        <p>カメラを起動してNFCをタッチすると<br>自動で撮影します</p>
+      <canvas id="faceCanvas"></canvas>
+      <div class="cam-ph" id="camPh"><span>🎥</span><div>起動中...</div></div>
+      <div class="cam-mini-status">
+        <div class="face-dot" id="fdot"></div>
+        <span id="fstat">顔未検出</span>
       </div>
-      <div class="scan-corners" id="scanCorners"></div>
-      <div class="scan-corners-b" id="scanCornersB"></div>
-      <div class="cam-flash" id="camFlash"></div>
     </div>
-    <div class="cam-controls">
-      <button class="cam-btn" id="camToggleBtn" onclick="toggleCamera()">📷 カメラ起動</button>
-      <button class="cam-btn" id="manualShootBtn" onclick="manualShoot()" disabled>📸 手動撮影</button>
-      <button class="cam-btn" onclick="clearPhoto()" id="clearPhotoBtn" style="display:none;">🗑 消去</button>
+    <div class="nfc-area">
+      <div class="nfc-ring ready" id="nring">
+        <div class="nfc-inner" id="ninner">
+          <div class="nfc-icon">📡</div>
+          <div class="nfc-txt">カードをタッチ</div>
+          <div class="nfc-sub">NFCリーダーにかざしてください</div>
+        </div>
+      </div>
+      <div class="found-card" id="fcard">
+        <div class="fc-av" id="fcav">
+          <img class="fc-avimg" id="fcimg" src="" alt="" style="display:none;">
+          <span id="fcinit">?</span>
+        </div>
+        <div><div class="fc-name" id="fcnm">—</div><div class="fc-sub" id="fcsb">—</div></div>
+        <div class="fc-badges" id="fcbdg"></div>
+        <img class="shot-prev" id="shotprev" src="" alt="撮影">
+        <button class="reg-btn" id="regbtn" onclick="doReg()">✓ 出席を登録する</button>
+        <button class="cbtn" onclick="cancelSel()" style="font-size:.68rem;padding:4px 12px;">キャンセル</button>
+      </div>
+    </div>
+    <div class="cam-bottom">
+      <button class="cbtn on" id="camtgl" onclick="toggleCam()">📷 カメラ停止</button>
+      <button class="cbtn" id="mshot" onclick="doManShot()">📸 手動撮影</button>
+      <button class="cbtn" id="clrshot" style="display:none;" onclick="clearShot()">🗑 写真消去</button>
     </div>
   </div>
-
-  <!-- ── 右：NFC＋ログ ── -->
   <div class="right-panel">
-
-    <!-- NFC入力 -->
-    <div class="nfc-zone">
-      <div class="nfc-label">🔖 NFCカード読み取り</div>
-      <div class="nfc-status ready" id="nfcStatus" onclick="document.getElementById('nfcInput').focus()">
-        <input type="text" id="nfcInput" autocomplete="off" autocorrect="off"
-          autocapitalize="off" spellcheck="false"
-          oninput="onNfcInput(this.value)"
-          onkeydown="onNfcKey(event)">
-        <div class="nfc-wave">
-          <svg viewBox="0 0 48 48" fill="none">
-            <path d="M6 24 C6 13.5 13.5 6 24 6" stroke="rgba(0,212,255,.4)" stroke-width="2" stroke-linecap="round"/>
-            <path d="M2 24 C2 11.3 11.3 2 24 2" stroke="rgba(0,212,255,.25)" stroke-width="2" stroke-linecap="round"/>
-            <path d="M10 24 C10 15.7 15.7 10 24 10" stroke="rgba(0,212,255,.6)" stroke-width="2" stroke-linecap="round"/>
-            <circle cx="24" cy="24" r="4" fill="rgba(0,212,255,.7)"/>
-          </svg>
-        </div>
-        <div class="nfc-status-icon" id="nfcIcon">📡</div>
-        <div class="nfc-status-text" id="nfcText">カードをリーダーにタッチしてください</div>
-        <div class="nfc-status-sub" id="nfcSub">または下の検索で名前から選択</div>
-      </div>
-
-      <!-- 会員カード -->
-      <div class="member-card" id="memberCard">
-        <div class="mc-top">
-          <div class="mc-avatar" id="mcAvatar">?</div>
-          <div>
-            <div class="mc-name" id="mcName">—</div>
-            <div class="mc-sub" id="mcSub">—</div>
-          </div>
-        </div>
-        <div class="mc-badges" id="mcBadges"></div>
-        <button class="reg-btn" id="regBtn" onclick="registerAttendance()">✓ 出席を登録する</button>
-      </div>
+    <div class="sw">
+      <input class="si" id="sinp" type="text" placeholder="🔍 名前で検索して手動選択..." oninput="onSearch(this.value)" autocomplete="off">
+      <div class="sr" id="sres"></div>
     </div>
-
-    <!-- 手動名前検索 -->
-    <div class="manual-wrap">
-      <input class="manual-inp" id="manualSearch" type="text"
-        placeholder="🔍 名前で検索..."
-        oninput="onManualSearch(this.value)"
-        autocomplete="off">
-      <div class="manual-results" id="manualResults"></div>
+    <div class="log-hdr">
+      <div class="log-title">本日の出席ログ</div>
+      <div class="log-n" id="logn">0件</div>
     </div>
-
-    <!-- 出席ログ -->
-    <div class="log-section">
-      <div class="log-header">
-        <div class="log-title">本日の出席ログ</div>
-        <div class="log-count" id="logCount">0件</div>
-      </div>
-      <div class="log-list" id="logList">
-        <div style="text-align:center;padding:24px;color:var(--text3);font-size:.8rem;">
-          まだ出席記録がありません
-        </div>
-      </div>
+    <div class="log-list" id="loglist">
+      <div style="text-align:center;padding:24px;color:var(--tx3);font-size:.76rem;">まだ出席記録がありません</div>
     </div>
   </div>
 </div>
-
-<div class="lbx" id="lbx" onclick="closeLbx()">
-  <img id="lbxImg" src="" alt="">
-</div>
+<div class="flash" id="flash"></div>
+<div class="lbx" id="lbx" onclick="closeLbx()"><img id="lbximg" src="" alt=""></div>
 <div class="toast" id="toast"></div>
-
 <script>
-const GAS_URL = 'https://script.google.com/macros/s/AKfycbyVH4yXtC0PsG4gwbWITAnsMFUdwvMSij2hNsZ9z4bfRTRS0RxHzqvZZeaN3AVIEOte/exec';
+const GAS='https://script.google.com/macros/s/AKfycbyVH4yXtC0PsG4gwbWITAnsMFUdwvMSij2hNsZ9z4bfRTRS0RxHzqvZZeaN3AVIEOte/exec';
+const MODEL_URL='/monjuni/models';
+let MEMBERS=[],LOG=[],cam=null,curMember=null,lastShot=null,nfcBuf='',nfcTmr=null,modelsOK=false,faceOK=false,faceLoop=false;
 
-// ── STATE ──
-let MEMBERS = [];
-let todayLog = []; // { nfcId, name, time, photo, grade, course }
-let cameraStream = null;
-let currentMember = null;
-let nfcBuffer = '';
-let nfcTimer = null;
-let lastPhoto = null; // base64
-
-// ── INIT ──
-async function init() {
-  await loadMembers();
+async function init(){
+  setLoad(true);
+  loadSession();
+  await Promise.all([loadMembers(),startCam()]);
+  loadModels();
+  loadTodayGas();
+  setLoad(false);
   focusNfc();
-  loadTodayLog();
+}
+function setLoad(b){document.getElementById('lbar').classList.toggle('show',b);}
+
+async function loadMembers(){
+  try{
+    const r=await fetch(GAS+'?action=getMembers');
+    const d=await r.json();
+    if(d.members&&d.members.length){MEMBERS=d.members;document.getElementById('mstat').textContent='会員 '+MEMBERS.length+'名';}
+  }catch(e){document.getElementById('mstat').textContent='会員 オフライン';}
 }
 
-async function loadMembers() {
-  try {
-    const r = await fetch(GAS_URL + '?action=getMembers');
-    const d = await r.json();
-    if (d.members && d.members.length) {
-      MEMBERS = d.members;
-      document.getElementById('memberCount').textContent = `会員 ${MEMBERS.length}名`;
-    }
-  } catch(e) {
-    document.getElementById('memberCount').textContent = '会員 オフライン';
+async function startCam(){
+  try{
+    cam=await navigator.mediaDevices.getUserMedia({video:{width:{ideal:640},height:{ideal:480},facingMode:'user'},audio:false});
+    const v=document.getElementById('camVideo');
+    v.srcObject=cam;
+    document.getElementById('camPh').style.display='none';
+    document.getElementById('camtgl').textContent='📷 カメラ停止';
+    document.getElementById('camtgl').classList.add('on');
+    document.getElementById('mshot').disabled=false;
+  }catch(e){
+    document.getElementById('camPh').querySelector('div').textContent='カメラ不可';
   }
 }
 
-// セッション内ログ保存（ページ閉じると消える）
-function loadTodayLog() {
-  try {
-    const s = sessionStorage.getItem('todayAttLog');
-    if (s) todayLog = JSON.parse(s);
-    renderLog();
-    updateCount();
-  } catch(e) {}
-}
-function saveTodayLog() {
-  sessionStorage.setItem('todayAttLog', JSON.stringify(todayLog));
-}
-
-// ── NFC INPUT ──
-function focusNfc() {
-  setTimeout(() => {
-    const el = document.getElementById('nfcInput');
-    if (el) el.focus();
-  }, 100);
-}
-
-// NFCリーダーはHIDキーボードとして動作
-// 連続入力 → 一定時間後にIDとして確定
-function onNfcInput(val) {
-  nfcBuffer = val;
-  clearTimeout(nfcTimer);
-  setNfcStatus('scanning', '⚡', 'スキャン中...', val.substring(0, 20));
-  nfcTimer = setTimeout(() => {
-    processNfcId(nfcBuffer.trim());
-    document.getElementById('nfcInput').value = '';
-    nfcBuffer = '';
-  }, 300); // 300ms で確定
-}
-
-function onNfcKey(e) {
-  // Enterキーでも確定
-  if (e.key === 'Enter' && nfcBuffer.trim()) {
-    clearTimeout(nfcTimer);
-    processNfcId(nfcBuffer.trim());
-    document.getElementById('nfcInput').value = '';
-    nfcBuffer = '';
-  }
-}
-
-function processNfcId(id) {
-  if (!id) return;
-
-  // IDで会員検索
-  // NFC IDまたはタイムスタンプIDで照合
-  const member = MEMBERS.find(m =>
-    m.nfcId === id || m.id === id ||
-    (m.nfcId && m.nfcId.toString() === id.toString())
-  );
-
-  if (!member) {
-    setNfcStatus('error', '❌', '会員が見つかりません', `ID: ${id.substring(0,16)}...`);
-    showToast('会員が見つかりません: ' + id.substring(0,12), 'err');
-    setTimeout(() => resetNfcStatus(), 3000);
-    return;
-  }
-
-  selectMember(member);
-
-  // カメラが起動中なら自動撮影
-  if (cameraStream) {
-    setTimeout(() => autoShoot(), 500);
-  }
-}
-
-function selectMember(member) {
-  currentMember = member;
-  const alreadyIn = todayLog.some(l => l.nfcId === member.nfcId || l.nfcId === member.id);
-
-  setNfcStatus('success', '✅', member.name, member.furigana || '');
-
-  // 会員カード表示
-  document.getElementById('mcAvatar').textContent = member.name[0];
-  document.getElementById('mcName').textContent = member.name;
-  document.getElementById('mcSub').textContent = (member.furigana || '') + (member.grade ? ' · ' + member.grade : '') + (member.course ? ' · ' + member.course : '');
-
-  const badgesEl = document.getElementById('mcBadges');
-  badgesEl.innerHTML = '';
-  if (member.course) badgesEl.innerHTML += `<span class="badge course">${member.course}</span>`;
-  if (member.grade) badgesEl.innerHTML += `<span class="badge grade">${member.grade}</span>`;
-  if (alreadyIn) badgesEl.innerHTML += `<span class="badge already">本日登録済み</span>`;
-
-  const btn = document.getElementById('regBtn');
-  if (alreadyIn) {
-    btn.textContent = '⚠ 再登録する（重複）';
-    btn.className = 'reg-btn already';
-  } else {
-    btn.textContent = '✓ 出席を登録する';
-    btn.className = 'reg-btn';
-  }
-  btn.disabled = false;
-
-  document.getElementById('memberCard').classList.add('show');
-
-  // スキャンコーナー表示
-  document.getElementById('scanCorners').classList.add('active');
-  document.getElementById('scanCornersB').classList.add('active');
-}
-
-// ── CAMERA ──
-async function toggleCamera() {
-  if (cameraStream) {
-    stopCamera();
-    return;
-  }
-  try {
-    cameraStream = await navigator.mediaDevices.getUserMedia({
-      video: { width: { ideal: 1280 }, height: { ideal: 720 }, facingMode: 'user' },
-      audio: false
-    });
-    const video = document.getElementById('camVideo');
-    video.srcObject = cameraStream;
-    document.getElementById('camPlaceholder').style.display = 'none';
-    document.getElementById('camToggleBtn').textContent = '⏹ カメラ停止';
-    document.getElementById('camToggleBtn').classList.add('active');
-    document.getElementById('manualShootBtn').disabled = false;
-    showToast('カメラ起動しました');
-  } catch(e) {
-    showToast('カメラにアクセスできません', 'err');
+function toggleCam(){
+  if(cam){
+    cam.getTracks().forEach(t=>t.stop());cam=null;faceLoop=false;
+    document.getElementById('camPh').style.display='flex';
+    document.getElementById('camtgl').textContent='📷 カメラ起動';
+    document.getElementById('camtgl').classList.remove('on');
+    document.getElementById('mshot').disabled=true;
+  }else{
+    startCam().then(()=>{if(modelsOK)startDetect();});
   }
   focusNfc();
 }
 
-function stopCamera() {
-  if (cameraStream) {
-    cameraStream.getTracks().forEach(t => t.stop());
-    cameraStream = null;
+async function loadModels(){
+  try{
+    await faceapi.nets.tinyFaceDetector.loadFromUri(MODEL_URL);
+    modelsOK=true;
+    startDetect();
+  }catch(e){console.warn('face-api model load failed');}
+}
+
+function startDetect(){
+  if(faceLoop||!cam||!modelsOK)return;
+  faceLoop=true;
+  detLoop();
+}
+
+async function detLoop(){
+  if(!faceLoop||!cam)return;
+  const v=document.getElementById('camVideo');
+  const c=document.getElementById('faceCanvas');
+  if(v.readyState===4){
+    try{
+      const det=await faceapi.detectSingleFace(v,new faceapi.TinyFaceDetectorOptions({inputSize:160,scoreThreshold:.5}));
+      const ctx=c.getContext('2d');
+      c.width=v.videoWidth||180;c.height=v.videoHeight||135;
+      ctx.clearRect(0,0,c.width,c.height);
+      if(det){
+        faceOK=true;
+        document.getElementById('fdot').classList.add('on');
+        document.getElementById('fstat').textContent='顔検出中';
+        const b=det.box;
+        ctx.strokeStyle='#00e676';ctx.lineWidth=2;
+        ctx.strokeRect(b.x,b.y,b.width,b.height);
+      }else{
+        faceOK=false;
+        document.getElementById('fdot').classList.remove('on');
+        document.getElementById('fstat').textContent='顔未検出';
+      }
+    }catch(e){}
   }
-  document.getElementById('camPlaceholder').style.display = 'flex';
-  document.getElementById('camToggleBtn').textContent = '📷 カメラ起動';
-  document.getElementById('camToggleBtn').classList.remove('active');
-  document.getElementById('manualShootBtn').disabled = true;
+  setTimeout(detLoop,300);
 }
 
-function autoShoot() {
-  if (!cameraStream) return;
-  flash();
-  captureFrame();
+function focusNfc(){setTimeout(()=>{const e=document.getElementById('nfcInput');if(e)e.focus();},80);}
+
+function onNfcIn(val){
+  nfcBuf=val;clearTimeout(nfcTmr);
+  setRing('scanning');
+  nfcTmr=setTimeout(()=>{
+    processId(nfcBuf.trim());
+    document.getElementById('nfcInput').value='';nfcBuf='';
+  },300);
+}
+function onNfcKey(e){
+  if(e.key==='Enter'&&nfcBuf.trim()){
+    clearTimeout(nfcTmr);processId(nfcBuf.trim());
+    document.getElementById('nfcInput').value='';nfcBuf='';
+  }
 }
 
-function manualShoot() {
-  if (!cameraStream) return;
-  flash();
-  captureFrame();
+function processId(id){
+  if(!id)return;
+  const m=MEMBERS.find(m=>m.nfcId===id||m.id===id||String(m.nfcId)===String(id));
+  if(!m){setRing('unknown');showToast('会員が見つかりません','err');setTimeout(resetRing,3000);return;}
+  showMember(m);
+  if(cam&&faceOK)setTimeout(doAutoShot,500);
 }
 
-function flash() {
-  const f = document.getElementById('camFlash');
-  f.classList.add('flash');
-  setTimeout(() => f.classList.remove('flash'), 150);
+function showMember(m){
+  curMember=m;
+  const dup=LOG.some(l=>(l.nfcId===m.nfcId||l.nfcId===m.id)&&l.date===today());
+  document.getElementById('fcinit').textContent=m.name[0];
+  if(m.facePhoto){
+    document.getElementById('fcimg').src=m.facePhoto;
+    document.getElementById('fcimg').style.display='block';
+    document.getElementById('fcinit').style.display='none';
+  }else{
+    document.getElementById('fcimg').style.display='none';
+    document.getElementById('fcinit').style.display='';
+  }
+  document.getElementById('fcnm').textContent=m.name;
+  document.getElementById('fcsb').textContent=[m.furigana,m.grade,m.course].filter(Boolean).join(' · ');
+  const bd=document.getElementById('fcbdg');bd.innerHTML='';
+  if(m.course)bd.innerHTML+=`<span class="bdg co">${m.course}</span>`;
+  if(m.grade)bd.innerHTML+=`<span class="bdg gr">${m.grade}</span>`;
+  if(dup)bd.innerHTML+=`<span class="bdg dp">本日登録済み</span>`;
+  if(m.bibColor&&m.bibNumber)bd.innerHTML+=`<span class="bdg bi">🎽 ${m.bibColor} #${m.bibNumber}</span>`;
+  const btn=document.getElementById('regbtn');
+  btn.disabled=false;
+  btn.className=dup?'reg-btn dp':'reg-btn';
+  btn.textContent=dup?'⚠ 再登録（重複）':'✓ 出席を登録する';
+  document.getElementById('shotprev').classList.remove('show');
+  document.getElementById('fcard').classList.add('show');
+  setRing('found');focusNfc();
 }
 
-function captureFrame() {
-  const video = document.getElementById('camVideo');
-  const canvas = document.createElement('canvas');
-  canvas.width = 640; canvas.height = 480;
-  const ctx = canvas.getContext('2d');
-  // mirror補正
-  ctx.translate(640, 0);
-  ctx.scale(-1, 1);
-  ctx.drawImage(video, 0, 0, 640, 480);
-  lastPhoto = canvas.toDataURL('image/jpeg', 0.75);
-  document.getElementById('clearPhotoBtn').style.display = '';
-  showToast('📸 撮影しました');
+function cancelSel(){
+  curMember=null;lastShot=null;
+  document.getElementById('fcard').classList.remove('show');
+  document.getElementById('shotprev').classList.remove('show');
+  document.getElementById('clrshot').style.display='none';
+  resetRing();focusNfc();
+}
+
+function doAutoShot(){if(!cam)return;doFlash();capture();}
+function doManShot(){if(!cam)return;doFlash();capture();}
+function doFlash(){const f=document.getElementById('flash');f.classList.add('go');setTimeout(()=>f.classList.remove('go'),140);}
+
+function capture(){
+  const v=document.getElementById('camVideo');
+  const c=document.createElement('canvas');c.width=320;c.height=240;
+  const ctx=c.getContext('2d');ctx.translate(320,0);ctx.scale(-1,1);
+  ctx.drawImage(v,0,0,320,240);
+  lastShot=c.toDataURL('image/jpeg',.72);
+  const p=document.getElementById('shotprev');p.src=lastShot;p.classList.add('show');
+  document.getElementById('clrshot').style.display='';
+  showToast('📸 撮影しました');focusNfc();
+}
+
+function clearShot(){
+  lastShot=null;
+  document.getElementById('shotprev').classList.remove('show');
+  document.getElementById('clrshot').style.display='none';
   focusNfc();
 }
 
-function clearPhoto() {
-  lastPhoto = null;
-  document.getElementById('clearPhotoBtn').style.display = 'none';
-  showToast('写真を消去しました', 'warn');
-}
-
-// ── REGISTER ──
-async function registerAttendance() {
-  if (!currentMember) return;
-  const btn = document.getElementById('regBtn');
-  btn.disabled = true;
-  btn.textContent = '登録中...';
-
-  const now = new Date();
-  const time = `${String(now.getHours()).padStart(2,'0')}:${String(now.getMinutes()).padStart(2,'0')}`;
-
-  // ログに追加
-  const entry = {
-    nfcId: currentMember.nfcId || currentMember.id,
-    name: currentMember.name,
-    furigana: currentMember.furigana || '',
-    grade: currentMember.grade || '',
-    course: currentMember.course || '',
-    time,
-    photo: lastPhoto
+async function doReg(){
+  if(!curMember)return;
+  const btn=document.getElementById('regbtn');btn.disabled=true;btn.textContent='登録中...';
+  const now=new Date();
+  const t=pad(now.getHours())+':'+pad(now.getMinutes());
+  const entry={
+    id:Date.now(),nfcId:curMember.nfcId||curMember.id,
+    name:curMember.name,furigana:curMember.furigana||'',
+    grade:curMember.grade||'',course:curMember.course||'',
+    time:t,date:today(),photo:lastShot||null
   };
-  todayLog.unshift(entry);
-  saveTodayLog();
+  LOG.unshift(entry);saveSession();renderLog();updateCount();
+  try{
+    await fetch(GAS,{method:'POST',body:JSON.stringify({
+      action:'attendance',nfcId:entry.nfcId,memberId:curMember.id,
+      memberName:curMember.name,class:'通常',date:entry.date,time:entry.time
+    })});
+  }catch(e){}
+  showToast('✓ '+curMember.name+' さんの出席を登録しました');
+  cancelSel();
+}
 
-  // GASに送信
-  try {
-    await fetch(GAS_URL, {
-      method: 'POST',
-      body: JSON.stringify({
-        action: 'attendance',
-        nfcId: entry.nfcId,
-        memberId: currentMember.id,
-        memberName: currentMember.name,
-        class: '通常'
-      })
-    });
-  } catch(e) { /* オフラインでもログは残す */ }
+async function delLog(id){
+  if(!confirm('この出席記録を削除しますか？'))return;
+  LOG=LOG.filter(l=>l.id!==id);saveSession();renderLog();updateCount();
+  try{await fetch(GAS,{method:'POST',body:JSON.stringify({action:'deleteAttendance',logId:id})});}catch(e){}
+  showToast('削除しました','warn');focusNfc();
+}
 
-  renderLog();
-  updateCount();
-  showToast(`✓ ${currentMember.name} さんの出席を登録しました`);
+async function loadTodayGas(){
+  try{
+    const r=await fetch(GAS+'?action=getAttendance&date='+today());
+    const d=await r.json();
+    if(d.records&&d.records.length){
+      const ex=new Set(LOG.map(l=>l.nfcId+l.time));
+      d.records.forEach(rec=>{
+        const k=(rec.nfcId||rec.memberId||'')+(rec.time||'');
+        if(!ex.has(k)){
+          LOG.push({
+            id:rec.id||Date.now()+Math.random(),
+            nfcId:rec.nfcId||rec.memberId||'',
+            name:rec.memberName||rec.name||'—',
+            furigana:rec.furigana||'',grade:rec.grade||'',course:rec.course||'',
+            time:rec.time||'',date:today(),photo:null,fromGas:true
+          });
+        }
+      });
+      LOG.sort((a,b)=>b.time.localeCompare(a.time));
+      saveSession();renderLog();updateCount();
+    }
+  }catch(e){}
+}
 
-  // リセット
-  lastPhoto = null;
-  currentMember = null;
-  document.getElementById('memberCard').classList.remove('show');
-  document.getElementById('clearPhotoBtn').style.display = 'none';
-  document.getElementById('scanCorners').classList.remove('active');
-  document.getElementById('scanCornersB').classList.remove('active');
-  resetNfcStatus();
+function renderLog(){
+  const el=document.getElementById('loglist');
+  if(!LOG.length){el.innerHTML='<div style="text-align:center;padding:22px;color:var(--tx3);font-size:.76rem;">まだ出席記録がありません</div>';return;}
+  el.innerHTML=LOG.map(l=>`
+    <div class="li">
+      <div class="liav">${l.photo?`<img src="${l.photo}" onclick="openLbx('${l.photo}')">`:l.name[0]}</div>
+      <div><div class="linm">${l.name}</div><div class="limt">${[l.grade,l.course].filter(Boolean).join(' · ')}</div></div>
+      <div class="lir">
+        <div class="litm">${l.time}</div>
+        <button class="lidel" onclick="delLog(${l.id})" title="削除">✕</button>
+      </div>
+    </div>`).join('');
+}
+
+function updateCount(){
+  const n=LOG.filter(l=>l.date===today()).length;
+  document.getElementById('todayN').textContent=n;
+  document.getElementById('logn').textContent=n+'件';
+}
+
+function onSearch(q){
+  const el=document.getElementById('sres');
+  if(!q.trim()){el.classList.remove('open');return;}
+  const f=MEMBERS.filter(m=>m.name.includes(q)||(m.furigana||'').includes(q)).slice(0,6);
+  if(!f.length){el.classList.remove('open');return;}
+  el.innerHTML=f.map(m=>`
+    <div class="sri" onclick="onSelSearch('${m.id}')">
+      <div class="sriv">${m.name[0]}</div>
+      <div><div style="font-weight:600;">${m.name}</div>
+      <div style="font-size:.6rem;color:var(--tx2);">${m.furigana||''} · ${m.grade||''}</div></div>
+    </div>`).join('');
+  el.classList.add('open');
+}
+
+function onSelSearch(id){
+  const m=MEMBERS.find(x=>x.id===id);if(!m)return;
+  document.getElementById('sinp').value='';document.getElementById('sres').classList.remove('open');
+  showMember(m);
+  if(cam&&faceOK)setTimeout(doAutoShot,400);
   focusNfc();
 }
 
-// ── LOG RENDER ──
-function renderLog() {
-  const el = document.getElementById('logList');
-  if (!todayLog.length) {
-    el.innerHTML = '<div style="text-align:center;padding:24px;color:var(--text3);font-size:.8rem;">まだ出席記録がありません</div>';
-    return;
-  }
-  el.innerHTML = todayLog.map((l, i) => `
-    <div class="log-item">
-      <div class="log-avatar">${l.name[0]}</div>
-      <div>
-        <div class="log-name">${l.name}</div>
-        <div class="log-meta">${l.grade || ''}${l.grade && l.course ? ' · ' : ''}${l.course || ''}</div>
-      </div>
-      <div style="display:flex;align-items:center;gap:8px;">
-        ${l.photo ? `<img class="log-face" src="${l.photo}" onclick="openLbx('${l.photo}')" title="顔写真">` : ''}
-        <div class="log-time">${l.time}</div>
-      </div>
-    </div>
-  `).join('');
-}
+function setRing(s){document.getElementById('nring').className='nfc-ring '+s;}
+function resetRing(){setRing('ready');document.getElementById('fcard').classList.remove('show');}
+function saveSession(){try{sessionStorage.setItem('nfcLog2',JSON.stringify(LOG));}catch(e){}}
+function loadSession(){try{const s=sessionStorage.getItem('nfcLog2');if(s){LOG=JSON.parse(s);renderLog();updateCount();}}catch(e){}}
+function today(){const d=new Date();return d.getFullYear()+'/'+pad(d.getMonth()+1)+'/'+pad(d.getDate());}
+function pad(n){return String(n).padStart(2,'0');}
+function showToast(msg,t=''){const el=document.getElementById('toast');el.textContent=msg;el.className='toast show'+(t?' '+t:'');clearTimeout(el._t);el._t=setTimeout(()=>el.classList.remove('show'),3000);}
+function openLbx(s){document.getElementById('lbximg').src=s;document.getElementById('lbx').classList.add('open');}
+function closeLbx(){document.getElementById('lbx').classList.remove('open');}
 
-function updateCount() {
-  const n = todayLog.length;
-  document.getElementById('todayCount').textContent = n;
-  document.getElementById('logCount').textContent = n + '件';
-}
-
-// ── MANUAL SEARCH ──
-function onManualSearch(q) {
-  const el = document.getElementById('manualResults');
-  if (!q.trim()) { el.classList.remove('show'); return; }
-  const found = MEMBERS.filter(m =>
-    m.name.includes(q) || (m.furigana||'').includes(q)
-  );
-  if (!found.length) { el.classList.remove('show'); return; }
-  el.innerHTML = found.slice(0,6).map(m => `
-    <div class="manual-result-item" onclick="onManualSelect('${m.id}')">
-      <div style="width:26px;height:26px;border-radius:50%;background:var(--border2);
-        display:flex;align-items:center;justify-content:center;font-size:.75rem;font-weight:700;flex-shrink:0;">
-        ${m.name[0]}
-      </div>
-      <div>
-        <div style="font-weight:600;">${m.name}</div>
-        <div style="font-size:.65rem;color:var(--text2);">${m.furigana||''} · ${m.grade||''}</div>
-      </div>
-    </div>
-  `).join('');
-  el.classList.add('show');
-}
-
-function onManualSelect(id) {
-  const member = MEMBERS.find(m => m.id === id);
-  if (!member) return;
-  document.getElementById('manualSearch').value = '';
-  document.getElementById('manualResults').classList.remove('show');
-  selectMember(member);
-  if (cameraStream) setTimeout(() => autoShoot(), 400);
-  focusNfc();
-}
-
-// ── HELPERS ──
-function setNfcStatus(type, icon, text, sub) {
-  const el = document.getElementById('nfcStatus');
-  el.className = 'nfc-status ' + type;
-  document.getElementById('nfcIcon').textContent = icon;
-  document.getElementById('nfcText').textContent = text;
-  document.getElementById('nfcSub').textContent = sub;
-}
-
-function resetNfcStatus() {
-  setNfcStatus('ready', '📡', 'カードをリーダーにタッチしてください', 'または下の検索で名前から選択');
-}
-
-function showToast(msg, type='') {
-  const t = document.getElementById('toast');
-  t.textContent = msg;
-  t.className = 'toast show' + (type ? ' ' + type : '');
-  clearTimeout(t._timer);
-  t._timer = setTimeout(() => t.classList.remove('show'), 3000);
-}
-
-function openLbx(src) {
-  document.getElementById('lbxImg').src = src;
-  document.getElementById('lbx').classList.add('open');
-}
-function closeLbx() {
-  document.getElementById('lbx').classList.remove('open');
-}
-
-// ── KEEP FOCUS on NFC input ──
-document.addEventListener('click', e => {
-  if (!e.target.closest('#manualSearch, .manual-result-item, .cam-btn, .reg-btn, .log-face, .lbx')) {
-    focusNfc();
-  }
+document.addEventListener('click',e=>{
+  if(!e.target.closest('#sinp,.sri,.cbtn,.reg-btn,.lidel,.lbx,.liav'))focusNfc();
 });
-document.addEventListener('keydown', e => {
-  // Escでリセット
-  if (e.key === 'Escape') {
-    currentMember = null;
-    document.getElementById('memberCard').classList.remove('show');
-    document.getElementById('scanCorners').classList.remove('active');
-    document.getElementById('scanCornersB').classList.remove('active');
-    resetNfcStatus();
-    focusNfc();
-  }
-});
-
+document.addEventListener('keydown',e=>{if(e.key==='Escape')cancelSel();});
 init();
 </script>
 </body>
