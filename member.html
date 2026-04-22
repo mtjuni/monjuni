@@ -181,23 +181,23 @@ body{font-family:'Noto Sans JP',sans-serif;background:var(--bg);color:var(--tx);
   background:var(--sur);border:1px solid var(--bd2);border-radius:var(--r);
   padding:14px;margin-bottom:10px;
 }
-.face-top{display:flex;align-items:center;gap:14px;margin-bottom:12px;}
-.face-img-wrap{position:relative;flex-shrink:0;}
+.face-top{display:flex;align-items:flex-start;gap:16px;margin-bottom:12px;}
 .face-img{
-  width:72px;height:72px;border-radius:50%;object-fit:cover;
-  border:2px solid var(--cyan);display:none;
+  width:90px;height:120px;border-radius:8px;object-fit:cover;
+  border:2px solid var(--cyan);display:none;flex-shrink:0;
   box-shadow:0 0 14px rgba(0,229,255,.25);
 }
 .face-img.show{display:block;}
 .face-none{
-  width:72px;height:72px;border-radius:50%;
+  width:90px;height:120px;border-radius:8px;flex-shrink:0;
   background:var(--sur2);border:2px dashed var(--bd2);
-  display:flex;align-items:center;justify-content:center;
-  color:var(--tx3);font-size:1.6rem;
+  display:flex;flex-direction:column;align-items:center;justify-content:center;
+  color:var(--tx3);font-size:2rem;gap:4px;
 }
-.face-info{flex:1;}
-.face-status{font-size:.78rem;font-weight:600;color:var(--tx2);margin-bottom:4px;}
-.face-date{font-size:.65rem;color:var(--tx3);}
+.face-none small{font-size:.58rem;color:var(--tx3);}
+.face-info{flex:1;padding-top:2px;}
+.face-status{font-size:.82rem;font-weight:700;color:var(--tx2);margin-bottom:4px;}
+.face-date{font-size:.65rem;color:var(--tx3);margin-bottom:10px;}
 .face-cam-wrap{
   position:relative;border-radius:var(--rs);overflow:hidden;
   background:var(--sur2);border:1px solid var(--bd2);margin-bottom:8px;
@@ -214,8 +214,6 @@ body{font-family:'Noto Sans JP',sans-serif;background:var(--bg);color:var(--tx);
   font-weight:600;cursor:pointer;transition:all .2s;
 }
 .face-btn:hover{border-color:var(--cyan);color:var(--cyan);}
-.face-btn.primary{background:var(--cyan);border-color:var(--cyan);color:var(--bg);}
-.face-btn.primary:hover{background:#33eeff;}
 .face-btn.shoot{background:var(--tl);border-color:var(--tl);color:var(--bg);}
 .face-btn.shoot:hover{background:#3df5c0;}
 .face-btn:disabled{opacity:.35;cursor:not-allowed;}
@@ -361,23 +359,23 @@ body{font-family:'Noto Sans JP',sans-serif;background:var(--bg);color:var(--tx);
     <div class="sec-title"><span>📷</span> 顔写真</div>
     <div class="face-section">
       <div class="face-top">
-        <div class="face-img-wrap">
-          <img class="face-img" id="faceImg" src="" alt="顔写真">
-          <div class="face-none" id="faceNone">👤</div>
-        </div>
+        <img class="face-img" id="faceImg" src="" alt="顔写真">
+        <div class="face-none" id="faceNone">👤<small>未登録</small></div>
         <div class="face-info">
           <div class="face-status" id="faceStatus">未登録</div>
-          <div class="face-date" id="faceDate"></div>
+          <div class="face-date" id="faceDate">カメラで撮影して登録してください</div>
+          <div class="face-btns" style="margin-top:8px;">
+            <button class="face-btn" id="faceCamBtn" onclick="toggleFaceCam()">📷 撮影して登録</button>
+          </div>
         </div>
       </div>
       <div class="face-cam-wrap" id="faceCamWrap">
         <video class="face-video" id="faceVideo" autoplay playsinline muted></video>
         <div class="face-flash" id="faceFlash"></div>
       </div>
-      <div class="face-btns">
-        <button class="face-btn" id="faceCamBtn" onclick="toggleFaceCam()">📷 撮影して登録</button>
-        <button class="face-btn shoot" id="faceShootBtn" onclick="doFaceShoot()" style="display:none;">📸 シャッター</button>
-        <button class="face-btn" id="faceCancelBtn" onclick="cancelFaceCam()" style="display:none;">キャンセル</button>
+      <div class="face-btns" id="faceShootBtns" style="display:none;">
+        <button class="face-btn shoot" id="faceShootBtn" onclick="doFaceShoot()">📸 シャッター</button>
+        <button class="face-btn" onclick="cancelFaceCam()">キャンセル</button>
       </div>
     </div>
   </div>
@@ -909,8 +907,7 @@ async function toggleFaceCam() {
     document.getElementById('faceVideo').srcObject = faceCamStream;
     wrap.classList.add('show');
     document.getElementById('faceCamBtn').style.display = 'none';
-    document.getElementById('faceShootBtn').style.display = '';
-    document.getElementById('faceCancelBtn').style.display = '';
+    document.getElementById('faceShootBtns').style.display = 'flex';
   } catch(e) {
     showToast('カメラにアクセスできません', true);
   }
@@ -920,8 +917,7 @@ function cancelFaceCam() {
   if (faceCamStream) { faceCamStream.getTracks().forEach(t=>t.stop()); faceCamStream = null; }
   document.getElementById('faceCamWrap').classList.remove('show');
   document.getElementById('faceCamBtn').style.display = '';
-  document.getElementById('faceShootBtn').style.display = 'none';
-  document.getElementById('faceCancelBtn').style.display = 'none';
+  document.getElementById('faceShootBtns').style.display = 'none';
 }
 
 async function doFaceShoot() {

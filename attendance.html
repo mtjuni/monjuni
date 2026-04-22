@@ -1450,9 +1450,9 @@ function onSearch(q) {
 function selectFromSearch(id) {
   const member = MEMBERS.find(m => m.id === id);
   if (member) {
-    showMember(member);
     document.getElementById('searchResults').classList.remove('show');
-    document.getElementById('searchInput').value = member.name;
+    document.getElementById('searchInput').value = '';
+    location.href = 'member.html?id=' + encodeURIComponent(member.id);
   }
 }
 
@@ -1580,11 +1580,7 @@ function renderMemberList() {
 function selectFromList(id) {
   const member = MEMBERS.find(m => m.id === id);
   if (member) {
-    showMember(member);
-    listOpen = false;
-    document.getElementById('memberListPanel').style.display = 'none';
-    document.getElementById('listToggleBtn').textContent = '📋 生徒リストを表示';
-    document.getElementById('listToggleBtn').classList.remove('open');
+    location.href = 'member.html?id=' + encodeURIComponent(member.id);
   }
 }
 
@@ -1880,7 +1876,7 @@ function renderMlTab() {
     const courseShort = m.course
       ? m.course.includes('1回') ? '月1回' : m.course.includes('2回') ? '月2回' : m.course
       : '';
-    return `<div class="ml-card" onclick="openEditByRow(${m.rowIndex})">
+    return `<div class="ml-card" onclick="location.href='member.html?id=${encodeURIComponent(m.id)}'" style="cursor:pointer;">
       <div style="flex:1;">
         <div class="ml-furi">${m.furigana || '—'}</div>
         <div class="ml-name">${m.name || '—'}</div>
