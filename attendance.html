@@ -1564,7 +1564,7 @@ function renderMemberList() {
   body.innerHTML = filtered.map(m => {
     const hasNfc = m.nfcId && m.nfcId.trim();
     return `
-      <div class="member-list-row" onclick="selectFromList('${m.id}')">
+      <div class="member-list-row" data-member-id="${encodeURIComponent(m.id)}">
         <div class="list-avatar">${(m.name||'?')[0]}</div>
         <div class="list-info">
           <div class="list-name">${m.name || '—'}</div>
@@ -1575,6 +1575,12 @@ function renderMemberList() {
         </div>
       </div>`;
   }).join('');
+
+  // イベント委譲でクリック処理
+  body.onclick = function(e) {
+    const row = e.target.closest('[data-member-id]');
+    if (row) location.href = 'member.html?id=' + row.dataset.memberId;
+  };
 }
 
 function selectFromList(id) {
@@ -1637,7 +1643,7 @@ function selectAiueo(ch) {
   res.style.display = '';
 
   list.innerHTML = matched.map(m => `
-    <div class="aiueo-item" onclick="selectFromAiueo('${m.id}')">
+    <div class="aiueo-item" data-member-id="${encodeURIComponent(m.id)}">
       <div class="aiueo-avatar">${(m.name||'?')[0]}</div>
       <div style="flex:1;">
         <div class="aiueo-name">${m.name||'—'}</div>
@@ -1647,14 +1653,16 @@ function selectAiueo(ch) {
         ${m.nfcId||'NFC未登録'}
       </div>
     </div>`).join('');
+
+  // イベント委譲（IDに特殊文字対応）
+  document.getElementById('aiueoList').onclick = function(e) {
+    const row = e.target.closest('[data-member-id]');
+    if (row) location.href = 'member.html?id=' + row.dataset.memberId;
+  };
 }
 
 function selectFromAiueo(id) {
-  const member = MEMBERS.find(m => m.id === id);
-  if (member) {
-    showMember(member);
-    clearAiueo();
-  }
+  location.href = 'member.html?id=' + encodeURIComponent(id);
 }
 
 function clearAiueo() {
