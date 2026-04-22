@@ -1564,7 +1564,7 @@ function renderMemberList() {
   body.innerHTML = filtered.map(m => {
     const hasNfc = m.nfcId && m.nfcId.trim();
     return `
-      <div class="member-list-row" data-member-id="${encodeURIComponent(m.id)}">
+      <div class="member-list-row" onclick="selectFromList('${m.id}')">
         <div class="list-avatar">${(m.name||'?')[0]}</div>
         <div class="list-info">
           <div class="list-name">${m.name || '—'}</div>
@@ -1575,12 +1575,6 @@ function renderMemberList() {
         </div>
       </div>`;
   }).join('');
-
-  // イベント委譲でクリック処理
-  body.onclick = function(e) {
-    const row = e.target.closest('[data-member-id]');
-    if (row) location.href = 'member.html?id=' + row.dataset.memberId;
-  };
 }
 
 function selectFromList(id) {
@@ -1643,7 +1637,7 @@ function selectAiueo(ch) {
   res.style.display = '';
 
   list.innerHTML = matched.map(m => `
-    <div class="aiueo-item" data-member-id="${encodeURIComponent(m.id)}">
+    <div class="aiueo-item" onclick="selectFromAiueo('${m.id}')">
       <div class="aiueo-avatar">${(m.name||'?')[0]}</div>
       <div style="flex:1;">
         <div class="aiueo-name">${m.name||'—'}</div>
@@ -1653,16 +1647,14 @@ function selectAiueo(ch) {
         ${m.nfcId||'NFC未登録'}
       </div>
     </div>`).join('');
-
-  // イベント委譲（IDに特殊文字対応）
-  document.getElementById('aiueoList').onclick = function(e) {
-    const row = e.target.closest('[data-member-id]');
-    if (row) location.href = 'member.html?id=' + row.dataset.memberId;
-  };
 }
 
 function selectFromAiueo(id) {
-  location.href = 'member.html?id=' + encodeURIComponent(id);
+  const member = MEMBERS.find(m => m.id === id);
+  if (member) {
+    showMember(member);
+    clearAiueo();
+  }
 }
 
 function clearAiueo() {
@@ -1686,12 +1678,12 @@ function shiftStatsMonth(delta) {
   renderStats();
 }
 
-function renderStats() {
+async function renderStats() {
   const { year, month, key } = getStatsMonth(statsMonthOffset);
   document.getElementById('statsMonthLabel').textContent = `${year}年 ${month}月`;
 
-  // 今月の出席データ（todayAttendance + デモ履歴）
-  const allAttendance = getAttendanceHistory();
+  // 今月の出席データ（GAS + ローカル）
+  const allAttendance = await getAttendanceHistory(key.slice(0,7));
   const thisMonthAtt = allAttendance.filter(a => a.dateKey && a.dateKey.startsWith(key));
   const uniqueToday = new Set(thisMonthAtt.map(a => a.memberId || a.memberName));
   const totalSessions = new Set(thisMonthAtt.map(a => a.date)).size || 1;
@@ -1751,17 +1743,49 @@ function renderStats() {
   }).join('') || '<tr><td colspan="4" style="text-align:center;color:var(--text3);padding:16px;">データなし</td></tr>';
 }
 
-// 出席履歴を統合（今日のセッション + デモデータ）
-function getAttendanceHistory() {
-  const now = new Date();
-  const todayKey = `${now.getFullYear()}/${String(now.getMonth()+1).padStart(2,'0')}`;
-  // todayAttendanceをattendance履歴形式に変換
-  return todayAttendance.map(a => ({
-    memberId: a.member?.id || '',
-    memberName: a.member?.name || '',
-    dateKey: todayKey + '/' + String(now.getDate()).padStart(2,'0'),
-    date: todayKey
-  }));
+// 出席履歴キャッシュ（GASから取得）
+let _attendanceCache = null;
+let _attendanceCacheMonth = '';
+
+async function getAttendanceHistory(monthKey) {
+  // キャッシュヒット
+  if (_attendanceCacheMonth === monthKey && _attendanceCache) return _attendanceCache;
+
+  try {
+    // GASのgetAttendanceはdate(YYYY-MM-DD)で絞るが、月単位で取るためdateなしで全件取得
+    const res = await fetch(GAS_URL + '?action=getAttendance');
+    const data = await res.json();
+    const rows = (data.attendance || []).map(a => ({
+      memberId:   a.memberId   || '',
+      memberName: a.memberName || '',
+      dateKey:    (a.date || '').replace(/-/g, '/'),  // YYYY-MM-DD → YYYY/MM/DD
+      date:       (a.date || '').slice(0, 7).replace(/-/g, '/'), // YYYY/MM
+    }));
+    // ローカルの今日分もマージ
+    const now = new Date();
+    const todayFull = `${now.getFullYear()}/${String(now.getMonth()+1).padStart(2,'0')}/${String(now.getDate()).padStart(2,'0')}`;
+    const todayMo   = todayFull.slice(0, 7);
+    const localRows = todayAttendance.map(a => ({
+      memberId:   a.member?.id   || '',
+      memberName: a.member?.name || '',
+      dateKey:    todayFull,
+      date:       todayMo,
+    }));
+    _attendanceCache = [...rows, ...localRows];
+    _attendanceCacheMonth = monthKey;
+    return _attendanceCache;
+  } catch(e) {
+    // 取得失敗時はローカルのみ
+    const now = new Date();
+    const todayFull = `${now.getFullYear()}/${String(now.getMonth()+1).padStart(2,'0')}/${String(now.getDate()).padStart(2,'0')}`;
+    const todayMo   = todayFull.slice(0, 7);
+    return todayAttendance.map(a => ({
+      memberId:   a.member?.id   || '',
+      memberName: a.member?.name || '',
+      dateKey:    todayFull,
+      date:       todayMo,
+    }));
+  }
 }
 
 // ── TABS ──
