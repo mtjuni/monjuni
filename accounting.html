@@ -869,7 +869,7 @@ function selectMemberForLookup(id) {
   const input = document.getElementById('lookupSearchInput');
   const m = MEMBERS.find(x => x.id === id);
   if (input && m) input.value = m.name;
-  selectMember(id);
+  lookupMember(id);  // 個人参照用の関数を呼ぶ
 }
 
 let selectedMemberObj = null;
@@ -1310,7 +1310,7 @@ function submitPayment() {
         showToast('⚠ 保存に失敗しました: ' + (d.message||''), true);
       }
     })
-    .catch(e => showToast('⚠ 通信エラー: ' + e.message, true));
+    .catch(e => console.warn('Payment GAS error:', e.message));
 
   // Stop camera
   if (cameraStream) {
@@ -1365,7 +1365,7 @@ function lookupMember(id) {
     <tr>
       <td>${p.date}</td>
       <td>${p.type}</td>
-      <td class="h-period">${p.months.join(', ') || '—'}</td>
+      <td class="h-period">${getMonthsArray(p).join(', ') || '—'}</td>
       <td class="h-amount">¥${p.amount.toLocaleString()}</td>
       <td>${p.method}</td>
       <td>${p.photos.length ? `<span class="h-photo" onclick="openLightbox('${p.photos[0]==='_demo_'?generateDemoReceipt(p):p.photos[0]}')">🖼 ${p.photos.length}</span>` : '—'}</td>
@@ -1457,12 +1457,18 @@ function generateDemoReceipt(p) {
 }
 
 // ── RECORDS ──
+function getMonthsArray(p) {
+  if (!p.months) return [];
+  if (Array.isArray(p.months)) return p.months.filter(Boolean);
+  return String(p.months).split(',').filter(Boolean);
+}
+
 function renderRecords(filter='') {
   const q = filter.toLowerCase();
   const filtered = PAYMENTS.filter(p => {
     const name = (p.memberName || p.name || '').toLowerCase();
     const type = (p.type || '').toLowerCase();
-    const months = Array.isArray(p.months) ? p.months : (p.months||'').split(',');
+    const months = getMonthsArray(p);
     return !q || name.includes(q) || type.includes(q) || months.some(m=>m.includes(q));
   });
   const tbody = document.getElementById('recordsTbody');
@@ -1471,7 +1477,7 @@ function renderRecords(filter='') {
       <td>${p.date}</td>
       <td>${p.name}</td>
       <td>${p.type}</td>
-      <td class="rt-period">${p.months.join(', ')||'—'}</td>
+      <td class="rt-period">${getMonthsArray(p).join(', ')||'—'}</td>
       <td class="rt-amount">¥${p.amount.toLocaleString()}</td>
       <td>${p.method}</td>
       <td>${p.photos.length ? `<span style="cursor:pointer;" onclick="openLightbox('${p.photos[0]==='_demo_'?generateDemoReceipt(p):p.photos[0]}')">🖼 ${p.photos.length}</span>` : '—'}</td>
@@ -1488,7 +1494,7 @@ function renderSummary() {
   const now = new Date();
   const thisMonth = `${now.getFullYear()}/${String(now.getMonth()+1).padStart(2,'0')}`;
 
-  const monthly = PAYMENTS.filter(p => p.type==='月謝' && p.months.includes(thisMonth)).reduce((s,p)=>s+p.amount,0);
+  const monthly = PAYMENTS.filter(p => p.type==='月謝' && getMonthsArray(p).includes(thisMonth)).reduce((s,p)=>s+p.amount,0);
   const cumulative = PAYMENTS.filter(p=>p.type==='月謝').reduce((s,p)=>s+p.amount,0);
   const allTotal = PAYMENTS.reduce((s,p)=>s+p.amount,0);
   const unpaidCount = MEMBERS.filter(m => !m.paidMonths.includes(thisMonth)).length;
@@ -1504,7 +1510,7 @@ function renderSummary() {
   for (let i=5; i>=0; i--) {
     const d = new Date(now.getFullYear(), now.getMonth()-i, 1);
     const key = `${d.getFullYear()}/${String(d.getMonth()+1).padStart(2,'0')}`;
-    const amt = PAYMENTS.filter(p=>p.type==='月謝'&&p.months.includes(key)).reduce((s,p)=>s+p.amount,0);
+    const amt = PAYMENTS.filter(p=>p.type==='月謝'&&getMonthsArray(p).includes(key)).reduce((s,p)=>s+p.amount,0);
     monthAmounts.push({ label: (d.getMonth()+1)+'月', amt });
   }
   const maxAmt = Math.max(...monthAmounts.map(x=>x.amt), 1);
