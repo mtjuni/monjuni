@@ -637,17 +637,17 @@
   <!-- ── TAB: LOOKUP ── -->
   <div id="tab-lookup" class="tab-panel">
     <div class="section-title">会員を選択</div>
-    <div class="member-select-bar lookup-search-wrap" style="margin-bottom:16px;">
+    <div class="member-select-bar lookup-search-wrap" style="margin-bottom:16px;position:relative;">
       <div style="position:relative;">
-        <span style="position:absolute;left:12px;top:50%;transform:translateY(-50%);color:var(--text3);">🔍</span>
-        <input type="text" id="lookupSearchInput" placeholder="名前で検索..." autocomplete="off"
+        <span style="position:absolute;left:12px;top:50%;transform:translateY(-50%);color:var(--text3);pointer-events:none;">🔍</span>
+        <input type="text" id="lookupSearchInput" placeholder="名前・よみがなで検索..." autocomplete="off"
           oninput="onLookupSearch(this.value)"
           style="width:100%;padding:12px 12px 12px 36px;background:var(--surface);border:1px solid var(--border);
             border-radius:var(--radius-sm);color:var(--text);font-family:inherit;font-size:0.95rem;outline:none;">
-        <div id="lookupSearchResults" style="display:none;position:absolute;top:100%;left:0;right:0;
-          background:var(--surface);border:1px solid var(--border);border-radius:var(--radius-sm);
-          margin-top:4px;z-index:50;overflow:hidden;"></div>
       </div>
+      <div id="lookupSearchResults" style="display:none;position:absolute;top:100%;left:0;right:0;
+        background:var(--surface);border:1px solid var(--border);border-radius:var(--radius-sm);
+        margin-top:4px;z-index:50;overflow:hidden;max-height:280px;overflow-y:auto;"></div>
     </div>
 
     <div class="member-detail" id="memberDetail">
@@ -835,10 +835,13 @@ function buildLookupSearchList() { /* 検索は入力時に動的フィルタ */
 
 function onLookupSearch(q) {
   const results = document.getElementById('lookupSearchResults');
+  if (!results) return;
   if (!q.trim()) { results.style.display = 'none'; return; }
   const ql = q.toLowerCase();
   const matched = MEMBERS.filter(m =>
-    (m.name||'').toLowerCase().includes(ql) || (m.furigana||'').toLowerCase().includes(ql)
+    (m.name||'').toLowerCase().includes(ql) ||
+    (m.furigana||'').toLowerCase().includes(ql) ||
+    (m.nfcId||'').toLowerCase().includes(ql)
   );
   if (!matched.length) { results.style.display = 'none'; return; }
   results.innerHTML = matched.map(m => `
@@ -864,10 +867,8 @@ function selectMemberForLookup(id) {
   const results = document.getElementById('lookupSearchResults');
   if (results) results.style.display = 'none';
   const input = document.getElementById('lookupSearchInput');
-  if (input) {
-    const m = MEMBERS.find(x => x.id === id);
-    if (m) input.value = m.name;
-  }
+  const m = MEMBERS.find(x => x.id === id);
+  if (input && m) input.value = m.name;
   selectMember(id);
 }
 
@@ -1267,7 +1268,49 @@ function submitPayment() {
     if (!selectedMemberObj.insurancePaidYears.includes(fy)) selectedMemberObj.insurancePaidYears.push(fy);
   }
 
-  showToast(`✓ ${selectedMemberObj.name} さんの支払いを登録しました (¥${amount.toLocaleString()})`);
+  // ── GASに保存 ──
+  const m = selectedMemberObj;
+  const payDate = new Date().toISOString().slice(0, 10);
+  const months = Array.from(
+    document.querySelectorAll('.month-chip.selected, .month-cell.selected')
+  ).map(el => el.dataset.month).filter(Boolean);
+
+  // 月謝のmonthsはpreviewから取得（月セルのdata-month）
+  const previewMonths = [];
+  document.querySelectorAll('#monthsPreview [data-month]').forEach(el => {
+    if (!skippedMonths.has(el.dataset.month)) previewMonths.push(el.dataset.month);
+  });
+
+  const payData = {
+    action:      'payment',
+    memberId:    m.id,
+    nfcId:       m.nfcId || m.id,
+    memberName:  m.name,
+    type:        type.startsWith('init_') ? '初回セット' : type,
+    months:      previewMonths.length ? previewMonths : [],
+    amount:      amount,
+    method:      document.getElementById('payMethod')?.value || '現金',
+    staff:       '',
+    note:        document.getElementById('payNote')?.value || '',
+    date:        payDate,
+  };
+
+  // JSONP経由でGASに送信（POSTはCORSで失敗するためGETパラメータで送る）
+  const qstr = Object.entries(payData)
+    .map(([k,v]) => `${k}=${encodeURIComponent(Array.isArray(v)?v.join(','):String(v))}`)
+    .join('&');
+  jsonpFetch(GAS_URL + '?' + qstr)
+    .then(d => {
+      if (d.status === 'ok') {
+        showToast(`✓ ${m.name} さんの支払いを登録しました (¥${amount.toLocaleString()})`);
+        // ローカルのPAYMENTSにも追加して一覧に即反映
+        PAYMENTS.push({ ...payData, id: d.id || 'P'+Date.now() });
+        renderRecords();
+      } else {
+        showToast('⚠ 保存に失敗しました: ' + (d.message||''), true);
+      }
+    })
+    .catch(e => showToast('⚠ 通信エラー: ' + e.message, true));
 
   // Stop camera
   if (cameraStream) {
@@ -1416,9 +1459,12 @@ function generateDemoReceipt(p) {
 // ── RECORDS ──
 function renderRecords(filter='') {
   const q = filter.toLowerCase();
-  const filtered = PAYMENTS.filter(p =>
-    !q || p.name.includes(q) || p.type.includes(q) || p.months.some(m=>m.includes(q))
-  );
+  const filtered = PAYMENTS.filter(p => {
+    const name = (p.memberName || p.name || '').toLowerCase();
+    const type = (p.type || '').toLowerCase();
+    const months = Array.isArray(p.months) ? p.months : (p.months||'').split(',');
+    return !q || name.includes(q) || type.includes(q) || months.some(m=>m.includes(q));
+  });
   const tbody = document.getElementById('recordsTbody');
   tbody.innerHTML = filtered.map(p => `
     <tr>
@@ -1519,15 +1565,10 @@ document.getElementById('monthlySection').style.display = '';
 document.getElementById('feeBreakdown').style.display = 'none';
 
 document.addEventListener('click', e => {
-  if (!e.target.closest('.member-select-bar') && !e.target.closest('.lookup-search-wrap')) {
+  if (!e.target.closest('.member-select-bar')) {
     document.getElementById('paySearchResults').classList.remove('show');
-    const lr = document.getElementById('lookupSearchResults');
-    if (lr) lr.classList.remove('show');
   }
 });
-
-// GASから会員・支払いデータを読み込む
-loadAccountingData();
 
 checkUrlParam();
 
