@@ -1461,7 +1461,9 @@ function selectFromSearch(id) {
 async function renderTodayList() {
   const now = new Date();
   // GASのdate列は "YYYY-MM-DD" 形式で保存されている
-  const todayISO = now.toISOString().slice(0, 10); // 例: "2026-04-23"
+  // JSTで正確な今日の日付を取得（toISOString()はUTCなので+9h補正）
+  const jstNow = new Date(now.getTime() + 9 * 60 * 60 * 1000);
+  const todayISO = jstNow.toISOString().slice(0, 10); // JST YYYY-MM-DD
   document.getElementById('todayDate').textContent =
     `${now.getFullYear()}年${now.getMonth()+1}月${now.getDate()}日 (${['日','月','火','水','木','金','土'][now.getDay()]})`;
 
@@ -1778,7 +1780,9 @@ async function renderStats() {
 // 出席履歴を統合（今日のセッション + デモデータ）
 async function getAttendanceHistory() {
   const now = new Date();
-  const todayISO   = now.toISOString().slice(0, 10);          // YYYY-MM-DD
+  // JSTで正確な今日の日付を取得
+  const jstNow2    = new Date(now.getTime() + 9 * 60 * 60 * 1000);
+  const todayISO   = jstNow2.toISOString().slice(0, 10);       // JST YYYY-MM-DD
   const todaySlash = todayISO.replace(/-/g, '/');              // YYYY/MM/DD
   const todayMo    = todaySlash.slice(0, 7);                   // YYYY/MM
 
