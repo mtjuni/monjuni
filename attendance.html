@@ -1292,7 +1292,7 @@ let MEMBERS = []; // GASから読み込む
 // GASから生徒リストを取得（起動時）
 async function loadMembersFromGAS() {
   try {
-    const res = await fetch(GAS_URL + '?action=getMembers');
+    const res = await fetch(GAS_URL + '?action=getMembers', { redirect: 'follow' });
     const data = await res.json();
     if (data && data.members && data.members.length > 0) {
       MEMBERS = data.members;
@@ -1711,12 +1711,11 @@ function shiftStatsMonth(delta) {
   renderStats();
 }
 
-function renderStats() {
+async function renderStats() {
   const { year, month, key } = getStatsMonth(statsMonthOffset);
   document.getElementById('statsMonthLabel').textContent = `${year}年 ${month}月`;
 
-  // 今月の出席データ（todayAttendance + デモ履歴）
-  const allAttendance = getAttendanceHistory();
+  const allAttendance = await getAttendanceHistory();
   const thisMonthAtt = allAttendance.filter(a => a.dateKey && a.dateKey.startsWith(key));
   const uniqueToday = new Set(thisMonthAtt.map(a => a.memberId || a.memberName));
   const totalSessions = new Set(thisMonthAtt.map(a => a.date)).size || 1;
@@ -1777,16 +1776,37 @@ function renderStats() {
 }
 
 // 出席履歴を統合（今日のセッション + デモデータ）
-function getAttendanceHistory() {
+async function getAttendanceHistory() {
   const now = new Date();
-  const todayKey = `${now.getFullYear()}/${String(now.getMonth()+1).padStart(2,'0')}`;
-  // todayAttendanceをattendance履歴形式に変換
-  return todayAttendance.map(a => ({
-    memberId: a.member?.id || '',
+  const todayISO   = now.toISOString().slice(0, 10);          // YYYY-MM-DD
+  const todaySlash = todayISO.replace(/-/g, '/');              // YYYY/MM/DD
+  const todayMo    = todaySlash.slice(0, 7);                   // YYYY/MM
+
+  // ローカル分（attendance.htmlで登録した今日の出席）
+  const localRows = todayAttendance.map(a => ({
+    memberId:   a.member?.id   || '',
     memberName: a.member?.name || '',
-    dateKey: todayKey + '/' + String(now.getDate()).padStart(2,'0'),
-    date: todayKey
+    dateKey:    todaySlash,
+    date:       todayMo,
   }));
+
+  try {
+    const res  = await fetch(GAS_URL + '?action=getAttendance', { redirect: 'follow' });
+    const data = await res.json();
+    const rows = (data.attendance || []).map(a => {
+      const d = (a.date || '').slice(0, 10).replace(/-/g, '/'); // YYYY/MM/DD
+      return {
+        memberId:   a.memberId   || '',
+        memberName: a.memberName || '',
+        dateKey:    d,
+        date:       d.slice(0, 7),
+      };
+    });
+    return [...rows, ...localRows];
+  } catch(e) {
+    console.warn('getAttendanceHistory error:', e);
+    return localRows;
+  }
 }
 
 // ── TABS ──
