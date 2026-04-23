@@ -1457,10 +1457,11 @@ function selectFromSearch(id) {
 }
 
 // ── TODAY ──
-// GASから当日出席を取得してリスト表示
+// GASから当日出席を取得して表示する
 async function renderTodayList() {
   const now = new Date();
-  const todayISO = now.toISOString().slice(0, 10); // YYYY-MM-DD
+  // GASのdate列は "YYYY-MM-DD" 形式で保存されている
+  const todayISO = now.toISOString().slice(0, 10); // 例: "2026-04-23"
   document.getElementById('todayDate').textContent =
     `${now.getFullYear()}年${now.getMonth()+1}月${now.getDate()}日 (${['日','月','火','水','木','金','土'][now.getDay()]})`;
 
@@ -1468,39 +1469,30 @@ async function renderTodayList() {
   list.innerHTML = '<div style="text-align:center;padding:20px;color:var(--text3);font-size:.85rem;">読み込み中...</div>';
 
   // GASから今日の出席を取得
-  let gasRows = [];
+  let rows = [];
   try {
     const res  = await fetch(GAS_URL + '?action=getAttendance&date=' + todayISO);
     const data = await res.json();
-    gasRows = data.attendance || [];
+    rows = data.attendance || [];
   } catch(e) {
-    console.warn('getAttendance error:', e);
+    console.warn('getAttendance fetch error:', e);
   }
 
-  // ローカルの今日分とマージ（GASにない分だけ追加）
-  const gasIds = new Set(gasRows.map(r => r.id).filter(Boolean));
+  // ローカルのtodayAttendanceとマージ（attendance.htmlで登録した分）
   const localRows = todayAttendance.map(a => ({
-    id:         '__local__',
     memberName: a.member?.name || '—',
     class:      a.class || '通常',
     time:       a.time  || '',
-    _local:     true,
   }));
 
-  // GAS行を表示用に整形
   const allRows = [
-    ...gasRows.map(r => ({
-      id:         r.id || '',
+    ...rows.map(r => ({
       memberName: r.memberName || r.memberId || '—',
       class:      r.class || '通常',
       time:       r.time  || '',
-      _local:     false,
     })),
     ...localRows,
-  ];
-
-  // 時刻でソート（新しい順）
-  allRows.sort((a, b) => b.time.localeCompare(a.time));
+  ].sort((a, b) => b.time.localeCompare(a.time)); // 新しい順
 
   document.getElementById('todayCount').textContent = allRows.length + '名';
 
@@ -1508,9 +1500,8 @@ async function renderTodayList() {
     list.innerHTML = '<div class="empty-state"><div class="empty-icon">📋</div><p>まだ出席者がいません</p></div>';
     return;
   }
-
-  list.innerHTML = allRows.map((r, i) => `
-    <div class="attendance-item" id="att-${i}">
+  list.innerHTML = allRows.map(r => `
+    <div class="attendance-item">
       <span class="att-time">${r.time}</span>
       <div class="member-avatar" style="width:34px;height:34px;font-size:1rem;">${(r.memberName||'?')[0]}</div>
       <span class="att-name">${r.memberName}</span>
@@ -1720,11 +1711,12 @@ function shiftStatsMonth(delta) {
   renderStats();
 }
 
-async function renderStats() {
+function renderStats() {
   const { year, month, key } = getStatsMonth(statsMonthOffset);
   document.getElementById('statsMonthLabel').textContent = `${year}年 ${month}月`;
 
-  const allAttendance = await getAttendanceHistory();
+  // 今月の出席データ（todayAttendance + デモ履歴）
+  const allAttendance = getAttendanceHistory();
   const thisMonthAtt = allAttendance.filter(a => a.dateKey && a.dateKey.startsWith(key));
   const uniqueToday = new Set(thisMonthAtt.map(a => a.memberId || a.memberName));
   const totalSessions = new Set(thisMonthAtt.map(a => a.date)).size || 1;
@@ -1784,44 +1776,17 @@ async function renderStats() {
   }).join('') || '<tr><td colspan="4" style="text-align:center;color:var(--text3);padding:16px;">データなし</td></tr>';
 }
 
-// 出席履歴 — GAS全件取得 + ローカルマージ
-let _attCache = null, _attCacheDay = '';
-async function getAttendanceHistory() {
+// 出席履歴を統合（今日のセッション + デモデータ）
+function getAttendanceHistory() {
   const now = new Date();
-  const todayISO  = now.toISOString().slice(0, 10);           // YYYY-MM-DD
-  const todaySlash = todayISO.replace(/-/g, '/');              // YYYY/MM/DD
-  const todayMo    = todaySlash.slice(0, 7);                   // YYYY/MM
-
-  const localRows = todayAttendance.map(a => ({
-    memberId:   a.member?.id   || '',
+  const todayKey = `${now.getFullYear()}/${String(now.getMonth()+1).padStart(2,'0')}`;
+  // todayAttendanceをattendance履歴形式に変換
+  return todayAttendance.map(a => ({
+    memberId: a.member?.id || '',
     memberName: a.member?.name || '',
-    dateKey:    todaySlash,
-    date:       todayMo,
+    dateKey: todayKey + '/' + String(now.getDate()).padStart(2,'0'),
+    date: todayKey
   }));
-
-  if (_attCacheDay === todayISO && _attCache) {
-    return [..._attCache, ...localRows];
-  }
-
-  try {
-    const res  = await fetch(GAS_URL + '?action=getAttendance');
-    const data = await res.json();
-    const rows = (data.attendance || []).map(a => {
-      const d = (a.date || '').slice(0, 10).replace(/-/g, '/'); // YYYY/MM/DD
-      return {
-        memberId:   a.memberId   || '',
-        memberName: a.memberName || '',
-        dateKey:    d,
-        date:       d.slice(0, 7),
-      };
-    });
-    _attCache    = rows;
-    _attCacheDay = todayISO;
-    return [...rows, ...localRows];
-  } catch(e) {
-    console.warn('getAttendanceHistory error:', e);
-    return localRows;
-  }
 }
 
 // ── TABS ──
