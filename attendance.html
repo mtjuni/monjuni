@@ -1311,8 +1311,7 @@ let MEMBERS = []; // GASから読み込む
 // GASから生徒リストを取得（起動時）
 async function loadMembersFromGAS() {
   try {
-    const res = await jsonpFetch(GAS_URL + '?action=getMembers');
-    const data = await res.json();
+    const data = await jsonpFetch(GAS_URL + '?action=getMembers');
     if (data && data.members && data.members.length > 0) {
       MEMBERS = data.members;
       // 読み込み完了後にUIを更新
@@ -1492,8 +1491,7 @@ async function renderTodayList() {
   // GASから今日の出席を取得
   let rows = [];
   try {
-    const res  = await jsonpFetch(GAS_URL + '?action=getAttendance&date=' + todayISO);
-    const data = await res.json();
+    const data = await jsonpFetch(GAS_URL + '?action=getAttendance&date=' + todayISO);
     rows = data.attendance || [];
   } catch(e) {
     console.warn('getAttendance fetch error:', e);
@@ -1825,8 +1823,7 @@ async function getAttendanceHistory() {
   }));
 
   try {
-    const res  = await jsonpFetch(GAS_URL + '?action=getAttendance');
-    const data = await res.json();
+    const data = await jsonpFetch(GAS_URL + '?action=getAttendance');
     const rows = (data.attendance || []).map(a => {
       const d = (a.date || '').slice(0, 10).replace(/-/g, '/'); // YYYY/MM/DD
       return {
