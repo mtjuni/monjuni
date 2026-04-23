@@ -437,59 +437,15 @@
   }
   .memo-textarea::placeholder { color: var(--text3, #4a5380); }
 
-
-/* ── AUTH OVERLAY ── */
-#authOverlay{
-  position:fixed;inset:0;background:#070810;z-index:9999;
-  display:flex;align-items:center;justify-content:center;padding:20px;
-}
-.auth-box{
-  background:#0d0f1c;border:1px solid #252b42;border-radius:16px;
-  padding:32px 24px;width:100%;max-width:360px;text-align:center;
-}
-.auth-logo{font-size:2rem;margin-bottom:8px;}
-.auth-title{font-size:1.1rem;font-weight:700;color:#e8eaf6;margin-bottom:4px;}
-.auth-sub{font-size:.78rem;color:#7b85a8;margin-bottom:24px;}
-.auth-input{
-  width:100%;padding:12px;background:#141728;border:1px solid #252b42;
-  border-radius:10px;color:#e8eaf6;font-family:inherit;font-size:1.1rem;
-  text-align:center;letter-spacing:.2em;outline:none;margin-bottom:12px;
-  transition:border-color .2s;
-}
-.auth-input:focus{border-color:#00e5ff;}
-.auth-btn{
-  width:100%;padding:12px;background:#00e5ff;color:#070810;border:none;
-  border-radius:10px;font-family:inherit;font-size:.95rem;font-weight:700;
-  cursor:pointer;transition:all .2s;
-}
-.auth-btn:hover{background:#33eeff;}
-.auth-err{color:#ff4757;font-size:.8rem;margin-top:8px;display:none;}
-
 </style>
 </head>
 <body>
 
-<!-- AUTH OVERLAY -->
-<div id="authOverlay">
-  <div class="auth-box">
-    <div class="auth-logo">🔐</div>
-    <div class="auth-title">Athletic Club</div>
-    <div class="auth-sub">管理者パスワードを入力してください</div>
-    <input class="auth-input" type="password" id="authInput" 
-      placeholder="••••" maxlength="20"
-      onkeydown="if(event.key==='Enter')checkAuth()">
-    <button class="auth-btn" onclick="checkAuth()">ログイン</button>
-    <div class="auth-err" id="authErr">パスワードが違います</div>
-  </div>
-</div>
-
-
 <header class="app-header">
   <div class="app-title">💴 会計管理 <span>Athletic Club</span></div>
   <div style="display:flex;gap:6px;">
-    <a href="index.html" class="header-link">🏠 HOME</a>
     <a href="attendance.html" class="header-link">⚡ 出席</a>
-    <a href="performance.html" target="_blank" class="header-link">📊 計測</a>
+    <a href="performance.html" class="header-link">📊 計測</a>
     <a href="coach.html" class="header-link">🏃 コーチ</a>
   </div>
 </header>
@@ -783,6 +739,24 @@
 // ── CONFIG ──
 const GAS_URL = 'https://script.google.com/macros/s/AKfycbyVH4yXtC0PsG4gwbWITAnsMFUdwvMSij2hNsZ9z4bfRTRS0RxHzqvZZeaN3AVIEOte/exec';
 
+function jsonpFetch(url) {
+  return new Promise((resolve, reject) => {
+    const cbName = '_cb_' + Date.now() + '_' + Math.random().toString(36).slice(2,7);
+    const script = document.createElement('script');
+    const timer = setTimeout(() => {
+      delete window[cbName]; script.remove();
+      reject(new Error('JSONP timeout'));
+    }, 12000);
+    window[cbName] = (data) => {
+      clearTimeout(timer); delete window[cbName]; script.remove();
+      resolve(data);
+    };
+    script.src = url + (url.includes('?') ? '&' : '?') + 'callback=' + cbName;
+    script.onerror = () => { clearTimeout(timer); delete window[cbName]; script.remove(); reject(new Error('Script load error')); };
+    document.head.appendChild(script);
+  });
+}
+
 // ── 料金定数（固定値）──
 const COURSE_FEES = { 1: 1500, 2: 2400 }; // 月1回・月2回
 const ASSOC_FEE = 600;   // 協会登録費（年間固定）
@@ -809,8 +783,7 @@ let PAYMENTS = []; // GASから読み込む
 async function loadAccountingData() {
   try {
     // まず会員データだけ読み込む（支払いは別途）
-    const mRes = await fetch(GAS_URL + '?action=getMembers');
-    const mData = await mRes.json();
+    const mData = await jsonpFetch(GAS_URL + '?action=getMembers');
     if (mData.members && mData.members.length) {
       MEMBERS = mData.members.map(m => ({
         ...m,
@@ -825,8 +798,7 @@ async function loadAccountingData() {
     }
     // 支払い記録を読み込んで月謝支払い済みを反映
     try {
-      const pRes = await fetch(GAS_URL + '?action=getAllPayments');
-      const pData = await pRes.json();
+      const pData = await jsonpFetch(GAS_URL + '?action=getAllPayments');
       if (pData.payments && pData.payments.length) {
         PAYMENTS = pData.payments;
         PAYMENTS.forEach(p => {
@@ -1639,32 +1611,6 @@ function autoResizeTextarea(el) {
 
 // 起動時にデータ読み込み
 loadAccountingData();
-
-
-// ── AUTH ──
-const AUTH_KEY = 'ac_auth';
-const AUTH_PASS = '1223';
-
-function checkAuth() {
-  const v = document.getElementById('authInput').value;
-  if (v === AUTH_PASS) {
-    sessionStorage.setItem(AUTH_KEY, '1');
-    document.getElementById('authOverlay').style.display = 'none';
-  } else {
-    document.getElementById('authErr').style.display = 'block';
-    document.getElementById('authInput').value = '';
-    document.getElementById('authInput').focus();
-  }
-}
-
-// 認証チェック
-if (!sessionStorage.getItem(AUTH_KEY)) {
-  // オーバーレイを表示（すでにHTML内にある）
-  document.getElementById('authInput').focus();
-} else {
-  document.getElementById('authOverlay').style.display = 'none';
-}
-
 </script>
 </body>
 </html>
