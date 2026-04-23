@@ -1471,7 +1471,7 @@ async function renderTodayList() {
   // GASから今日の出席を取得
   let rows = [];
   try {
-    const res  = await fetch(GAS_URL + '?action=getAttendance&date=' + todayISO);
+    const res  = await fetch(GAS_URL + '?action=getAttendance&date=' + todayISO, { redirect: 'follow' });
     const data = await res.json();
     rows = data.attendance || [];
   } catch(e) {
