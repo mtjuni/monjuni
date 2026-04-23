@@ -811,7 +811,10 @@ async function loadAccountingData() {
       if (pData.payments && pData.payments.length) {
         PAYMENTS = pData.payments;
         PAYMENTS.forEach(p => {
-          const m = MEMBERS.find(x => x.id === p.memberId || x.nfcId === p.nfcId);
+          const m = MEMBERS.find(x => 
+            String(x.id) === String(p.memberId) || 
+            String(x.nfcId) === String(p.nfcId)
+          );
           if (!m) return;
           if (p.months) {
             const months = Array.isArray(p.months) ? p.months : p.months.split(',').filter(Boolean);
@@ -1108,7 +1111,7 @@ function updateMonthsPreview() {
     if (isDup) cls = 'dup';
     else if (isSkipped) cls = 'skipped';
     const tooltip = isDup ? '支払済' : isSkipped ? 'タップで復活' : 'タップで休会';
-    return `<span class="month-chip ${cls}" onclick="toggleMonth('${mo}')" title="${tooltip}">${mo}${isDup?' ✓':isSkipped?' 休':''}  </span>`;
+    return `<span class="month-chip ${cls}" data-month="${mo}" onclick="toggleMonth('${mo}')" title="${tooltip}">${mo}${isDup?' ✓':isSkipped?' 休':''}  </span>`;
   }).join('');
   calcAndFill();
   updateSummary();
@@ -1270,16 +1273,26 @@ function submitPayment() {
 
   // ── GASに保存 ──
   const m = selectedMemberObj;
-  const payDate = new Date().toISOString().slice(0, 10);
+  const _now = new Date();
+  const _jst = new Date(_now.getTime() + 9 * 60 * 60 * 1000);
+  const payDate = _jst.toISOString().slice(0, 10); // JST YYYY-MM-DD
   const months = Array.from(
     document.querySelectorAll('.month-chip.selected, .month-cell.selected')
   ).map(el => el.dataset.month).filter(Boolean);
 
-  // 月謝のmonthsはpreviewから取得（月セルのdata-month）
+  // 月謝のmonthsをupdateMonthsPreviewと同じロジックで計算
   const previewMonths = [];
-  document.querySelectorAll('#monthsPreview [data-month]').forEach(el => {
-    if (!skippedMonths.has(el.dataset.month)) previewMonths.push(el.dataset.month);
-  });
+  const startVal2 = document.getElementById('startMonth').value;
+  const info2 = getPayTypeInfo(type);
+  const hasMonthly2 = type !== '協会登録費' && type !== '保険料' && type !== 'その他';
+  if (startVal2 && hasMonthly2) {
+    const [py, pm] = startVal2.split('-').map(Number);
+    for (let i = 0; i < (info2.months || 3); i++) {
+      const d = new Date(py, pm - 1 + i, 1);
+      const key = `${d.getFullYear()}/${String(d.getMonth()+1).padStart(2,'0')}`;
+      if (!skippedMonths.has(key)) previewMonths.push(key);
+    }
+  }
 
   const payData = {
     action:      'payment',
@@ -1472,11 +1485,17 @@ function renderRecords(filter='') {
     return !q || name.includes(q) || type.includes(q) || months.some(m=>m.includes(q));
   });
   const tbody = document.getElementById('recordsTbody');
+  if (!PAYMENTS.length) {
+    tbody.innerHTML = '<tr><td colspan="7" style="text-align:center;padding:20px;color:var(--text3);">支払い記録がありません</td></tr>';
+    document.getElementById('recordsCount').textContent = '0件';
+    document.getElementById('recordsTotal').textContent = '¥0';
+    return;
+  }
   tbody.innerHTML = filtered.map(p => `
     <tr>
-      <td>${p.date}</td>
-      <td>${p.name}</td>
-      <td>${p.type}</td>
+      <td>${(p.date||'').slice(0,10)}</td>
+      <td>${p.memberName||p.name||'—'}</td>
+      <td>${p.type||'—'}</td>
       <td class="rt-period">${getMonthsArray(p).join(', ')||'—'}</td>
       <td class="rt-amount">¥${p.amount.toLocaleString()}</td>
       <td>${p.method}</td>
@@ -1494,9 +1513,9 @@ function renderSummary() {
   const now = new Date();
   const thisMonth = `${now.getFullYear()}/${String(now.getMonth()+1).padStart(2,'0')}`;
 
-  const monthly = PAYMENTS.filter(p => p.type==='月謝' && getMonthsArray(p).includes(thisMonth)).reduce((s,p)=>s+p.amount,0);
-  const cumulative = PAYMENTS.filter(p=>p.type==='月謝').reduce((s,p)=>s+p.amount,0);
-  const allTotal = PAYMENTS.reduce((s,p)=>s+p.amount,0);
+  const monthly = PAYMENTS.filter(p => (p.type==='月謝'||p.type?.startsWith('月謝_')) && getMonthsArray(p).includes(thisMonth)).reduce((s,p)=>s+(parseFloat(p.amount)||0),0);
+  const cumulative = PAYMENTS.filter(p=>(p.type==='月謝'||p.type?.startsWith('月謝_')||p.type==='初回セット').reduce((s,p)=>s+(parseFloat(p.amount)||0),0);
+  const allTotal = PAYMENTS.reduce((s,p)=>s+(parseFloat(p.amount)||0),0);
   const unpaidCount = MEMBERS.filter(m => !m.paidMonths.includes(thisMonth)).length;
 
   document.getElementById('sumMonthly').textContent = `¥${monthly.toLocaleString()}`;
@@ -1510,7 +1529,7 @@ function renderSummary() {
   for (let i=5; i>=0; i--) {
     const d = new Date(now.getFullYear(), now.getMonth()-i, 1);
     const key = `${d.getFullYear()}/${String(d.getMonth()+1).padStart(2,'0')}`;
-    const amt = PAYMENTS.filter(p=>p.type==='月謝'&&getMonthsArray(p).includes(key)).reduce((s,p)=>s+p.amount,0);
+    const amt = PAYMENTS.filter(p=>p.type==='月謝'&&getMonthsArray(p).includes(key)).reduce((s,p)=>s+(parseFloat(p.amount)||0),0);
     monthAmounts.push({ label: (d.getMonth()+1)+'月', amt });
   }
   const maxAmt = Math.max(...monthAmounts.map(x=>x.amt), 1);
