@@ -637,8 +637,17 @@
   <!-- ── TAB: LOOKUP ── -->
   <div id="tab-lookup" class="tab-panel">
     <div class="section-title">会員を選択</div>
-    <div class="member-select-bar" style="margin-bottom:16px;">
-
+    <div class="member-select-bar lookup-search-wrap" style="margin-bottom:16px;">
+      <div style="position:relative;">
+        <span style="position:absolute;left:12px;top:50%;transform:translateY(-50%);color:var(--text3);">🔍</span>
+        <input type="text" id="lookupSearchInput" placeholder="名前で検索..." autocomplete="off"
+          oninput="onLookupSearch(this.value)"
+          style="width:100%;padding:12px 12px 12px 36px;background:var(--surface);border:1px solid var(--border);
+            border-radius:var(--radius-sm);color:var(--text);font-family:inherit;font-size:0.95rem;outline:none;">
+        <div id="lookupSearchResults" style="display:none;position:absolute;top:100%;left:0;right:0;
+          background:var(--surface);border:1px solid var(--border);border-radius:var(--radius-sm);
+          margin-top:4px;z-index:50;overflow:hidden;"></div>
+      </div>
     </div>
 
     <div class="member-detail" id="memberDetail">
@@ -823,6 +832,44 @@ async function loadAccountingData() {
 
 function buildPaySearchList() { /* 検索は入力時に動的フィルタ */ }
 function buildLookupSearchList() { /* 検索は入力時に動的フィルタ */ }
+
+function onLookupSearch(q) {
+  const results = document.getElementById('lookupSearchResults');
+  if (!q.trim()) { results.style.display = 'none'; return; }
+  const ql = q.toLowerCase();
+  const matched = MEMBERS.filter(m =>
+    (m.name||'').toLowerCase().includes(ql) || (m.furigana||'').toLowerCase().includes(ql)
+  );
+  if (!matched.length) { results.style.display = 'none'; return; }
+  results.innerHTML = matched.map(m => `
+    <div onclick="selectMemberForLookup('${m.id}')"
+      style="padding:10px 14px;cursor:pointer;border-bottom:1px solid var(--border);
+        display:flex;align-items:center;gap:10px;"
+      onmouseover="this.style.background='var(--surface2)'"
+      onmouseout="this.style.background=''">
+      <div style="width:32px;height:32px;border-radius:50%;background:var(--purple);
+        display:flex;align-items:center;justify-content:center;color:#fff;font-weight:700;flex-shrink:0;">
+        ${(m.name||'?')[0]}
+      </div>
+      <div>
+        <div style="font-weight:600;font-size:0.9rem;">${m.name}</div>
+        <div style="font-size:0.75rem;color:var(--text2);">${m.furigana||''} · ${m.course||'コース未設定'}</div>
+      </div>
+    </div>
+  `).join('');
+  results.style.display = 'block';
+}
+
+function selectMemberForLookup(id) {
+  const results = document.getElementById('lookupSearchResults');
+  if (results) results.style.display = 'none';
+  const input = document.getElementById('lookupSearchInput');
+  if (input) {
+    const m = MEMBERS.find(x => x.id === id);
+    if (m) input.value = m.name;
+  }
+  selectMember(id);
+}
 
 let selectedMemberObj = null;
 let selectedCourse = 0; // 1 or 2
@@ -1472,10 +1519,15 @@ document.getElementById('monthlySection').style.display = '';
 document.getElementById('feeBreakdown').style.display = 'none';
 
 document.addEventListener('click', e => {
-  if (!e.target.closest('.member-select-bar')) {
+  if (!e.target.closest('.member-select-bar') && !e.target.closest('.lookup-search-wrap')) {
     document.getElementById('paySearchResults').classList.remove('show');
+    const lr = document.getElementById('lookupSearchResults');
+    if (lr) lr.classList.remove('show');
   }
 });
+
+// GASから会員・支払いデータを読み込む
+loadAccountingData();
 
 checkUrlParam();
 
