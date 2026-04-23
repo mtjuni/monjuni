@@ -1094,7 +1094,7 @@
     <div style="background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);overflow:hidden;">
       <table class="stats-table">
         <thead>
-          <tr><th>氏名</th><th>よみがな</th><th>出席回数</th><th>状況</th></tr>
+          <tr><th>氏名</th><th>よみがな</th><th>出席回数</th><th>出席日</th><th>状況</th></tr>
         </thead>
         <tbody id="statsMemberTbody"></tbody>
       </table>
@@ -1286,13 +1286,32 @@ const GAS_URL = 'https://script.google.com/macros/s/AKfycbyVH4yXtC0PsG4gwbWITAns
 // Google Forms → スプレッドシート連携: GASのgetMembersエンドポイントで自動取得
 // スプレッドシートのID設定はCode.gsのSS_IDで行う
 
+// JSONP fetch（GASのCORSリダイレクト問題を回避）
+function jsonpFetch(url) {
+  return new Promise((resolve, reject) => {
+    const cbName = '_cb_' + Date.now() + '_' + Math.random().toString(36).slice(2,7);
+    const script = document.createElement('script');
+    const timer = setTimeout(() => {
+      delete window[cbName]; script.remove();
+      reject(new Error('JSONP timeout'));
+    }, 12000);
+    window[cbName] = (data) => {
+      clearTimeout(timer); delete window[cbName]; script.remove();
+      resolve(data);
+    };
+    script.src = url + (url.includes('?') ? '&' : '?') + 'callback=' + cbName;
+    script.onerror = () => { clearTimeout(timer); delete window[cbName]; script.remove(); reject(new Error('Script load error')); };
+    document.head.appendChild(script);
+  });
+}
+
 // ── 生徒データ（GASから取得、未接続時はデモデータ）──
 let MEMBERS = []; // GASから読み込む
 
 // GASから生徒リストを取得（起動時）
 async function loadMembersFromGAS() {
   try {
-    const res = await fetch(GAS_URL + '?action=getMembers', { redirect: 'follow' });
+    const res = await jsonpFetch(GAS_URL + '?action=getMembers');
     const data = await res.json();
     if (data && data.members && data.members.length > 0) {
       MEMBERS = data.members;
@@ -1473,7 +1492,7 @@ async function renderTodayList() {
   // GASから今日の出席を取得
   let rows = [];
   try {
-    const res  = await fetch(GAS_URL + '?action=getAttendance&date=' + todayISO, { redirect: 'follow' });
+    const res  = await jsonpFetch(GAS_URL + '?action=getAttendance&date=' + todayISO);
     const data = await res.json();
     rows = data.attendance || [];
   } catch(e) {
@@ -1766,15 +1785,26 @@ async function renderStats() {
   const sorted = [...MEMBERS].sort((a, b) =>
     (memberCounts[a.id] || 0) < (memberCounts[b.id] || 0) ? 1 : -1
   );
+  // メンバー別の出席日リスト
+  const memberDates = {};
+  thisMonthAtt.forEach(a => {
+    const k2 = a.memberId || a.memberName;
+    if (!memberDates[k2]) memberDates[k2] = new Set();
+    if (a.dateKey) memberDates[k2].add(a.dateKey.slice(8,10).replace(/^0/,'') + '日');
+  });
+
   document.getElementById('statsMemberTbody').innerHTML = sorted.map(m => {
     const cnt = memberCounts[m.id] || memberCounts[m.name] || 0;
+    const datesKey = m.id || m.name;
+    const dates = [...(memberDates[datesKey] || new Set())].sort((a,b)=>parseInt(a)-parseInt(b)).join(', ');
     return `<tr>
       <td style="font-weight:600;">${m.name}</td>
       <td style="color:var(--text2);font-size:0.78rem;">${m.furigana||'—'}</td>
       <td style="font-family:'DM Mono',monospace;font-weight:700;">${cnt}回</td>
+      <td style="font-size:0.75rem;color:var(--text2);">${dates||'—'}</td>
       <td><span class="attend-badge ${cnt>0?'good':'none'}">${cnt>0?'出席あり':'未出席'}</span></td>
     </tr>`;
-  }).join('') || '<tr><td colspan="4" style="text-align:center;color:var(--text3);padding:16px;">データなし</td></tr>';
+  }).join('') || '<tr><td colspan="5" style="text-align:center;color:var(--text3);padding:16px;">データなし</td></tr>';
 }
 
 // 出席履歴を統合（今日のセッション + デモデータ）
@@ -1795,7 +1825,7 @@ async function getAttendanceHistory() {
   }));
 
   try {
-    const res  = await fetch(GAS_URL + '?action=getAttendance', { redirect: 'follow' });
+    const res  = await jsonpFetch(GAS_URL + '?action=getAttendance');
     const data = await res.json();
     const rows = (data.attendance || []).map(a => {
       const d = (a.date || '').slice(0, 10).replace(/-/g, '/'); // YYYY/MM/DD
