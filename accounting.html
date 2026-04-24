@@ -1590,10 +1590,15 @@ document.getElementById('monthlySection').style.display = '';
 document.getElementById('feeBreakdown').style.display = 'none';
 
 document.addEventListener('click', e => {
-  if (!e.target.closest('.member-select-bar')) {
+  if (!e.target.closest('.member-select-bar') && !e.target.closest('.lookup-search-wrap')) {
     document.getElementById('paySearchResults').classList.remove('show');
+    const lr = document.getElementById('lookupSearchResults');
+    if (lr) lr.style.display = 'none';
   }
 });
+
+// GASから会員・支払いデータを読み込む
+loadAccountingData();
 
 checkUrlParam();
 
