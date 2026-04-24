@@ -272,6 +272,68 @@ body{font-family:'Noto Sans JP',sans-serif;background:var(--bg);color:var(--tx);
     <div id="perfHistory"></div>
   </div>
 
+  <!-- コース -->
+  <div class="section">
+    <div class="sec-title"><span>🎽</span> コース</div>
+    <div id="courseSection" style="background:var(--sur);border:1px solid var(--bd2);border-radius:var(--r);padding:14px;">
+
+      <!-- 現在のコース -->
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;">
+        <div>
+          <div style="font-size:.68rem;color:var(--tx3);text-transform:uppercase;letter-spacing:.06em;margin-bottom:4px;">現在のコース</div>
+          <div id="currentCourseLabel" style="font-size:1rem;font-weight:700;color:var(--cyan);">—</div>
+        </div>
+        <button onclick="toggleCourseChangeForm()"
+          style="padding:8px 16px;background:rgba(0,229,255,.1);border:1px solid rgba(0,229,255,.25);
+          border-radius:var(--rs);color:var(--cyan);font-family:inherit;font-size:.8rem;font-weight:700;cursor:pointer;">
+          🔄 コース変更
+        </button>
+      </div>
+
+      <!-- コース変更フォーム（初期非表示） -->
+      <div id="courseChangeForm" style="display:none;border-top:1px solid var(--bd);padding-top:14px;margin-bottom:14px;">
+        <div style="font-size:.72rem;font-weight:700;color:var(--tx2);margin-bottom:10px;">新しいコースを選択</div>
+        <select id="newCourseSelect" onchange="onNewCourseChange(this.value)"
+          style="width:100%;padding:10px 12px;background:var(--sur2);border:1px solid var(--bd2);
+          border-radius:var(--rs);color:var(--tx);font-family:inherit;font-size:.9rem;outline:none;
+          appearance:none;margin-bottom:8px;">
+          <option value="">— 選択 —</option>
+          <option value="通常クラス・月1回">通常クラス・月1回</option>
+          <option value="通常クラス・月2回">通常クラス・月2回</option>
+          <option value="特別コース">特別コース</option>
+          <option value="その他">その他（自由入力）</option>
+        </select>
+        <input id="newCourseOther" type="text" placeholder="コース名を入力..."
+          style="display:none;width:100%;padding:10px 12px;background:var(--sur2);border:1px solid var(--bd2);
+          border-radius:var(--rs);color:var(--tx);font-family:inherit;font-size:.9rem;outline:none;margin-bottom:8px;">
+        <div style="font-size:.72rem;font-weight:700;color:var(--tx2);margin-bottom:6px;">変更開始月</div>
+        <input id="courseStartMonth" type="month"
+          style="width:100%;padding:10px 12px;background:var(--sur2);border:1px solid var(--bd2);
+          border-radius:var(--rs);color:var(--tx);font-family:inherit;font-size:.9rem;outline:none;margin-bottom:8px;">
+        <div style="font-size:.72rem;font-weight:700;color:var(--tx2);margin-bottom:6px;">メモ（任意）</div>
+        <input id="courseChangeNote" type="text" placeholder="例: 体調不良により一時変更 など"
+          style="width:100%;padding:10px 12px;background:var(--sur2);border:1px solid var(--bd2);
+          border-radius:var(--rs);color:var(--tx);font-family:inherit;font-size:.9rem;outline:none;margin-bottom:10px;">
+        <div style="display:flex;gap:8px;">
+          <button onclick="toggleCourseChangeForm()"
+            style="flex:1;padding:10px;background:var(--sur2);border:1px solid var(--bd2);border-radius:var(--rs);
+            color:var(--tx2);font-family:inherit;font-size:.85rem;font-weight:700;cursor:pointer;">キャンセル</button>
+          <button onclick="saveCourseChange()"
+            style="flex:2;padding:10px;background:var(--tl);border:none;border-radius:var(--rs);
+            color:var(--bg);font-family:inherit;font-size:.85rem;font-weight:700;cursor:pointer;">✓ 変更を保存</button>
+        </div>
+      </div>
+
+      <!-- 履歴 -->
+      <div>
+        <div style="font-size:.68rem;color:var(--tx3);text-transform:uppercase;letter-spacing:.06em;margin-bottom:8px;">変更履歴</div>
+        <div id="courseHistoryList">
+          <div style="color:var(--tx3);font-size:.8rem;">読み込み中...</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
   <div class="section">
     <div class="sec-title"><span>📝</span> メモ</div>
     <div class="memo-box">
@@ -351,6 +413,7 @@ async function init() {
 
     renderAll();
     loadMemo(id);
+    loadCourseHistory(id);
     checkTodayAttendance();
 
     document.getElementById('loadingScreen').style.display = 'none';
@@ -613,6 +676,111 @@ function saveMemo() {
   const id = new URLSearchParams(location.search).get('id');
   localStorage.setItem('memo_' + id, document.getElementById('memoArea').value);
   showToast('✓ メモを保存しました');
+}
+
+// ── コース管理 ──
+let COURSE_HISTORY = [];
+
+function renderCurrentCourse() {
+  const label = document.getElementById('currentCourseLabel');
+  if (label) label.textContent = MEMBER.course || 'コース未設定';
+}
+
+async function loadCourseHistory(memberId) {
+  renderCurrentCourse();
+  try {
+    const data = await jsonpFetch(GAS + '?action=getCourseHistory&memberId=' + encodeURIComponent(memberId));
+    COURSE_HISTORY = data.history || [];
+  } catch(e) {
+    COURSE_HISTORY = [];
+  }
+  renderCourseHistory();
+}
+
+function renderCourseHistory() {
+  const el = document.getElementById('courseHistoryList');
+  if (!el) return;
+  if (!COURSE_HISTORY.length) {
+    el.innerHTML = '<div style="color:var(--tx3);font-size:.8rem;">履歴がありません</div>';
+    return;
+  }
+  const sorted = [...COURSE_HISTORY].sort((a,b) => (b.startMonth||'').localeCompare(a.startMonth||''));
+  el.innerHTML = sorted.map(h => `
+    <div style="display:flex;align-items:flex-start;gap:10px;padding:8px 0;border-bottom:1px solid var(--bd);">
+      <div style="font-family:'DM Mono',monospace;font-size:.72rem;color:var(--tx3);min-width:60px;padding-top:2px;">
+        ${h.startMonth || '—'}
+      </div>
+      <div style="flex:1;">
+        <div style="font-size:.88rem;font-weight:700;color:var(--cyan);">${h.course || '—'}</div>
+        ${h.note ? `<div style="font-size:.72rem;color:var(--tx2);margin-top:2px;">📝 ${h.note}</div>` : ''}
+      </div>
+    </div>`).join('');
+  // 最後のborder-bottomを消す
+  el.lastElementChild && (el.lastElementChild.style.borderBottom = 'none');
+}
+
+function toggleCourseChangeForm() {
+  const form = document.getElementById('courseChangeForm');
+  const isOpen = form.style.display !== 'none';
+  form.style.display = isOpen ? 'none' : '';
+  if (!isOpen) {
+    // 開いたとき：現在の月をデフォルト設定
+    const now = new Date();
+    document.getElementById('courseStartMonth').value =
+      `${now.getFullYear()}-${String(now.getMonth()+1).padStart(2,'0')}`;
+    document.getElementById('newCourseSelect').value = '';
+    document.getElementById('newCourseOther').style.display = 'none';
+    document.getElementById('courseChangeNote').value = '';
+  }
+}
+
+function onNewCourseChange(val) {
+  document.getElementById('newCourseOther').style.display = val === 'その他' ? '' : 'none';
+}
+
+async function saveCourseChange() {
+  let course = document.getElementById('newCourseSelect').value;
+  if (course === 'その他') {
+    course = document.getElementById('newCourseOther').value.trim();
+    if (!course) { showToast('⚠ コース名を入力してください', true); return; }
+  }
+  if (!course) { showToast('⚠ コースを選択してください', true); return; }
+
+  const startMonthRaw = document.getElementById('courseStartMonth').value; // YYYY-MM
+  if (!startMonthRaw) { showToast('⚠ 変更開始月を入力してください', true); return; }
+  const startMonth = startMonthRaw.replace('-', '/'); // YYYY/MM
+  const note = document.getElementById('courseChangeNote').value.trim();
+
+  const btn = document.querySelector('#courseChangeForm button[onclick="saveCourseChange()"]');
+  if (btn) { btn.disabled = true; btn.textContent = '保存中...'; }
+
+  try {
+    const res = await fetch(GAS, { method: 'POST', body: JSON.stringify({
+      action:     'saveCourseHistory',
+      memberId:   MEMBER.id,
+      memberName: MEMBER.name,
+      course,
+      startMonth,
+      note,
+    })});
+    const d = await res.json();
+    if (d.status === 'ok') {
+      // MEMBER のコースも更新
+      MEMBER.course = course;
+      renderCurrentCourse();
+      renderHero();
+      // 履歴に追加して再描画
+      COURSE_HISTORY.unshift({ course, startMonth, note, id: d.id });
+      renderCourseHistory();
+      toggleCourseChangeForm();
+      showToast('✓ コースを変更しました');
+    } else {
+      showToast('⚠ 保存失敗: ' + (d.message||''), true);
+    }
+  } catch(e) {
+    showToast('⚠ 通信エラー: ' + e.message, true);
+  }
+  if (btn) { btn.disabled = false; btn.textContent = '✓ 変更を保存'; }
 }
 
 // ── 本日の出席登録 ──
