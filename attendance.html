@@ -10,628 +10,148 @@
 <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@300;400;500;700;900&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
 <style>
   :root {
-    --bg: #0d0f1a;
-    --surface: #161929;
-    --surface2: #1e2235;
-    --border: #2a2f45;
-    --accent: #4fffb0;
-    --accent2: #7b6fff;
-    --warn: #ff6b6b;
-    --text: #e8eaf6;
-    --text2: #8892b0;
-    --text3: #4a5380;
-    --radius: 16px;
-    --radius-sm: 10px;
-    --safe-top: env(safe-area-inset-top, 0px);
-    --safe-bottom: env(safe-area-inset-bottom, 0px);
+    --bg: #0d0f1a; --surface: #161929; --surface2: #1e2235; --border: #2a2f45;
+    --accent: #4fffb0; --accent2: #7b6fff; --warn: #ff6b6b;
+    --text: #e8eaf6; --text2: #8892b0; --text3: #4a5380;
+    --radius: 16px; --radius-sm: 10px;
+    --safe-top: env(safe-area-inset-top, 0px); --safe-bottom: env(safe-area-inset-bottom, 0px);
   }
-
   * { margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
-
-  body {
-    font-family: 'Noto Sans JP', sans-serif;
-    background: var(--bg);
-    color: var(--text);
-    min-height: 100dvh;
-    overflow-x: hidden;
-  }
-
-  /* ── HEADER ── */
-  .app-header {
-    position: sticky;
-    top: 0;
-    z-index: 100;
-    background: rgba(13,15,26,0.92);
-    backdrop-filter: blur(20px);
-    -webkit-backdrop-filter: blur(20px);
-    border-bottom: 1px solid var(--border);
-    padding: calc(var(--safe-top) + 12px) 20px 12px;
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-  }
-  .app-title {
-    font-size: 1.05rem;
-    font-weight: 700;
-    letter-spacing: 0.05em;
-    color: var(--accent);
-  }
+  body { font-family: 'Noto Sans JP', sans-serif; background: var(--bg); color: var(--text); min-height: 100dvh; overflow-x: hidden; }
+  .app-header { position: sticky; top: 0; z-index: 100; background: rgba(13,15,26,0.92); backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px); border-bottom: 1px solid var(--border); padding: calc(var(--safe-top) + 12px) 20px 12px; display: flex; align-items: center; justify-content: space-between; }
+  .app-title { font-size: 1.05rem; font-weight: 700; letter-spacing: 0.05em; color: var(--accent); }
   .app-title span { color: var(--text2); font-weight: 300; }
-  .header-link {
-    background: var(--surface2);
-    border: 1px solid var(--border);
-    color: var(--text2);
-    padding: 6px 14px;
-    border-radius: 20px;
-    font-size: 0.78rem;
-    font-weight: 500;
-    text-decoration: none;
-    transition: all 0.2s;
-  }
+  .header-link { background: var(--surface2); border: 1px solid var(--border); color: var(--text2); padding: 6px 14px; border-radius: 20px; font-size: 0.78rem; font-weight: 500; text-decoration: none; transition: all 0.2s; }
   .header-link:hover { color: var(--accent); border-color: var(--accent); }
-
-  /* ── TABS ── */
-  .tab-bar {
-    display: flex;
-    background: var(--surface);
-    border-bottom: 1px solid var(--border);
-    overflow-x: auto;
-    scrollbar-width: none;
-    -webkit-overflow-scrolling: touch;
-  }
+  .tab-bar { display: flex; background: var(--surface); border-bottom: 1px solid var(--border); overflow-x: auto; scrollbar-width: none; -webkit-overflow-scrolling: touch; }
   .tab-bar::-webkit-scrollbar { display: none; }
-  .tab-btn {
-    flex: 1;
-    min-width: 80px;
-    padding: 12px 10px;
-    background: none;
-    border: none;
-    color: var(--text3);
-    font-family: inherit;
-    font-size: 0.78rem;
-    font-weight: 500;
-    cursor: pointer;
-    transition: all 0.2s;
-    white-space: nowrap;
-    position: relative;
-  }
+  .tab-btn { flex: 1; min-width: 80px; padding: 12px 10px; background: none; border: none; color: var(--text3); font-family: inherit; font-size: 0.78rem; font-weight: 500; cursor: pointer; transition: all 0.2s; white-space: nowrap; position: relative; }
   .tab-btn.active { color: var(--accent); }
-  .tab-btn.active::after {
-    content: '';
-    position: absolute;
-    bottom: 0; left: 20%; right: 20%;
-    height: 2px;
-    background: var(--accent);
-    border-radius: 2px 2px 0 0;
-  }
-
-  /* ── MAIN CONTENT ── */
+  .tab-btn.active::after { content: ''; position: absolute; bottom: 0; left: 20%; right: 20%; height: 2px; background: var(--accent); border-radius: 2px 2px 0 0; }
   .main { padding: 20px; max-width: 640px; margin: 0 auto; }
   .tab-panel { display: none; }
   .tab-panel.active { display: block; }
-
-  /* ── NFC SCANNER PANEL ── */
-  .nfc-zone {
-    background: var(--surface);
-    border: 1px solid var(--border);
-    border-radius: var(--radius);
-    padding: 28px 20px;
-    text-align: center;
-    margin-bottom: 20px;
-    position: relative;
-    overflow: hidden;
-  }
-  .nfc-zone::before {
-    content: '';
-    position: absolute;
-    inset: 0;
-    background: radial-gradient(ellipse at 50% 0%, rgba(79,255,176,0.06) 0%, transparent 70%);
-    pointer-events: none;
-  }
-  .nfc-ring {
-    width: 110px;
-    height: 110px;
-    margin: 0 auto 16px;
-    position: relative;
-  }
-  .nfc-ring-outer {
-    width: 110px;
-    height: 110px;
-    border-radius: 50%;
-    border: 2px solid rgba(79,255,176,0.2);
-    position: absolute;
-    animation: pulse-ring 2s ease-in-out infinite;
-  }
-  .nfc-ring-inner {
-    width: 80px;
-    height: 80px;
-    border-radius: 50%;
-    border: 2px solid rgba(79,255,176,0.4);
-    position: absolute;
-    top: 15px; left: 15px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    background: var(--surface2);
-  }
+  .nfc-zone { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); padding: 28px 20px; text-align: center; margin-bottom: 20px; position: relative; overflow: hidden; }
+  .nfc-zone::before { content: ''; position: absolute; inset: 0; background: radial-gradient(ellipse at 50% 0%, rgba(79,255,176,0.06) 0%, transparent 70%); pointer-events: none; }
+  .nfc-ring { width: 110px; height: 110px; margin: 0 auto 16px; position: relative; }
+  .nfc-ring-outer { width: 110px; height: 110px; border-radius: 50%; border: 2px solid rgba(79,255,176,0.2); position: absolute; animation: pulse-ring 2s ease-in-out infinite; }
+  .nfc-ring-inner { width: 80px; height: 80px; border-radius: 50%; border: 2px solid rgba(79,255,176,0.4); position: absolute; top: 15px; left: 15px; display: flex; align-items: center; justify-content: center; background: var(--surface2); }
   .nfc-icon { font-size: 2rem; }
-  @keyframes pulse-ring {
-    0%, 100% { transform: scale(1); opacity: 0.6; }
-    50% { transform: scale(1.1); opacity: 1; }
-  }
+  @keyframes pulse-ring { 0%, 100% { transform: scale(1); opacity: 0.6; } 50% { transform: scale(1.1); opacity: 1; } }
   .nfc-zone.scanning .nfc-ring-outer { animation: spin 1s linear infinite; border-color: var(--accent); }
   .nfc-zone.success .nfc-ring-outer { border-color: var(--accent); animation: none; }
   .nfc-zone.success .nfc-ring-inner { border-color: var(--accent); background: rgba(79,255,176,0.1); }
   .nfc-zone.error .nfc-ring-outer { border-color: var(--warn); animation: none; }
   @keyframes spin { to { transform: rotate(360deg); } }
-
-  .nfc-label {
-    font-size: 0.85rem;
-    color: var(--text2);
-    margin-bottom: 8px;
-  }
-  .nfc-status {
-    font-size: 1rem;
-    font-weight: 700;
-    color: var(--text);
-    min-height: 24px;
-  }
+  .nfc-label { font-size: 0.85rem; color: var(--text2); margin-bottom: 8px; }
+  .nfc-status { font-size: 1rem; font-weight: 700; color: var(--text); min-height: 24px; }
   .nfc-status.ok { color: var(--accent); }
   .nfc-status.err { color: var(--warn); }
-
-  /* ── SEARCH ── */
-  .search-wrap {
-    position: relative;
-    margin-bottom: 20px;
-  }
-  .search-icon {
-    position: absolute;
-    left: 14px; top: 50%;
-    transform: translateY(-50%);
-    font-size: 1rem;
-    color: var(--text3);
-    pointer-events: none;
-  }
-  .search-input {
-    width: 100%;
-    padding: 14px 14px 14px 42px;
-    background: var(--surface);
-    border: 1px solid var(--border);
-    border-radius: var(--radius-sm);
-    color: var(--text);
-    font-family: inherit;
-    font-size: 1rem;
-    outline: none;
-    transition: border-color 0.2s;
-  }
+  .search-wrap { position: relative; margin-bottom: 20px; }
+  .search-icon { position: absolute; left: 14px; top: 50%; transform: translateY(-50%); font-size: 1rem; color: var(--text3); pointer-events: none; }
+  .search-input { width: 100%; padding: 14px 14px 14px 42px; background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius-sm); color: var(--text); font-family: inherit; font-size: 1rem; outline: none; transition: border-color 0.2s; }
   .search-input:focus { border-color: var(--accent2); }
   .search-input::placeholder { color: var(--text3); }
-  .search-results {
-    background: var(--surface);
-    border: 1px solid var(--border);
-    border-radius: var(--radius-sm);
-    overflow: hidden;
-    margin-top: 8px;
-    display: none;
-  }
+  .search-results { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius-sm); overflow: hidden; margin-top: 8px; display: none; }
   .search-results.show { display: block; }
-  .search-result-item {
-    padding: 12px 16px;
-    cursor: pointer;
-    transition: background 0.15s;
-    display: flex;
-    align-items: center;
-    gap: 12px;
-    border-bottom: 1px solid var(--border);
-  }
+  .search-result-item { padding: 12px 16px; cursor: pointer; transition: background 0.15s; display: flex; align-items: center; gap: 12px; border-bottom: 1px solid var(--border); }
   .search-result-item:last-child { border-bottom: none; }
   .search-result-item:hover, .search-result-item:active { background: var(--surface2); }
-  .result-avatar {
-    width: 38px; height: 38px;
-    border-radius: 50%;
-    background: var(--accent2);
-    display: flex; align-items: center; justify-content: center;
-    font-size: 1rem; font-weight: 700; color: #fff;
-    flex-shrink: 0;
-  }
+  .result-avatar { width: 38px; height: 38px; border-radius: 50%; background: var(--accent2); display: flex; align-items: center; justify-content: center; font-size: 1rem; font-weight: 700; color: #fff; flex-shrink: 0; }
   .result-name { font-weight: 600; font-size: 0.95rem; }
   .result-meta { font-size: 0.78rem; color: var(--text2); margin-top: 2px; }
-
-  /* ── MEMBER CARD ── */
-  .member-card {
-    background: var(--surface);
-    border: 1px solid var(--border);
-    border-radius: var(--radius);
-    padding: 20px;
-    margin-bottom: 16px;
-    display: none;
-    animation: slide-up 0.3s ease;
-  }
+  .member-card { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); padding: 20px; margin-bottom: 16px; display: none; animation: slide-up 0.3s ease; }
   .member-card.show { display: block; }
-  @keyframes slide-up {
-    from { opacity: 0; transform: translateY(16px); }
-    to { opacity: 1; transform: translateY(0); }
-  }
-  .member-header {
-    display: flex;
-    align-items: center;
-    gap: 14px;
-    margin-bottom: 16px;
-  }
-  .member-avatar {
-    width: 56px; height: 56px;
-    border-radius: 50%;
-    background: linear-gradient(135deg, var(--accent2), var(--accent));
-    display: flex; align-items: center; justify-content: center;
-    font-size: 1.5rem; font-weight: 900; color: #0d0f1a;
-    flex-shrink: 0;
-  }
+  @keyframes slide-up { from { opacity: 0; transform: translateY(16px); } to { opacity: 1; transform: translateY(0); } }
+  .member-header { display: flex; align-items: center; gap: 14px; margin-bottom: 16px; }
+  .member-avatar { width: 56px; height: 56px; border-radius: 50%; background: linear-gradient(135deg, var(--accent2), var(--accent)); display: flex; align-items: center; justify-content: center; font-size: 1.5rem; font-weight: 900; color: #0d0f1a; flex-shrink: 0; }
   .member-name { font-size: 1.2rem; font-weight: 700; }
   .member-furigana { font-size: 0.78rem; color: var(--text2); margin-bottom: 4px; }
   .member-badges { display: flex; gap: 6px; flex-wrap: wrap; margin-top: 6px; }
-  .badge {
-    padding: 3px 10px;
-    border-radius: 20px;
-    font-size: 0.7rem;
-    font-weight: 600;
-    letter-spacing: 0.03em;
-  }
+  .badge { padding: 3px 10px; border-radius: 20px; font-size: 0.7rem; font-weight: 600; letter-spacing: 0.03em; }
   .badge-course { background: rgba(123,111,255,0.2); color: var(--accent2); border: 1px solid rgba(123,111,255,0.3); }
   .badge-paid { background: rgba(79,255,176,0.15); color: var(--accent); border: 1px solid rgba(79,255,176,0.3); }
   .badge-unpaid { background: rgba(255,107,107,0.15); color: var(--warn); border: 1px solid rgba(255,107,107,0.3); }
   .badge-warn { background: rgba(255,184,0,0.15); color: #ffb800; border: 1px solid rgba(255,184,0,0.3); }
-
-  /* payment months strip */
-  .payment-strip {
-    display: grid;
-    grid-template-columns: repeat(6, 1fr);
-    gap: 4px;
-    margin-bottom: 16px;
-  }
-  .month-cell {
-    aspect-ratio: 1;
-    border-radius: 6px;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    font-size: 0.6rem;
-    font-weight: 600;
-    gap: 2px;
-  }
+  .payment-strip { display: grid; grid-template-columns: repeat(6, 1fr); gap: 4px; margin-bottom: 16px; }
+  .month-cell { aspect-ratio: 1; border-radius: 6px; display: flex; flex-direction: column; align-items: center; justify-content: center; font-size: 0.6rem; font-weight: 600; gap: 2px; }
   .month-cell.paid { background: rgba(79,255,176,0.15); color: var(--accent); }
   .month-cell.unpaid { background: var(--surface2); color: var(--text3); }
   .month-cell.current { outline: 2px solid var(--accent); outline-offset: 1px; }
   .month-num { font-size: 0.75rem; font-weight: 700; font-family: 'DM Mono', monospace; }
-
-  /* class selector */
-  .class-select-label {
-    font-size: 0.78rem;
-    color: var(--text2);
-    margin-bottom: 8px;
-    font-weight: 500;
-  }
-  .class-pills {
-    display: flex;
-    gap: 8px;
-    flex-wrap: wrap;
-    margin-bottom: 16px;
-  }
-  .class-pill {
-    padding: 8px 16px;
-    background: var(--surface2);
-    border: 1px solid var(--border);
-    border-radius: 20px;
-    color: var(--text2);
-    font-family: inherit;
-    font-size: 0.85rem;
-    font-weight: 500;
-    cursor: pointer;
-    transition: all 0.15s;
-  }
-  .class-pill.active {
-    background: rgba(123,111,255,0.2);
-    border-color: var(--accent2);
-    color: var(--accent2);
-  }
-
-  /* confirm button */
-  .confirm-btn {
-    width: 100%;
-    padding: 16px;
-    background: var(--accent);
-    color: #0d0f1a;
-    border: none;
-    border-radius: var(--radius-sm);
-    font-family: inherit;
-    font-size: 1rem;
-    font-weight: 800;
-    cursor: pointer;
-    letter-spacing: 0.05em;
-    transition: all 0.2s;
-    position: relative;
-    overflow: hidden;
-  }
+  .class-select-label { font-size: 0.78rem; color: var(--text2); margin-bottom: 8px; font-weight: 500; }
+  .class-pills { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 16px; }
+  .class-pill { padding: 8px 16px; background: var(--surface2); border: 1px solid var(--border); border-radius: 20px; color: var(--text2); font-family: inherit; font-size: 0.85rem; font-weight: 500; cursor: pointer; transition: all 0.15s; }
+  .class-pill.active { background: rgba(123,111,255,0.2); border-color: var(--accent2); color: var(--accent2); }
+  .confirm-btn { width: 100%; padding: 16px; background: var(--accent); color: #0d0f1a; border: none; border-radius: var(--radius-sm); font-family: inherit; font-size: 1rem; font-weight: 800; cursor: pointer; letter-spacing: 0.05em; transition: all 0.2s; position: relative; overflow: hidden; }
   .confirm-btn:active { transform: scale(0.98); }
   .confirm-btn:hover { background: #6affd0; }
   .confirm-btn:disabled { background: var(--text3); color: var(--surface); cursor: not-allowed; }
-
-  /* ── TODAY LIST ── */
-  .today-header {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    margin-bottom: 16px;
-  }
+  .today-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 16px; }
   .today-title { font-size: 1rem; font-weight: 700; }
-  .today-count {
-    background: var(--accent);
-    color: #0d0f1a;
-    border-radius: 20px;
-    padding: 3px 12px;
-    font-size: 0.8rem;
-    font-weight: 800;
-    font-family: 'DM Mono', monospace;
-  }
+  .today-count { background: var(--accent); color: #0d0f1a; border-radius: 20px; padding: 3px 12px; font-size: 0.8rem; font-weight: 800; font-family: 'DM Mono', monospace; }
   .attendance-list { display: flex; flex-direction: column; gap: 8px; }
-  .attendance-item {
-    background: var(--surface);
-    border: 1px solid var(--border);
-    border-radius: var(--radius-sm);
-    padding: 12px 16px;
-    display: flex;
-    align-items: center;
-    gap: 12px;
-    animation: slide-up 0.2s ease;
-  }
-  .att-time {
-    font-family: 'DM Mono', monospace;
-    font-size: 0.8rem;
-    color: var(--accent);
-    min-width: 42px;
-  }
+  .attendance-item { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius-sm); padding: 12px 16px; display: flex; align-items: center; gap: 12px; animation: slide-up 0.2s ease; }
+  .att-time { font-family: 'DM Mono', monospace; font-size: 0.8rem; color: var(--accent); min-width: 42px; }
   .att-name { flex: 1; font-weight: 600; font-size: 0.9rem; }
-  .att-class {
-    font-size: 0.72rem;
-    color: var(--text2);
-    padding: 3px 8px;
-    background: var(--surface2);
-    border-radius: 10px;
-  }
-  .att-undo {
-    background: none;
-    border: none;
-    color: var(--text3);
-    cursor: pointer;
-    font-size: 1rem;
-    padding: 4px;
-    transition: color 0.15s;
-  }
-  .att-undo:hover { color: var(--warn); }
-
-  /* ── MEMBER REGISTER ── */
+  .att-class { font-size: 0.72rem; color: var(--text2); padding: 3px 8px; background: var(--surface2); border-radius: 10px; }
   .form-section { margin-bottom: 20px; }
-  .form-label {
-    font-size: 0.78rem;
-    font-weight: 600;
-    color: var(--text2);
-    margin-bottom: 6px;
-    display: block;
-    letter-spacing: 0.04em;
-    text-transform: uppercase;
-  }
-  .form-input, .form-select {
-    width: 100%;
-    padding: 13px 14px;
-    background: var(--surface);
-    border: 1px solid var(--border);
-    border-radius: var(--radius-sm);
-    color: var(--text);
-    font-family: inherit;
-    font-size: 0.95rem;
-    outline: none;
-    transition: border-color 0.2s;
-    appearance: none;
-    -webkit-appearance: none;
-  }
+  .form-label { font-size: 0.78rem; font-weight: 600; color: var(--text2); margin-bottom: 6px; display: block; letter-spacing: 0.04em; text-transform: uppercase; }
+  .form-input, .form-select { width: 100%; padding: 13px 14px; background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius-sm); color: var(--text); font-family: inherit; font-size: 0.95rem; outline: none; transition: border-color 0.2s; appearance: none; -webkit-appearance: none; }
   .form-input:focus, .form-select:focus { border-color: var(--accent2); }
   .form-select { background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' fill='none'%3E%3Cpath d='M1 1l5 5 5-5' stroke='%238892b0' stroke-width='2' stroke-linecap='round'/%3E%3C/svg%3E"); background-repeat: no-repeat; background-position: right 14px center; padding-right: 36px; }
   .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
-
-  /* ── NFC GUIDE ── */
-  .guide-step {
-    display: flex;
-    gap: 16px;
-    margin-bottom: 20px;
-    padding: 16px;
-    background: var(--surface);
-    border: 1px solid var(--border);
-    border-radius: var(--radius-sm);
-  }
-  .step-num {
-    width: 32px; height: 32px;
-    border-radius: 50%;
-    background: var(--accent2);
-    color: #fff;
-    display: flex; align-items: center; justify-content: center;
-    font-weight: 800;
-    font-size: 0.85rem;
-    flex-shrink: 0;
-  }
+  .guide-step { display: flex; gap: 16px; margin-bottom: 20px; padding: 16px; background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius-sm); }
+  .step-num { width: 32px; height: 32px; border-radius: 50%; background: var(--accent2); color: #fff; display: flex; align-items: center; justify-content: center; font-weight: 800; font-size: 0.85rem; flex-shrink: 0; }
   .step-content h4 { font-size: 0.9rem; font-weight: 700; margin-bottom: 4px; }
   .step-content p { font-size: 0.82rem; color: var(--text2); line-height: 1.55; }
-  .step-content code {
-    font-family: 'DM Mono', monospace;
-    background: var(--surface2);
-    padding: 2px 6px;
-    border-radius: 4px;
-    font-size: 0.78rem;
-    color: var(--accent);
-  }
-  .guide-note {
-    background: rgba(123,111,255,0.1);
-    border: 1px solid rgba(123,111,255,0.3);
-    border-radius: var(--radius-sm);
-    padding: 14px 16px;
-    font-size: 0.82rem;
-    color: var(--text2);
-    line-height: 1.6;
-    margin-bottom: 20px;
-  }
-
-  /* ── SUCCESS TOAST ── */
-  .toast {
-    position: fixed;
-    bottom: calc(var(--safe-bottom) + 24px);
-    left: 50%; transform: translateX(-50%) translateY(100px);
-    background: var(--accent);
-    color: #0d0f1a;
-    padding: 12px 24px;
-    border-radius: 30px;
-    font-weight: 700;
-    font-size: 0.9rem;
-    z-index: 999;
-    transition: transform 0.35s cubic-bezier(0.34, 1.56, 0.64, 1);
-    white-space: nowrap;
-    box-shadow: 0 8px 32px rgba(79,255,176,0.4);
-  }
+  .step-content code { font-family: 'DM Mono', monospace; background: var(--surface2); padding: 2px 6px; border-radius: 4px; font-size: 0.78rem; color: var(--accent); }
+  .guide-note { background: rgba(123,111,255,0.1); border: 1px solid rgba(123,111,255,0.3); border-radius: var(--radius-sm); padding: 14px 16px; font-size: 0.82rem; color: var(--text2); line-height: 1.6; margin-bottom: 20px; }
+  .toast { position: fixed; bottom: calc(var(--safe-bottom) + 24px); left: 50%; transform: translateX(-50%) translateY(100px); background: var(--accent); color: #0d0f1a; padding: 12px 24px; border-radius: 30px; font-weight: 700; font-size: 0.9rem; z-index: 999; transition: transform 0.35s cubic-bezier(0.34, 1.56, 0.64, 1); white-space: nowrap; box-shadow: 0 8px 32px rgba(79,255,176,0.4); }
   .toast.show { transform: translateX(-50%) translateY(0); }
-
-  /* ── SECTION TITLE ── */
-  .section-title {
-    font-size: 0.72rem;
-    font-weight: 700;
-    letter-spacing: 0.1em;
-    text-transform: uppercase;
-    color: var(--text3);
-    margin-bottom: 12px;
-    padding-bottom: 8px;
-    border-bottom: 1px solid var(--border);
-  }
-
-  /* ── MEMBER LIST PANEL ── */
-  .list-toggle-btn {
-    width:100%; padding:11px; margin-top:10px;
-    background:var(--surface2); border:1px dashed var(--border);
-    border-radius:var(--radius-sm); color:var(--text2);
-    font-family:inherit; font-size:0.85rem; font-weight:600;
-    cursor:pointer; transition:all 0.2s; text-align:center;
-  }
-  .list-toggle-btn:hover, .list-toggle-btn.open {
-    border-color:var(--accent); color:var(--accent);
-  }
-  .member-list-panel {
-    margin-top:12px; background:var(--surface);
-    border:1px solid var(--border); border-radius:var(--radius);
-    overflow:hidden;
-  }
-  .list-filters {
-    display:grid; grid-template-columns:1fr auto; gap:8px;
-    padding:12px; border-bottom:1px solid var(--border);
-  }
-  .list-filter-input {
-    padding:9px 12px; background:var(--surface2);
-    border:1px solid var(--border); border-radius:var(--radius-sm);
-    color:var(--text); font-family:inherit; font-size:0.88rem; outline:none;
-    transition:border-color 0.2s;
-  }
+  .section-title { font-size: 0.72rem; font-weight: 700; letter-spacing: 0.1em; text-transform: uppercase; color: var(--text3); margin-bottom: 12px; padding-bottom: 8px; border-bottom: 1px solid var(--border); }
+  .list-toggle-btn { width:100%; padding:11px; margin-top:10px; background:var(--surface2); border:1px dashed var(--border); border-radius:var(--radius-sm); color:var(--text2); font-family:inherit; font-size:0.85rem; font-weight:600; cursor:pointer; transition:all 0.2s; text-align:center; }
+  .list-toggle-btn:hover, .list-toggle-btn.open { border-color:var(--accent); color:var(--accent); }
+  .member-list-panel { margin-top:12px; background:var(--surface); border:1px solid var(--border); border-radius:var(--radius); overflow:hidden; }
+  .list-filters { display:grid; grid-template-columns:1fr auto; gap:8px; padding:12px; border-bottom:1px solid var(--border); }
+  .list-filter-input { padding:9px 12px; background:var(--surface2); border:1px solid var(--border); border-radius:var(--radius-sm); color:var(--text); font-family:inherit; font-size:0.88rem; outline:none; transition:border-color 0.2s; }
   .list-filter-input:focus { border-color:var(--accent); }
-  .list-filter-select {
-    padding:9px 10px; background:var(--surface2);
-    border:1px solid var(--border); border-radius:var(--radius-sm);
-    color:var(--text); font-family:inherit; font-size:0.85rem; outline:none;
-    appearance:none; -webkit-appearance:none; cursor:pointer; min-width:90px;
-  }
-  .list-filter-select:focus { border-color:var(--accent); }
-  .list-count {
-    padding:6px 14px; font-size:0.72rem; color:var(--text3);
-    border-bottom:1px solid var(--border); font-family:'DM Mono',monospace;
-  }
+  .list-filter-select { padding:9px 10px; background:var(--surface2); border:1px solid var(--border); border-radius:var(--radius-sm); color:var(--text); font-family:inherit; font-size:0.85rem; outline:none; appearance:none; -webkit-appearance:none; cursor:pointer; min-width:90px; }
+  .list-count { padding:6px 14px; font-size:0.72rem; color:var(--text3); border-bottom:1px solid var(--border); font-family:'DM Mono',monospace; }
   .member-list-body { max-height:360px; overflow-y:auto; }
-  .member-list-row {
-    display:grid; grid-template-columns:auto 1fr auto;
-    align-items:center; gap:10px; padding:10px 14px;
-    border-bottom:1px solid var(--border); cursor:pointer; transition:background 0.15s;
-  }
+  .member-list-row { display:grid; grid-template-columns:auto 1fr auto; align-items:center; gap:10px; padding:10px 14px; border-bottom:1px solid var(--border); cursor:pointer; transition:background 0.15s; }
   .member-list-row:last-child { border-bottom:none; }
   .member-list-row:hover { background:var(--surface2); }
-  .list-avatar {
-    width:32px; height:32px; border-radius:50%;
-    background:linear-gradient(135deg,var(--accent2),var(--accent));
-    display:flex; align-items:center; justify-content:center;
-    font-weight:700; color:#0d0f1a; font-size:0.85rem; flex-shrink:0;
-  }
+  .list-avatar { width:32px; height:32px; border-radius:50%; background:linear-gradient(135deg,var(--accent2),var(--accent)); display:flex; align-items:center; justify-content:center; font-weight:700; color:#0d0f1a; font-size:0.85rem; flex-shrink:0; }
   .list-info .list-name { font-size:0.88rem; font-weight:600; }
   .list-info .list-sub { font-size:0.72rem; color:var(--text2); margin-top:1px; }
-  .list-nfc {
-    font-family:'DM Mono',monospace; font-size:0.7rem;
-    color:var(--text3); text-align:right;
-  }
+  .list-nfc { font-family:'DM Mono',monospace; font-size:0.7rem; color:var(--text3); text-align:right; }
   .list-nfc.has-nfc { color:var(--accent); }
   .list-nfc.no-nfc { color:var(--warn); }
-
-  /* ── 五十音グリッド ── */
-  .aiueo-grid {
-    display:flex; flex-wrap:wrap; gap:5px; margin-bottom:8px;
-  }
-  .aiueo-btn {
-    width:36px; height:36px; background:var(--surface2); border:1px solid var(--border);
-    border-radius:8px; color:var(--text2); font-family:inherit; font-size:0.82rem;
-    font-weight:700; cursor:pointer; transition:all 0.15s; display:flex;
-    align-items:center; justify-content:center;
-  }
+  .aiueo-grid { display:flex; flex-wrap:wrap; gap:5px; margin-bottom:8px; }
+  .aiueo-btn { width:36px; height:36px; background:var(--surface2); border:1px solid var(--border); border-radius:8px; color:var(--text2); font-family:inherit; font-size:0.82rem; font-weight:700; cursor:pointer; transition:all 0.15s; display:flex; align-items:center; justify-content:center; }
   .aiueo-btn:hover { border-color:var(--accent); color:var(--accent); }
   .aiueo-btn.active { background:rgba(79,255,176,0.15); border-color:var(--accent); color:var(--accent); }
   .aiueo-btn.empty { opacity:0.3; cursor:default; }
-  .aiueo-results {
-    background:var(--surface); border:1px solid var(--border); border-radius:var(--radius-sm);
-    margin-bottom:10px; overflow:hidden;
-  }
-  .aiueo-results-header {
-    display:flex; justify-content:space-between; align-items:center;
-    padding:8px 12px; border-bottom:1px solid var(--border);
-    font-size:0.8rem; font-weight:700; color:var(--accent);
-  }
-  .aiueo-item {
-    display:flex; align-items:center; gap:10px; padding:9px 12px;
-    border-bottom:1px solid var(--border); cursor:pointer; transition:background 0.15s;
-  }
+  .aiueo-results { background:var(--surface); border:1px solid var(--border); border-radius:var(--radius-sm); margin-bottom:10px; overflow:hidden; }
+  .aiueo-results-header { display:flex; justify-content:space-between; align-items:center; padding:8px 12px; border-bottom:1px solid var(--border); font-size:0.8rem; font-weight:700; color:var(--accent); }
+  .aiueo-item { display:flex; align-items:center; gap:10px; padding:9px 12px; border-bottom:1px solid var(--border); cursor:pointer; transition:background 0.15s; }
   .aiueo-item:last-child { border-bottom:none; }
   .aiueo-item:hover { background:var(--surface2); }
-  .aiueo-avatar {
-    width:30px; height:30px; border-radius:50%; background:var(--accent2);
-    display:flex; align-items:center; justify-content:center;
-    font-weight:700; color:#fff; font-size:0.8rem; flex-shrink:0;
-  }
+  .aiueo-avatar { width:30px; height:30px; border-radius:50%; background:var(--accent2); display:flex; align-items:center; justify-content:center; font-weight:700; color:#fff; font-size:0.8rem; flex-shrink:0; }
   .aiueo-name { font-size:0.88rem; font-weight:600; flex:1; }
   .aiueo-sub { font-size:0.72rem; color:var(--text2); }
-
-  /* ── STATS TAB ── */
-  .stats-summary-grid {
-    display:grid; grid-template-columns:1fr 1fr; gap:10px; margin-bottom:16px;
-  }
-  .stats-sum-card {
-    background:var(--surface); border:1px solid var(--border); border-radius:var(--radius);
-    padding:14px; position:relative; overflow:hidden;
-  }
-  .stats-sum-card::before {
-    content:''; position:absolute; top:0; left:0; right:0; height:3px;
-  }
+  .stats-summary-grid { display:grid; grid-template-columns:1fr 1fr; gap:10px; margin-bottom:16px; }
+  .stats-sum-card { background:var(--surface); border:1px solid var(--border); border-radius:var(--radius); padding:14px; position:relative; overflow:hidden; }
+  .stats-sum-card::before { content:''; position:absolute; top:0; left:0; right:0; height:3px; }
   .stats-sum-card.green::before { background:var(--accent); }
   .stats-sum-card.blue::before { background:var(--accent2); }
   .stats-sum-card.gold::before { background:#ffd166; }
   .stats-sum-card.red::before { background:var(--warn); }
   .stats-sum-val { font-family:'DM Mono',monospace; font-size:1.5rem; font-weight:700; margin-bottom:2px; }
-  .stats-sum-val.green { color:var(--accent); }
-  .stats-sum-val.blue { color:var(--accent2); }
-  .stats-sum-val.gold { color:#ffd166; }
-  .stats-sum-val.red { color:var(--warn); }
+  .stats-sum-val.green { color:var(--accent); } .stats-sum-val.blue { color:var(--accent2); } .stats-sum-val.gold { color:#ffd166; } .stats-sum-val.red { color:var(--warn); }
   .stats-sum-lbl { font-size:0.72rem; color:var(--text2); }
-
-  .stats-chart-card {
-    background:var(--surface); border:1px solid var(--border); border-radius:var(--radius);
-    padding:16px; margin-bottom:4px;
-  }
+  .stats-chart-card { background:var(--surface); border:1px solid var(--border); border-radius:var(--radius); padding:16px; margin-bottom:4px; }
   .stats-chart-title { font-size:0.78rem; color:var(--text2); font-weight:600; margin-bottom:14px; }
   .stats-bars { display:flex; gap:6px; align-items:flex-end; height:100px; }
   .stats-bar-col { flex:1; display:flex; flex-direction:column; align-items:center; gap:4px; }
@@ -640,194 +160,67 @@
   .stats-bar.current { background:var(--accent2); opacity:1; }
   .stats-bar-lbl { font-size:0.6rem; color:var(--text3); font-family:'DM Mono',monospace; }
   .stats-bar-val { font-size:0.6rem; color:var(--accent); font-family:'DM Mono',monospace; }
-
   .stats-table { width:100%; border-collapse:collapse; font-size:0.82rem; }
-  .stats-table th {
-    text-align:left; padding:8px 12px; font-size:0.68rem; font-weight:700;
-    text-transform:uppercase; letter-spacing:0.06em; color:var(--text3);
-    border-bottom:1px solid var(--border); background:var(--surface2);
-  }
+  .stats-table th { text-align:left; padding:8px 12px; font-size:0.68rem; font-weight:700; text-transform:uppercase; letter-spacing:0.06em; color:var(--text3); border-bottom:1px solid var(--border); background:var(--surface2); }
   .stats-table td { padding:9px 12px; border-bottom:1px solid var(--border); }
   .stats-table tr:last-child td { border-bottom:none; }
   .stats-table tr:hover td { background:var(--surface2); }
-  .attend-badge {
-    display:inline-block; padding:2px 8px; border-radius:8px;
-    font-size:0.72rem; font-weight:700;
-  }
+  .attend-badge { display:inline-block; padding:2px 8px; border-radius:8px; font-size:0.72rem; font-weight:700; }
   .attend-badge.good { background:rgba(79,255,176,0.15); color:var(--accent); }
   .attend-badge.none { background:rgba(64,72,112,0.3); color:var(--text3); }
-
-  /* ── EMPTY STATE ── */
-  .empty-state {
-    text-align: center;
-    padding: 48px 20px;
-    color: var(--text3);
-  }
+  .empty-state { text-align: center; padding: 48px 20px; color: var(--text3); }
   .empty-state .empty-icon { font-size: 3rem; margin-bottom: 12px; }
   .empty-state p { font-size: 0.85rem; line-height: 1.6; }
-
-  /* ── DESKTOP LAYOUT ── */
   @media (min-width: 768px) {
     .app-header { padding: 16px 32px; }
     .main { padding: 28px 32px; max-width: 900px; }
     .tab-btn { min-width: 120px; font-size: 0.85rem; }
-
-    /* desktop: 2-column for scan tab */
-    .scan-layout {
-      display: grid;
-      grid-template-columns: 1fr 1fr;
-      gap: 24px;
-      align-items: start;
-    }
+    .scan-layout { display: grid; grid-template-columns: 1fr 1fr; gap: 24px; align-items: start; }
     .scan-left, .scan-right { min-width: 0; }
-
-    .payment-strip {
-      grid-template-columns: repeat(12, 1fr);
-    }
-
-    .form-row-3 {
-      grid-template-columns: 1fr 1fr 1fr;
-    }
+    .payment-strip { grid-template-columns: repeat(12, 1fr); }
   }
-
-  @media (min-width: 1024px) {
-    .main { max-width: 1100px; }
-  }
-
-  /* ── STAT BOXES ── */
-  .stats-row {
-    display: grid;
-    grid-template-columns: repeat(3, 1fr);
-    gap: 8px;
-    margin-bottom: 16px;
-  }
-  .stat-box {
-    background: var(--surface2);
-    border-radius: var(--radius-sm);
-    padding: 10px;
-    text-align: center;
-  }
-  .stat-val {
-    font-family: 'DM Mono', monospace;
-    font-size: 1.1rem;
-    font-weight: 700;
-    color: var(--accent);
-  }
+  @media (min-width: 1024px) { .main { max-width: 1100px; } }
+  .stats-row { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; margin-bottom: 16px; }
+  .stat-box { background: var(--surface2); border-radius: var(--radius-sm); padding: 10px; text-align: center; }
+  .stat-val { font-family: 'DM Mono', monospace; font-size: 1.1rem; font-weight: 700; color: var(--accent); }
   .stat-lbl { font-size: 0.65rem; color: var(--text3); margin-top: 2px; }
-
-  .ml-sort-btn {
-    padding: 6px 14px;
-    background: var(--surface2);
-    border: 1px solid var(--border);
-    border-radius: 20px;
-    color: var(--text2);
-    font-family: inherit;
-    font-size: 0.78rem;
-    font-weight: 600;
-    cursor: pointer;
-    transition: all 0.15s;
-  }
-  .ml-sort-btn.active {
-    background: rgba(79,255,176,0.12);
-    border-color: var(--accent);
-    color: var(--accent);
-  }
-  .ml-card {
-    background: var(--surface);
-    border: 1px solid var(--border);
-    border-radius: var(--radius-sm);
-    padding: 12px 14px;
-    margin-bottom: 8px;
-    display: grid;
-    grid-template-columns: 1fr auto;
-    align-items: center;
-    gap: 8px;
-    transition: border-color 0.2s;
-  }
+  .ml-sort-btn { padding: 6px 14px; background: var(--surface2); border: 1px solid var(--border); border-radius: 20px; color: var(--text2); font-family: inherit; font-size: 0.78rem; font-weight: 600; cursor: pointer; transition: all 0.15s; }
+  .ml-sort-btn.active { background: rgba(79,255,176,0.12); border-color: var(--accent); color: var(--accent); }
+  .ml-card { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius-sm); padding: 12px 14px; margin-bottom: 8px; display: grid; grid-template-columns: 1fr auto; align-items: center; gap: 8px; transition: border-color 0.2s; }
   .ml-card:hover { border-color: var(--accent); }
   .ml-name { font-weight: 700; font-size: 0.92rem; }
   .ml-furi { font-size: 0.72rem; color: var(--text3); margin-bottom: 3px; }
   .ml-badges { display: flex; gap: 5px; flex-wrap: wrap; margin-top: 4px; }
-  .ml-badge {
-    font-size: 0.68rem; padding: 2px 8px; border-radius: 8px;
-    font-weight: 600; letter-spacing: 0.03em;
-  }
+  .ml-badge { font-size: 0.68rem; padding: 2px 8px; border-radius: 8px; font-weight: 600; letter-spacing: 0.03em; }
   .ml-badge-grade { background: rgba(123,111,255,0.18); color: var(--accent2); border: 1px solid rgba(123,111,255,0.3); }
   .ml-badge-gender { background: rgba(79,255,176,0.12); color: var(--accent); border: 1px solid rgba(79,255,176,0.25); }
   .ml-badge-nfc { background: rgba(79,255,176,0.12); color: var(--accent); border: 1px solid rgba(79,255,176,0.25); }
   .ml-badge-nonfc { background: rgba(255,107,107,0.12); color: var(--warn); border: 1px solid rgba(255,107,107,0.25); }
-  .ml-nfc-id { font-family: 'DM Mono', monospace; font-size: 0.72rem; color: var(--text3); margin-top: 3px; }
-
-
-  .memo-textarea {
-    width: 100%;
-    min-height: 80px;
-    padding: 10px 12px;
-    background: var(--surface2, #1e2235);
-    border: 1px solid var(--border2, #2a2f45);
-    border-radius: 10px;
-    color: var(--text, #e8eaf6);
-    font-family: inherit;
-    font-size: 0.88rem;
-    line-height: 1.6;
-    outline: none;
-    resize: none;
-    overflow: hidden;
-    transition: border-color 0.2s;
-    white-space: pre-wrap;
-  }
-  .memo-textarea:focus {
-    border-color: var(--accent, #00e5ff);
-    box-shadow: 0 0 0 2px rgba(0,229,255,0.1);
-  }
-  .memo-textarea::placeholder { color: var(--text3, #4a5380); }
-
-
-/* ── AUTH OVERLAY ── */
-#authOverlay{
-  position:fixed;inset:0;background:#070810;z-index:9999;
-  display:flex;align-items:center;justify-content:center;padding:20px;
-}
-.auth-box{
-  background:#0d0f1c;border:1px solid #252b42;border-radius:16px;
-  padding:32px 24px;width:100%;max-width:360px;text-align:center;
-}
-.auth-logo{font-size:2rem;margin-bottom:8px;}
-.auth-title{font-size:1.1rem;font-weight:700;color:#e8eaf6;margin-bottom:4px;}
-.auth-sub{font-size:.78rem;color:#7b85a8;margin-bottom:24px;}
-.auth-input{
-  width:100%;padding:12px;background:#141728;border:1px solid #252b42;
-  border-radius:10px;color:#e8eaf6;font-family:inherit;font-size:1.1rem;
-  text-align:center;letter-spacing:.2em;outline:none;margin-bottom:12px;
-  transition:border-color .2s;
-}
-.auth-input:focus{border-color:#00e5ff;}
-.auth-btn{
-  width:100%;padding:12px;background:#00e5ff;color:#070810;border:none;
-  border-radius:10px;font-family:inherit;font-size:.95rem;font-weight:700;
-  cursor:pointer;transition:all .2s;
-}
-.auth-btn:hover{background:#33eeff;}
-.auth-err{color:#ff4757;font-size:.8rem;margin-top:8px;display:none;}
-
+  .memo-textarea { width: 100%; min-height: 80px; padding: 10px 12px; background: var(--surface2); border: 1px solid var(--border); border-radius: 10px; color: var(--text); font-family: inherit; font-size: 0.88rem; line-height: 1.6; outline: none; resize: none; overflow: hidden; transition: border-color 0.2s; white-space: pre-wrap; }
+  .memo-textarea:focus { border-color: var(--accent); box-shadow: 0 0 0 2px rgba(0,229,255,0.1); }
+  .memo-textarea::placeholder { color: var(--text3); }
+  #authOverlay { position:fixed;inset:0;background:#070810;z-index:9999;display:flex;align-items:center;justify-content:center;padding:20px; }
+  .auth-box { background:#0d0f1c;border:1px solid #252b42;border-radius:16px;padding:32px 24px;width:100%;max-width:360px;text-align:center; }
+  .auth-logo{font-size:2rem;margin-bottom:8px;} .auth-title{font-size:1.1rem;font-weight:700;color:#e8eaf6;margin-bottom:4px;} .auth-sub{font-size:.78rem;color:#7b85a8;margin-bottom:24px;}
+  .auth-input { width:100%;padding:12px;background:#141728;border:1px solid #252b42;border-radius:10px;color:#e8eaf6;font-family:inherit;font-size:1.1rem;text-align:center;letter-spacing:.2em;outline:none;margin-bottom:12px;transition:border-color .2s; }
+  .auth-input:focus{border-color:#00e5ff;}
+  .auth-btn { width:100%;padding:12px;background:#00e5ff;color:#070810;border:none;border-radius:10px;font-family:inherit;font-size:.95rem;font-weight:700;cursor:pointer;transition:all .2s; }
+  .auth-btn:hover{background:#33eeff;}
+  .auth-err{color:#ff4757;font-size:.8rem;margin-top:8px;display:none;}
 </style>
 </head>
 <body>
 
-<!-- AUTH OVERLAY -->
 <div id="authOverlay">
   <div class="auth-box">
     <div class="auth-logo">🔐</div>
     <div class="auth-title">Athletic Club</div>
     <div class="auth-sub">管理者パスワードを入力してください</div>
-    <input class="auth-input" type="password" id="authInput" 
-      placeholder="••••" maxlength="20"
-      onkeydown="if(event.key==='Enter')checkAuth()">
+    <input class="auth-input" type="password" id="authInput" placeholder="••••" maxlength="20" onkeydown="if(event.key==='Enter')checkAuth()">
     <button class="auth-btn" onclick="checkAuth()">ログイン</button>
     <div class="auth-err" id="authErr">パスワードが違います</div>
   </div>
 </div>
-
 
 <header class="app-header">
   <div class="app-title">⚡ 出席管理 <span>Athletic Club</span></div>
@@ -850,31 +243,24 @@
 
 <div class="main">
 
-  <!-- ── TAB: SCAN ── -->
+  <!-- TAB: SCAN -->
   <div id="tab-scan" class="tab-panel active">
     <div class="scan-layout">
       <div class="scan-left">
-        <!-- NFC zone -->
         <div class="nfc-zone" id="nfcZone">
           <div class="nfc-ring">
             <div class="nfc-ring-outer"></div>
-            <div class="nfc-ring-inner">
-              <span class="nfc-icon">📶</span>
-            </div>
+            <div class="nfc-ring-inner"><span class="nfc-icon">📶</span></div>
           </div>
           <div class="nfc-label">NFCカードをかざしてください</div>
           <div class="nfc-status" id="nfcStatus">待機中...</div>
         </div>
-
-        <!-- 名前検索 -->
         <div class="section-title">名前で検索</div>
         <div class="search-wrap">
           <span class="search-icon">🔍</span>
           <input class="search-input" id="searchInput" type="text" placeholder="名前・ふりがなで検索..." autocomplete="off" oninput="onSearch(this.value)">
           <div class="search-results" id="searchResults"></div>
         </div>
-
-        <!-- 五十音インデックス -->
         <div class="section-title" style="margin-top:14px;">五十音で検索</div>
         <div class="aiueo-grid" id="aiueoGrid"></div>
         <div class="aiueo-results" id="aiueoResults" style="display:none;">
@@ -884,28 +270,17 @@
           </div>
           <div id="aiueoList"></div>
         </div>
-
-        <!-- リスト表示ボタン -->
-        <button class="list-toggle-btn" id="listToggleBtn" onclick="toggleMemberList()">
-          📋 生徒リストを表示
-        </button>
-
-        <!-- 生徒リストパネル -->
+        <button class="list-toggle-btn" id="listToggleBtn" onclick="toggleMemberList()">📋 生徒リストを表示</button>
         <div class="member-list-panel" id="memberListPanel" style="display:none;">
           <div class="list-filters">
-            <input class="list-filter-input" id="filterFurigana" type="text"
-              placeholder="よみがなで絞り込み..." oninput="renderMlTab()">
-            <select class="list-filter-select" id="filterGrade" onchange="renderMlTab()">
-              <option value="">全学年</option>
-            </select>
+            <input class="list-filter-input" id="filterFurigana" type="text" placeholder="よみがなで絞り込み..." oninput="renderMemberList()">
+            <select class="list-filter-select" id="filterGrade" onchange="renderMemberList()"><option value="">全学年</option></select>
           </div>
           <div class="list-count" id="listCount">—</div>
           <div class="member-list-body" id="memberListBody"></div>
         </div>
       </div>
-
       <div class="scan-right">
-        <!-- Member card -->
         <div class="member-card" id="memberCard">
           <div class="member-header">
             <div class="member-avatar" id="memberAvatar">?</div>
@@ -915,25 +290,13 @@
               <div class="member-badges" id="memberBadges"></div>
             </div>
           </div>
-
           <div class="stats-row">
-            <div class="stat-box">
-              <div class="stat-val" id="statTotal">—</div>
-              <div class="stat-lbl">累計月謝</div>
-            </div>
-            <div class="stat-box">
-              <div class="stat-val" id="statMonths">—</div>
-              <div class="stat-lbl">支払済月数</div>
-            </div>
-            <div class="stat-box">
-              <div class="stat-val" id="statLast">—</div>
-              <div class="stat-lbl">最終支払</div>
-            </div>
+            <div class="stat-box"><div class="stat-val" id="statTotal">—</div><div class="stat-lbl">累計月謝</div></div>
+            <div class="stat-box"><div class="stat-val" id="statMonths">—</div><div class="stat-lbl">支払済月数</div></div>
+            <div class="stat-box"><div class="stat-val" id="statLast">—</div><div class="stat-lbl">最終支払</div></div>
           </div>
-
           <div class="section-title" style="font-size:0.65rem;">直近6ヶ月の支払い状況</div>
           <div class="payment-strip" id="paymentStrip"></div>
-
           <div class="class-select-label">クラスを選択</div>
           <div class="class-pills">
             <button class="class-pill active" onclick="selectClass(this,'通常')">通常</button>
@@ -941,35 +304,27 @@
             <button class="class-pill" onclick="selectClass(this,'補講')">補講</button>
             <button class="class-pill" onclick="selectClass(this,'体験')">体験</button>
           </div>
-
           <button class="confirm-btn" id="confirmBtn" onclick="confirmAttendance()">✓ 出席を登録する</button>
         </div>
-
         <div id="noMemberState" style="display:none;">
-          <div class="empty-state">
-            <div class="empty-icon">🪪</div>
-            <p>NFCカードをかざすか<br>名前で検索してください</p>
-          </div>
+          <div class="empty-state"><div class="empty-icon">🪪</div><p>NFCカードをかざすか<br>名前で検索してください</p></div>
         </div>
       </div>
     </div>
   </div>
 
-  <!-- ── TAB: TODAY ── -->
+  <!-- TAB: TODAY -->
   <div id="tab-today" class="tab-panel">
     <div class="today-header">
       <div class="today-title" id="todayDate">—</div>
       <div class="today-count" id="todayCount">0名</div>
     </div>
     <div class="attendance-list" id="attendanceList">
-      <div class="empty-state">
-        <div class="empty-icon">📋</div>
-        <p>まだ出席者がいません</p>
-      </div>
+      <div class="empty-state"><div class="empty-icon">📋</div><p>まだ出席者がいません</p></div>
     </div>
   </div>
 
-  <!-- ── TAB: REGISTER ── -->
+  <!-- TAB: REGISTER -->
   <div id="tab-register" class="tab-panel">
     <div class="section-title">新規会員登録</div>
     <div class="form-section">
@@ -985,7 +340,7 @@
         <label class="form-label">NFCカードID</label>
         <input class="form-input" id="regNfc" type="text" placeholder="NFC007">
       </div>
-     <div>
+      <div>
         <label class="form-label">コース</label>
         <select class="form-select" id="regCourse" onchange="onRegCourseChange(this.value)">
           <option value="">— 選択 —</option>
@@ -994,10 +349,9 @@
           <option value="特別コース">特別コース</option>
           <option value="その他">その他（自由入力）</option>
         </select>
-        <input class="form-input" id="regCourseOther" type="text"
-          placeholder="コース名を入力..."
-          style="display:none;margin-top:8px;">
+        <input class="form-input" id="regCourseOther" type="text" placeholder="コース名を入力..." style="display:none;margin-top:8px;">
       </div>
+    </div>
     <div class="form-section">
       <label class="form-label">電話番号</label>
       <input class="form-input" id="regPhone" type="tel" placeholder="090-0000-0000">
@@ -1013,141 +367,61 @@
     <button class="confirm-btn" onclick="registerMember()" style="margin-top:8px;">✓ 会員を登録する</button>
   </div>
 
-  <!-- ── TAB: GUIDE ── -->
+  <!-- TAB: GUIDE -->
   <div id="tab-guide" class="tab-panel">
     <div class="section-title">NFC設定ガイド</div>
-    <div class="guide-note">
-      💡 iPhoneはNFCカードにURLを書き込むことで自動的にブラウザを開きます。Web NFC APIは不要です。Chrome（Android）はNFCカードを直接読み取ることもできます。
-    </div>
-
-    <div class="guide-step">
-      <div class="step-num">1</div>
-      <div class="step-content">
-        <h4>NFCタグを用意する</h4>
-        <p>NTAG213/215/216タグを購入（Amazonで10枚¥500〜）。金属面に貼る場合はon-metalタグを使用してください。</p>
-      </div>
-    </div>
-
-    <div class="guide-step">
-      <div class="step-num">2</div>
-      <div class="step-content">
-        <h4>URLを書き込む（NFC Toolsアプリ）</h4>
-        <p>App Store / Play Storeで「NFC Tools」をインストール。<br>
-        「Write」→「Add a record」→「URL/URI」を選択し、以下の形式で入力：<br><br>
-        <code>https://あなたのサイト.com/attendance.html?member=NFC001</code><br><br>
-        各カードごとにNFC001、NFC002…と変更してください。</p>
-      </div>
-    </div>
-
-    <div class="guide-step">
-      <div class="step-num">3</div>
-      <div class="step-content">
-        <h4>iPhoneでの動作確認</h4>
-        <p>iPhone XS以降はカード上部（NFC部）をかざすだけで自動読み取り。Safariまたは設定中のブラウザが起動し、会員情報が表示されます。</p>
-      </div>
-    </div>
-
-    <div class="guide-step">
-      <div class="step-num">4</div>
-      <div class="step-content">
-        <h4>Shortcutsで自動化（オプション）</h4>
-        <p>「ショートカット」アプリ →「オートメーション」→「個人用オートメーション」→「NFC」でタグをスキャン。アクション「URLを開く」でURLを指定すると、バナー確認なしで即起動できます。</p>
-      </div>
-    </div>
-
-    <div class="guide-step">
-      <div class="step-num">5</div>
-      <div class="step-content">
-        <h4>Google Apps Scriptにデプロイ</h4>
-        <p>Code.gsをGASにデプロイしてWebアプリURLを取得。attendance.htmlの<code>GAS_URL</code>定数に設定してください。</p>
-      </div>
-    </div>
-
-    <div class="guide-step">
-      <div class="step-num">6</div>
-      <div class="step-content">
-        <h4>ホーム画面に追加</h4>
-        <p>Chrome: メニュー → 「ホーム画面に追加」<br>Safari: 共有 → 「ホーム画面に追加」<br>ネイティブアプリのようにフルスクリーンで使用できます。</p>
-      </div>
-    </div>
+    <div class="guide-note">💡 iPhoneはNFCカードにURLを書き込むことで自動的にブラウザを開きます。Web NFC APIは不要です。</div>
+    <div class="guide-step"><div class="step-num">1</div><div class="step-content"><h4>NFCタグを用意する</h4><p>NTAG213/215/216タグを購入（Amazonで10枚¥500〜）。</p></div></div>
+    <div class="guide-step"><div class="step-num">2</div><div class="step-content"><h4>URLを書き込む（NFC Toolsアプリ）</h4><p>「Write」→「Add a record」→「URL/URI」を選択し書き込む。<br><code>https://mtjuni.github.io/monjuni/attendance.html?member=NFC001</code></p></div></div>
+    <div class="guide-step"><div class="step-num">3</div><div class="step-content"><h4>iPhoneでの動作確認</h4><p>iPhone XS以降はカード上部をかざすだけで自動読み取り。</p></div></div>
+    <div class="guide-step"><div class="step-num">4</div><div class="step-content"><h4>Shortcutsで自動化（オプション）</h4><p>「ショートカット」→「オートメーション」→「NFC」でバナーなし即起動できます。</p></div></div>
+    <div class="guide-step"><div class="step-num">5</div><div class="step-content"><h4>ホーム画面に追加</h4><p>Chrome: メニュー →「ホーム画面に追加」<br>Safari: 共有 →「ホーム画面に追加」</p></div></div>
   </div>
 
-  <!-- ── TAB: STATS ── -->
+  <!-- TAB: STATS -->
   <div id="tab-stats" class="tab-panel">
     <div class="section-title">月別出席統計</div>
-
-    <!-- Month picker -->
     <div style="display:flex;gap:8px;align-items:center;margin-bottom:16px;">
       <button onclick="shiftStatsMonth(-1)" style="padding:8px 14px;background:var(--surface2);border:1px solid var(--border);border-radius:8px;color:var(--text2);cursor:pointer;font-size:1rem;">‹</button>
       <div id="statsMonthLabel" style="flex:1;text-align:center;font-weight:700;font-size:0.95rem;"></div>
       <button onclick="shiftStatsMonth(1)" style="padding:8px 14px;background:var(--surface2);border:1px solid var(--border);border-radius:8px;color:var(--text2);cursor:pointer;font-size:1rem;">›</button>
     </div>
-
-    <!-- Summary cards -->
     <div class="stats-summary-grid" id="statsSummaryGrid"></div>
-
-    <!-- Bar chart -->
     <div class="stats-chart-card">
       <div class="stats-chart-title">過去6ヶ月の出席人数推移</div>
       <div class="stats-bars" id="statsBars"></div>
     </div>
-
-    <!-- Per-member table -->
     <div class="section-title" style="margin-top:20px;">今月の生徒別出席回数</div>
     <div style="background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);overflow:hidden;">
       <table class="stats-table">
-        <thead>
-          <tr><th>氏名</th><th>よみがな</th><th>出席回数</th><th>出席日</th><th>状況</th></tr>
-        </thead>
+        <thead><tr><th>氏名</th><th>よみがな</th><th>出席回数</th><th>出席日</th><th>状況</th></tr></thead>
         <tbody id="statsMemberTbody"></tbody>
       </table>
     </div>
   </div>
 
-
-  <!-- ── TAB: MEMBERS ── -->
+  <!-- TAB: MEMBERS -->
   <div id="tab-members" class="tab-panel">
     <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;">
       <div class="section-title" style="margin:0;border:none;padding:0;">登録メンバー一覧</div>
       <button onclick="openAddModal()" style="padding:8px 16px;background:var(--accent);color:#0d0f1a;border:none;border-radius:10px;font-family:inherit;font-size:0.82rem;font-weight:700;cursor:pointer;">＋ 新規追加</button>
     </div>
-
-    <!-- Sort / Filter controls -->
     <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:14px;align-items:center;">
-      <input type="text" id="mlSearch" placeholder="名前・よみがなで検索..."
-        oninput="renderMlTab()"
-        style="flex:1;min-width:160px;padding:9px 12px;background:var(--surface2);border:1px solid var(--border);
-          border-radius:10px;color:var(--text);font-family:inherit;font-size:0.85rem;outline:none;">
+      <input type="text" id="mlSearch" placeholder="名前・よみがなで検索..." oninput="renderMlTab()" style="flex:1;min-width:160px;padding:9px 12px;background:var(--surface2);border:1px solid var(--border);border-radius:10px;color:var(--text);font-family:inherit;font-size:0.85rem;outline:none;">
     </div>
     <div style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:14px;">
-      <select id="mlGrade" onchange="renderMlTab()"
-        style="padding:7px 12px;background:var(--surface2);border:1px solid var(--border);border-radius:8px;
-          color:var(--text);font-family:inherit;font-size:0.82rem;outline:none;cursor:pointer;">
-        <option value="">全学年</option>
-      </select>
-      <select id="mlGender" onchange="renderMlTab()"
-        style="padding:7px 12px;background:var(--surface2);border:1px solid var(--border);border-radius:8px;
-          color:var(--text);font-family:inherit;font-size:0.82rem;outline:none;cursor:pointer;">
-        <option value="">性別（全て）</option>
-        <option value="男">男</option>
-        <option value="女">女</option>
-      </select>
-      <select id="mlNfc" onchange="renderMlTab()"
-        style="padding:7px 12px;background:var(--surface2);border:1px solid var(--border);border-radius:8px;
-          color:var(--text);font-family:inherit;font-size:0.82rem;outline:none;cursor:pointer;">
-        <option value="">NFC（全て）</option>
-        <option value="registered">登録済み</option>
-        <option value="none">未登録</option>
-      </select>
-      <select id="mlCourse" onchange="renderMlTab()"
-        style="padding:7px 12px;background:var(--surface2);border:1px solid var(--border);border-radius:8px;
-          color:var(--text);font-family:inherit;font-size:0.82rem;outline:none;cursor:pointer;">
+      <select id="mlGrade" onchange="renderMlTab()" style="padding:7px 12px;background:var(--surface2);border:1px solid var(--border);border-radius:8px;color:var(--text);font-family:inherit;font-size:0.82rem;outline:none;cursor:pointer;"><option value="">全学年</option></select>
+      <select id="mlGender" onchange="renderMlTab()" style="padding:7px 12px;background:var(--surface2);border:1px solid var(--border);border-radius:8px;color:var(--text);font-family:inherit;font-size:0.82rem;outline:none;cursor:pointer;"><option value="">性別（全て）</option><option value="男">男</option><option value="女">女</option></select>
+      <select id="mlNfc" onchange="renderMlTab()" style="padding:7px 12px;background:var(--surface2);border:1px solid var(--border);border-radius:8px;color:var(--text);font-family:inherit;font-size:0.82rem;outline:none;cursor:pointer;"><option value="">NFC（全て）</option><option value="registered">登録済み</option><option value="none">未登録</option></select>
+      <select id="mlCourse" onchange="renderMlTab()" style="padding:7px 12px;background:var(--surface2);border:1px solid var(--border);border-radius:8px;color:var(--text);font-family:inherit;font-size:0.82rem;outline:none;cursor:pointer;">
         <option value="">コース（全て）</option>
-        <option value="月に1回の参加">月1回</option>
-        <option value="月に2回の参加">月2回</option>
+        <option value="通常クラス・月1回">月1回</option>
+        <option value="通常クラス・月2回">月2回</option>
+        <option value="特別コース">特別</option>
+        <option value="月に1回の参加">月に1回（旧）</option>
+        <option value="月に2回の参加">月に2回（旧）</option>
       </select>
     </div>
-    <!-- Sort buttons -->
     <div style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:14px;align-items:center;">
       <span style="font-size:0.72rem;color:var(--text3);letter-spacing:0.06em;text-transform:uppercase;font-weight:700;">ソート:</span>
       <button id="sort-furigana" class="ml-sort-btn active" onclick="setMlSort('furigana')">五十音順</button>
@@ -1157,18 +431,13 @@
       <button id="sort-name" class="ml-sort-btn" onclick="setMlSort('name')">氏名順</button>
       <button id="sort-id" class="ml-sort-btn" onclick="setMlSort('id')">登録順</button>
     </div>
-
-    <!-- Count -->
     <div id="mlCount" style="font-size:0.78rem;color:var(--text3);margin-bottom:10px;"></div>
-
-    <!-- Member cards -->
     <div id="mlCards"></div>
   </div>
 
 </div><!-- /main -->
 
-
-<!-- ── EDIT MEMBER MODAL ── -->
+<!-- EDIT MEMBER MODAL -->
 <div id="editMemberModal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.88);z-index:300;overflow-y:auto;padding:20px;align-items:flex-start;justify-content:center;">
   <div style="max-width:480px;width:100%;margin:0 auto;background:#161929;border:1px solid #2a2f45;border-radius:16px;overflow:hidden;">
     <div style="padding:16px 20px;border-bottom:1px solid #2a2f45;">
@@ -1177,100 +446,51 @@
         <button onclick="closeEditModal()" style="background:none;border:none;color:#8892b0;font-size:1.2rem;cursor:pointer;">✕</button>
       </div>
       <div id="mlNavBar" style="display:flex;align-items:center;justify-content:space-between;margin-top:10px;">
-        <button onclick="navigateMember(-1)" id="prevMemberBtn"
-          style="padding:5px 14px;background:rgba(79,255,176,0.1);border:1px solid rgba(79,255,176,0.2);border-radius:8px;color:#4fffb0;font-family:inherit;font-size:0.82rem;cursor:pointer;">‹ 前へ</button>
+        <button onclick="navigateMember(-1)" id="prevMemberBtn" style="padding:5px 14px;background:rgba(79,255,176,0.1);border:1px solid rgba(79,255,176,0.2);border-radius:8px;color:#4fffb0;font-family:inherit;font-size:0.82rem;cursor:pointer;">‹ 前へ</button>
         <span id="mlNavCounter" style="font-size:0.7rem;color:#4a5380;"></span>
-        <button onclick="navigateMember(1)" id="nextMemberBtn"
-          style="padding:5px 14px;background:rgba(79,255,176,0.1);border:1px solid rgba(79,255,176,0.2);border-radius:8px;color:#4fffb0;font-family:inherit;font-size:0.82rem;cursor:pointer;">次へ ›</button>
+        <button onclick="navigateMember(1)" id="nextMemberBtn" style="padding:5px 14px;background:rgba(79,255,176,0.1);border:1px solid rgba(79,255,176,0.2);border-radius:8px;color:#4fffb0;font-family:inherit;font-size:0.82rem;cursor:pointer;">次へ ›</button>
       </div>
     </div>
     <div style="padding:16px 20px;">
       <input type="hidden" id="editRowIndex">
       <input type="hidden" id="editMemberId">
-      <div style="margin-bottom:12px;">
-        <label style="font-size:0.7rem;font-weight:700;letter-spacing:0.08em;text-transform:uppercase;color:#4a5380;display:block;margin-bottom:5px;">氏名 *</label>
-        <input id="editName" type="text" placeholder="例: 田中 太郎"
-          style="width:100%;padding:10px 12px;background:#1e2235;border:1px solid #2a2f45;border-radius:10px;color:#e8eaf6;font-family:inherit;font-size:0.9rem;outline:none;">
-      </div>
-      <div style="margin-bottom:12px;">
-        <label style="font-size:0.7rem;font-weight:700;letter-spacing:0.08em;text-transform:uppercase;color:#4a5380;display:block;margin-bottom:5px;">よみがな *</label>
-        <input id="editFurigana" type="text" placeholder="例: たなか たろう"
-          style="width:100%;padding:10px 12px;background:#1e2235;border:1px solid #2a2f45;border-radius:10px;color:#e8eaf6;font-family:inherit;font-size:0.9rem;outline:none;">
+      <div style="margin-bottom:12px;"><label style="font-size:0.7rem;font-weight:700;letter-spacing:0.08em;text-transform:uppercase;color:#4a5380;display:block;margin-bottom:5px;">氏名 *</label><input id="editName" type="text" placeholder="例: 田中 太郎" style="width:100%;padding:10px 12px;background:#1e2235;border:1px solid #2a2f45;border-radius:10px;color:#e8eaf6;font-family:inherit;font-size:0.9rem;outline:none;"></div>
+      <div style="margin-bottom:12px;"><label style="font-size:0.7rem;font-weight:700;letter-spacing:0.08em;text-transform:uppercase;color:#4a5380;display:block;margin-bottom:5px;">よみがな *</label><input id="editFurigana" type="text" placeholder="例: たなか たろう" style="width:100%;padding:10px 12px;background:#1e2235;border:1px solid #2a2f45;border-radius:10px;color:#e8eaf6;font-family:inherit;font-size:0.9rem;outline:none;"></div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:12px;">
+        <div><label style="font-size:0.7rem;font-weight:700;letter-spacing:0.08em;text-transform:uppercase;color:#4a5380;display:block;margin-bottom:5px;">性別</label><select id="editGender" style="width:100%;padding:10px 12px;background:#1e2235;border:1px solid #2a2f45;border-radius:10px;color:#e8eaf6;font-family:inherit;font-size:0.9rem;outline:none;appearance:none;cursor:pointer;"><option value="">未設定</option><option value="男子">男子</option><option value="女子">女子</option></select></div>
+        <div><label style="font-size:0.7rem;font-weight:700;letter-spacing:0.08em;text-transform:uppercase;color:#4a5380;display:block;margin-bottom:5px;">学年</label><input id="editGrade" type="text" placeholder="例: 3年" style="width:100%;padding:10px 12px;background:#1e2235;border:1px solid #2a2f45;border-radius:10px;color:#e8eaf6;font-family:inherit;font-size:0.9rem;outline:none;"></div>
       </div>
       <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:12px;">
-        <div>
-          <label style="font-size:0.7rem;font-weight:700;letter-spacing:0.08em;text-transform:uppercase;color:#4a5380;display:block;margin-bottom:5px;">性別</label>
-          <select id="editGender"
-            style="width:100%;padding:10px 12px;background:#1e2235;border:1px solid #2a2f45;border-radius:10px;color:#e8eaf6;font-family:inherit;font-size:0.9rem;outline:none;appearance:none;cursor:pointer;">
-            <option value="">未設定</option>
-            <option value="男子">男子</option>
-            <option value="女子">女子</option>
-          </select>
-        </div>
-        <div>
-          <label style="font-size:0.7rem;font-weight:700;letter-spacing:0.08em;text-transform:uppercase;color:#4a5380;display:block;margin-bottom:5px;">学年</label>
-          <input id="editGrade" type="text" placeholder="例: 3年"
-            style="width:100%;padding:10px 12px;background:#1e2235;border:1px solid #2a2f45;border-radius:10px;color:#e8eaf6;font-family:inherit;font-size:0.9rem;outline:none;">
-        </div>
+        <div><label style="font-size:0.7rem;font-weight:700;letter-spacing:0.08em;text-transform:uppercase;color:#4a5380;display:block;margin-bottom:5px;">年齢</label><input id="editAge" type="number" placeholder="例: 9" style="width:100%;padding:10px 12px;background:#1e2235;border:1px solid #2a2f45;border-radius:10px;color:#e8eaf6;font-family:inherit;font-size:0.9rem;outline:none;"></div>
+        <div><label style="font-size:0.7rem;font-weight:700;letter-spacing:0.08em;text-transform:uppercase;color:#4a5380;display:block;margin-bottom:5px;">小学校名</label><input id="editSchool" type="text" placeholder="例: ○○小学校" style="width:100%;padding:10px 12px;background:#1e2235;border:1px solid #2a2f45;border-radius:10px;color:#e8eaf6;font-family:inherit;font-size:0.9rem;outline:none;"></div>
       </div>
+      <div style="margin-bottom:12px;"><label style="font-size:0.7rem;font-weight:700;letter-spacing:0.08em;text-transform:uppercase;color:#4a5380;display:block;margin-bottom:5px;">保護者名</label><input id="editParent" type="text" placeholder="例: 田中 一郎" style="width:100%;padding:10px 12px;background:#1e2235;border:1px solid #2a2f45;border-radius:10px;color:#e8eaf6;font-family:inherit;font-size:0.9rem;outline:none;"></div>
       <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:12px;">
-        <div>
-          <label style="font-size:0.7rem;font-weight:700;letter-spacing:0.08em;text-transform:uppercase;color:#4a5380;display:block;margin-bottom:5px;">年齢</label>
-          <input id="editAge" type="number" placeholder="例: 9"
-            style="width:100%;padding:10px 12px;background:#1e2235;border:1px solid #2a2f45;border-radius:10px;color:#e8eaf6;font-family:inherit;font-size:0.9rem;outline:none;">
-        </div>
-        <div>
-          <label style="font-size:0.7rem;font-weight:700;letter-spacing:0.08em;text-transform:uppercase;color:#4a5380;display:block;margin-bottom:5px;">小学校名</label>
-          <input id="editSchool" type="text" placeholder="例: ○○小学校"
-            style="width:100%;padding:10px 12px;background:#1e2235;border:1px solid #2a2f45;border-radius:10px;color:#e8eaf6;font-family:inherit;font-size:0.9rem;outline:none;">
-        </div>
+        <div><label style="font-size:0.7rem;font-weight:700;letter-spacing:0.08em;text-transform:uppercase;color:#4a5380;display:block;margin-bottom:5px;">メールアドレス</label><input id="editEmail" type="email" placeholder="例: xxx@gmail.com" style="width:100%;padding:10px 12px;background:#1e2235;border:1px solid #2a2f45;border-radius:10px;color:#e8eaf6;font-family:inherit;font-size:0.9rem;outline:none;"></div>
+        <div><label style="font-size:0.7rem;font-weight:700;letter-spacing:0.08em;text-transform:uppercase;color:#4a5380;display:block;margin-bottom:5px;">緊急連絡先</label><input id="editPhone" type="tel" placeholder="例: 090-0000-0000" style="width:100%;padding:10px 12px;background:#1e2235;border:1px solid #2a2f45;border-radius:10px;color:#e8eaf6;font-family:inherit;font-size:0.9rem;outline:none;"></div>
       </div>
-      <div style="margin-bottom:12px;">
-        <label style="font-size:0.7rem;font-weight:700;letter-spacing:0.08em;text-transform:uppercase;color:#4a5380;display:block;margin-bottom:5px;">保護者名</label>
-        <input id="editParent" type="text" placeholder="例: 田中 一郎"
-          style="width:100%;padding:10px 12px;background:#1e2235;border:1px solid #2a2f45;border-radius:10px;color:#e8eaf6;font-family:inherit;font-size:0.9rem;outline:none;">
-      </div>
-      <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:12px;">
-        <div>
-          <label style="font-size:0.7rem;font-weight:700;letter-spacing:0.08em;text-transform:uppercase;color:#4a5380;display:block;margin-bottom:5px;">メールアドレス</label>
-          <input id="editEmail" type="email" placeholder="例: xxx@gmail.com"
-            style="width:100%;padding:10px 12px;background:#1e2235;border:1px solid #2a2f45;border-radius:10px;color:#e8eaf6;font-family:inherit;font-size:0.9rem;outline:none;">
-        </div>
-        <div>
-          <label style="font-size:0.7rem;font-weight:700;letter-spacing:0.08em;text-transform:uppercase;color:#4a5380;display:block;margin-bottom:5px;">緊急連絡先</label>
-          <input id="editPhone" type="tel" placeholder="例: 090-0000-0000"
-            style="width:100%;padding:10px 12px;background:#1e2235;border:1px solid #2a2f45;border-radius:10px;color:#e8eaf6;font-family:inherit;font-size:0.9rem;outline:none;">
-        </div>
-      </div>
-      <div style="margin-bottom:12px;">
-        <label style="font-size:0.7rem;font-weight:700;letter-spacing:0.08em;text-transform:uppercase;color:#4a5380;display:block;margin-bottom:5px;">LINE ID</label>
-        <input id="editLineId" type="text" placeholder="例: @xxxxx"
-          style="width:100%;padding:10px 12px;background:#1e2235;border:1px solid #2a2f45;border-radius:10px;color:#06c755;font-family:'DM Mono',monospace;font-size:0.9rem;outline:none;">
-      </div>
+      <div style="margin-bottom:12px;"><label style="font-size:0.7rem;font-weight:700;letter-spacing:0.08em;text-transform:uppercase;color:#4a5380;display:block;margin-bottom:5px;">LINE ID</label><input id="editLineId" type="text" placeholder="例: @xxxxx" style="width:100%;padding:10px 12px;background:#1e2235;border:1px solid #2a2f45;border-radius:10px;color:#06c755;font-family:'DM Mono',monospace;font-size:0.9rem;outline:none;"></div>
       <div style="margin-bottom:12px;">
         <label style="font-size:0.7rem;font-weight:700;letter-spacing:0.08em;text-transform:uppercase;color:#4a5380;display:block;margin-bottom:5px;">NFCカードID（自動生成）</label>
         <div style="display:flex;gap:8px;align-items:center;">
-          <input id="editNfcId" type="text" readonly
-            style="flex:1;padding:10px 12px;background:#111420;border:1px solid #2a2f45;border-radius:10px;color:#4fffb0;font-family:'DM Mono',monospace;font-size:0.9rem;outline:none;cursor:default;">
-          <button onclick="copyNfcId(document.getElementById('editNfcId').value)"
-            style="padding:10px 16px;background:rgba(79,255,176,0.12);border:1px solid rgba(79,255,176,0.3);border-radius:10px;color:#4fffb0;font-family:inherit;font-size:0.82rem;font-weight:700;cursor:pointer;white-space:nowrap;">コピー</button>
+          <input id="editNfcId" type="text" readonly style="flex:1;padding:10px 12px;background:#111420;border:1px solid #2a2f45;border-radius:10px;color:#4fffb0;font-family:'DM Mono',monospace;font-size:0.9rem;outline:none;cursor:default;">
+          <button onclick="copyNfcId(document.getElementById('editNfcId').value)" style="padding:10px 16px;background:rgba(79,255,176,0.12);border:1px solid rgba(79,255,176,0.3);border-radius:10px;color:#4fffb0;font-family:inherit;font-size:0.82rem;font-weight:700;cursor:pointer;white-space:nowrap;">コピー</button>
         </div>
-        <div style="font-size:0.68rem;color:#4a5380;margin-top:4px;">※ タイムスタンプから自動生成されます。NFC Toolsアプリにコピペして書き込んでください。</div>
+        <div style="font-size:0.68rem;color:#4a5380;margin-top:4px;">※ タイムスタンプから自動生成されます。</div>
       </div>
       <div style="margin-bottom:16px;">
         <label style="font-size:0.7rem;font-weight:700;letter-spacing:0.08em;text-transform:uppercase;color:#4a5380;display:block;margin-bottom:5px;">コース</label>
-        <select id="editCourse"
-          style="width:100%;padding:10px 12px;background:#1e2235;border:1px solid #2a2f45;border-radius:10px;color:#e8eaf6;font-family:inherit;font-size:0.9rem;outline:none;appearance:none;cursor:pointer;">
+        <select id="editCourse" style="width:100%;padding:10px 12px;background:#1e2235;border:1px solid #2a2f45;border-radius:10px;color:#e8eaf6;font-family:inherit;font-size:0.9rem;outline:none;appearance:none;cursor:pointer;">
           <option value="">未設定</option>
-          <option value="月に1回の参加">月に1回の参加</option>
-          <option value="月に2回の参加">月に2回の参加</option>
+          <option value="通常クラス・月1回">通常クラス・月1回</option>
+          <option value="通常クラス・月2回">通常クラス・月2回</option>
+          <option value="特別コース">特別コース</option>
+          <option value="月に1回の参加">月に1回の参加（旧）</option>
+          <option value="月に2回の参加">月に2回の参加（旧）</option>
         </select>
       </div>
       <div style="display:flex;gap:8px;">
-        <button onclick="toggleHiddenMember()" id="hideToggleBtn"
-          style="flex:1;padding:12px;background:rgba(255,107,107,0.12);border:1px solid rgba(255,107,107,0.3);border-radius:10px;color:var(--warn);font-family:inherit;font-size:0.85rem;font-weight:700;cursor:pointer;">
-          🚫 非表示にする
-        </button>
+        <button onclick="toggleHiddenMember()" id="hideToggleBtn" style="flex:1;padding:12px;background:rgba(255,107,107,0.12);border:1px solid rgba(255,107,107,0.3);border-radius:10px;color:var(--warn);font-family:inherit;font-size:0.85rem;font-weight:700;cursor:pointer;">🚫 非表示にする</button>
       </div>
       <div style="height:8px;"></div>
       <div style="display:flex;gap:8px;">
@@ -1284,86 +504,59 @@
 <div class="toast" id="toast"></div>
 
 <script>
-// ── CONFIG ──
 const GAS_URL = 'https://script.google.com/macros/s/AKfycbyVH4yXtC0PsG4gwbWITAnsMFUdwvMSij2hNsZ9z4bfRTRS0RxHzqvZZeaN3AVIEOte/exec';
-// Google Forms → スプレッドシート連携: GASのgetMembersエンドポイントで自動取得
-// スプレッドシートのID設定はCode.gsのSS_IDで行う
 
-// JSONP fetch（GASのCORSリダイレクト問題を回避）
 function jsonpFetch(url) {
   return new Promise((resolve, reject) => {
     const cbName = '_cb_' + Date.now() + '_' + Math.random().toString(36).slice(2,7);
     const script = document.createElement('script');
-    const timer = setTimeout(() => {
-      delete window[cbName]; script.remove();
-      reject(new Error('JSONP timeout'));
-    }, 12000);
-    window[cbName] = (data) => {
-      clearTimeout(timer); delete window[cbName]; script.remove();
-      resolve(data);
-    };
+    const timer = setTimeout(() => { delete window[cbName]; script.remove(); reject(new Error('JSONP timeout')); }, 12000);
+    window[cbName] = (data) => { clearTimeout(timer); delete window[cbName]; script.remove(); resolve(data); };
     script.src = url + (url.includes('?') ? '&' : '?') + 'callback=' + cbName;
     script.onerror = () => { clearTimeout(timer); delete window[cbName]; script.remove(); reject(new Error('Script load error')); };
     document.head.appendChild(script);
   });
 }
 
-// ── 生徒データ（GASから取得、未接続時はデモデータ）──
-let MEMBERS = []; // GASから読み込む
+let MEMBERS = [];
+let todayAttendance = [];
+let selectedMember = null;
+let selectedClass = '通常';
+let _mlCurrentList = [];
+let _mlCurrentIndex = -1;
+let mlSortKey = 'furigana';
 
-// GASから生徒リストを取得（起動時）
 async function loadMembersFromGAS() {
   try {
     const data = await jsonpFetch(GAS_URL + '?action=getMembers');
     if (data && data.members && data.members.length > 0) {
       MEMBERS = data.members;
-      // 読み込み完了後にUIを更新
-      buildAiueoGrid(); // 五十音グリッドを再構築
+      buildAiueoGrid();
       showToast(`✓ 生徒リスト ${MEMBERS.length}名 を読み込みました`);
     }
-  } catch(e) {
-    showToast('⚠ 生徒リストの読み込みに失敗しました', true);
-  }
+  } catch(e) { showToast('⚠ 生徒リストの読み込みに失敗しました', true); }
 }
 
-let todayAttendance = [];
-let selectedMember = null;
-let selectedClass = '通常';
-
-// ── URL PARAM: NFC trigger ──
 function checkUrlParam() {
   const params = new URLSearchParams(window.location.search);
   const memberId = params.get('member') || params.get('id');
-  if (memberId) {
-    history.replaceState({}, '', window.location.pathname);
-    setTimeout(() => simulateScan(memberId), 400);
-  }
+  if (memberId) { history.replaceState({}, '', window.location.pathname); setTimeout(() => simulateScan(memberId), 400); }
 }
 
 function simulateScan(id) {
   const zone = document.getElementById('nfcZone');
   const status = document.getElementById('nfcStatus');
   zone.className = 'nfc-zone scanning';
-  status.textContent = 'スキャン中...';
-  status.className = 'nfc-status';
+  status.textContent = 'スキャン中...'; status.className = 'nfc-status';
   setTimeout(() => {
-    const member = MEMBERS.find(m => m.id === id);
+    const member = MEMBERS.find(m => m.id === id || m.nfcId === id);
     if (member) {
-      zone.className = 'nfc-zone success';
-      status.textContent = '✓ 認識しました';
-      status.className = 'nfc-status ok';
-      showMember(member);
-      if (navigator.vibrate) navigator.vibrate([50, 30, 50]);
+      zone.className = 'nfc-zone success'; status.textContent = '✓ 認識しました'; status.className = 'nfc-status ok';
+      showMember(member); if (navigator.vibrate) navigator.vibrate([50, 30, 50]);
     } else {
-      zone.className = 'nfc-zone error';
-      status.textContent = '✗ 未登録のカードです';
-      status.className = 'nfc-status err';
+      zone.className = 'nfc-zone error'; status.textContent = '✗ 未登録のカードです'; status.className = 'nfc-status err';
     }
-    setTimeout(() => {
-      zone.className = 'nfc-zone';
-      status.textContent = '待機中...';
-      status.className = 'nfc-status';
-    }, 3000);
+    setTimeout(() => { zone.className = 'nfc-zone'; status.textContent = '待機中...'; status.className = 'nfc-status'; }, 3000);
   }, 900);
 }
 
@@ -1372,95 +565,55 @@ function showMember(member) {
   document.getElementById('memberAvatar').textContent = member.name[0];
   document.getElementById('memberFurigana').textContent = member.furigana;
   document.getElementById('memberName').textContent = member.name;
-
-  // badges
   const now = new Date();
   const thisMonth = `${now.getFullYear()}/${String(now.getMonth()+1).padStart(2,'0')}`;
-  const isPaidThisMonth = member.paidMonths.includes(thisMonth);
-  const badges = document.getElementById('memberBadges');
-  badges.innerHTML = `
-    <span class="badge badge-course">${member.course}</span>
-    <span class="badge ${isPaidThisMonth ? 'badge-paid' : 'badge-unpaid'}">${isPaidThisMonth ? '✓ 今月支払済' : '⚠ 今月未払い'}</span>
-    ${!member.assocFee ? '<span class="badge badge-warn">協会費未払</span>' : ''}
-    ${!member.insurance ? '<span class="badge badge-warn">保険未払</span>' : ''}
-  `;
-
-  // stats
-  const totalPaid = member.paidMonths.length * member.fee;
-  document.getElementById('statTotal').textContent = `¥${totalPaid.toLocaleString()}`;
-  document.getElementById('statMonths').textContent = member.paidMonths.length + 'ヶ月';
-  const sorted = [...member.paidMonths].sort();
+  const paidMonths = member.paidMonths || [];
+  const isPaidThisMonth = paidMonths.includes(thisMonth);
+  document.getElementById('memberBadges').innerHTML = `
+    <span class="badge badge-course">${member.course || '未設定'}</span>
+    <span class="badge ${isPaidThisMonth ? 'badge-paid' : 'badge-unpaid'}">${isPaidThisMonth ? '✓ 今月支払済' : '⚠ 今月未払い'}</span>`;
+  const fee = member.fee || 0;
+  document.getElementById('statTotal').textContent = `¥${(paidMonths.length * fee).toLocaleString()}`;
+  document.getElementById('statMonths').textContent = paidMonths.length + 'ヶ月';
+  const sorted = [...paidMonths].sort();
   document.getElementById('statLast').textContent = sorted.length ? sorted[sorted.length-1].slice(5) + '月' : '—';
-
-  // payment strip (last 6 months)
   const strip = document.getElementById('paymentStrip');
   strip.innerHTML = '';
   for (let i = 5; i >= 0; i--) {
     const d = new Date(now.getFullYear(), now.getMonth() - i, 1);
     const key = `${d.getFullYear()}/${String(d.getMonth()+1).padStart(2,'0')}`;
-    const paid = member.paidMonths.includes(key);
-    const isCurrent = key === thisMonth;
-    strip.innerHTML += `
-      <div class="month-cell ${paid ? 'paid' : 'unpaid'} ${isCurrent ? 'current' : ''}">
-        <span class="month-num">${d.getMonth()+1}</span>
-        <span>${paid ? '✓' : '✗'}</span>
-      </div>
-    `;
+    const paid = paidMonths.includes(key);
+    strip.innerHTML += `<div class="month-cell ${paid?'paid':'unpaid'} ${key===thisMonth?'current':''}"><span class="month-num">${d.getMonth()+1}</span><span>${paid?'✓':'✗'}</span></div>`;
   }
-
   document.getElementById('memberCard').classList.add('show');
   document.getElementById('noMemberState').style.display = 'none';
-
-  // scroll to card on mobile
-  if (window.innerWidth < 768) {
-    setTimeout(() => document.getElementById('memberCard').scrollIntoView({ behavior:'smooth', block:'nearest' }), 100);
-  }
+  if (window.innerWidth < 768) setTimeout(() => document.getElementById('memberCard').scrollIntoView({ behavior:'smooth', block:'nearest' }), 100);
 }
 
 function selectClass(btn, cls) {
   document.querySelectorAll('.class-pill').forEach(p => p.classList.remove('active'));
-  btn.classList.add('active');
-  selectedClass = cls;
+  btn.classList.add('active'); selectedClass = cls;
 }
 
 function confirmAttendance() {
   if (!selectedMember) return;
   const btn = document.getElementById('confirmBtn');
-  btn.disabled = true;
-  btn.textContent = '登録中...';
-
+  btn.disabled = true; btn.textContent = '登録中...';
   const now = new Date();
   const time = `${String(now.getHours()).padStart(2,'0')}:${String(now.getMinutes()).padStart(2,'0')}`;
-  
-  // selectedMemberを先にローカル変数に保存
   const member = selectedMember;
   const cls = selectedClass;
-
-  // GASに送信（非同期・メイン処理）
   jsonpFetch(GAS_URL + '?action=recordAttendance'
     + '&memberId=' + encodeURIComponent(member.id)
-    + '&nfcId='    + encodeURIComponent(member.nfcId || '')
+    + '&nfcId=' + encodeURIComponent(member.nfcId || '')
     + '&memberName=' + encodeURIComponent(member.name)
-    + '&class='    + encodeURIComponent(cls)
+    + '&class=' + encodeURIComponent(cls)
   ).then(res => {
-    if (res.status === 'duplicate') {
-      showToast('⚠ ' + member.name + ' さんは本日すでに登録済みです', true);
-    } else {
-      todayAttendance.unshift({ member, class: cls, time });
-      renderTodayList();
-      showToast('✓ ' + member.name + ' さんの出席を登録しました');
-    }
+    if (res.status === 'duplicate') { showToast('⚠ ' + member.name + ' さんは本日すでに登録済みです', true); }
+    else { todayAttendance.unshift({ member, class: cls, time }); renderTodayList(); showToast('✓ ' + member.name + ' さんの出席を登録しました'); }
   }).catch(() => {
-    // GAS失敗時はローカルだけ記録
-    todayAttendance.unshift({ member, class: cls, time });
-    renderTodayList();
-    showToast('✓ ' + member.name + ' さんの出席を登録しました（オフライン）');
-  }).finally(() => {
-    btn.disabled = false;
-    btn.textContent = '✓ 出席を登録する';
-  });
-
-  // 画面リセット
+    todayAttendance.unshift({ member, class: cls, time }); renderTodayList(); showToast('✓ ' + member.name + ' さんの出席を登録しました（オフライン）');
+  }).finally(() => { btn.disabled = false; btn.textContent = '✓ 出席を登録する'; });
   document.getElementById('memberCard').classList.remove('show');
   document.getElementById('noMemberState').style.display = '';
   document.getElementById('searchInput').value = '';
@@ -1468,180 +621,101 @@ function confirmAttendance() {
   selectedMember = null;
 }
 
-function sendToGAS(data) {
-  if (!GAS_URL.includes('YOUR_SCRIPT_ID')) {
-    fetch(GAS_URL, { method:'POST', body:JSON.stringify(data) }).catch(()=>{});
-  }
-}
-
-// ── SEARCH ──
 function onSearch(q) {
   const container = document.getElementById('searchResults');
   if (!q.trim()) { container.classList.remove('show'); return; }
-  const results = MEMBERS.filter(m =>
-    m.name.includes(q) || m.furigana.includes(q) || m.id.toLowerCase().includes(q.toLowerCase())
-  );
+  const results = MEMBERS.filter(m => m.name.includes(q) || m.furigana.includes(q) || (m.id||'').toLowerCase().includes(q.toLowerCase()));
   if (!results.length) { container.classList.remove('show'); return; }
-  container.innerHTML = results.map(m => `
-    <div class="search-result-item" onclick="selectFromSearch('${m.id}')">
-      <div class="result-avatar">${m.name[0]}</div>
-      <div>
-        <div class="result-name">${m.name}</div>
-        <div class="result-meta">${m.furigana} · ${m.course}</div>
-      </div>
-    </div>
-  `).join('');
+  container.innerHTML = results.map(m => `<div class="search-result-item" onclick="selectFromSearch('${m.id}')"><div class="result-avatar">${m.name[0]}</div><div><div class="result-name">${m.name}</div><div class="result-meta">${m.furigana} · ${m.course||'未設定'}</div></div></div>`).join('');
   container.classList.add('show');
 }
 
 function selectFromSearch(id) {
-  const member = MEMBERS.find(m => m.id === id);
-  if (member) {
-    document.getElementById('searchResults').classList.remove('show');
-    document.getElementById('searchInput').value = '';
-    location.href = 'member.html?id=' + encodeURIComponent(member.id);
-  }
+  document.getElementById('searchResults').classList.remove('show');
+  document.getElementById('searchInput').value = '';
+  location.href = 'member.html?id=' + encodeURIComponent(id);
 }
 
-// ── TODAY ──
-// GASから当日出席を取得して表示する
 async function renderTodayList() {
   const now = new Date();
-  // GASのdate列は "YYYY-MM-DD" 形式で保存されている
-  // JSTで正確な今日の日付を取得（toISOString()はUTCなので+9h補正）
   const jstNow = new Date(now.getTime() + 9 * 60 * 60 * 1000);
-  const todayISO = jstNow.toISOString().slice(0, 10); // JST YYYY-MM-DD
-  document.getElementById('todayDate').textContent =
-    `${now.getFullYear()}年${now.getMonth()+1}月${now.getDate()}日 (${['日','月','火','水','木','金','土'][now.getDay()]})`;
-
+  const todayISO = jstNow.toISOString().slice(0, 10);
+  document.getElementById('todayDate').textContent = `${now.getFullYear()}年${now.getMonth()+1}月${now.getDate()}日 (${['日','月','火','水','木','金','土'][now.getDay()]})`;
   const list = document.getElementById('attendanceList');
   list.innerHTML = '<div style="text-align:center;padding:20px;color:var(--text3);font-size:.85rem;">読み込み中...</div>';
-
-  // GASから今日の出席を取得
   let rows = [];
-  try {
-    const data = await jsonpFetch(GAS_URL + '?action=getAttendance&date=' + todayISO);
-    rows = data.attendance || [];
-  } catch(e) {
-    console.warn('getAttendance fetch error:', e);
-  }
-
-  // ローカルのtodayAttendanceとマージ（attendance.htmlで登録した分）
-  const localRows = todayAttendance.map(a => ({
-    memberName: a.member?.name || '—',
-    class:      a.class || '通常',
-    time:       a.time  || '',
-  }));
-
+  try { const data = await jsonpFetch(GAS_URL + '?action=getAttendance&date=' + todayISO); rows = data.attendance || []; } catch(e) {}
   const allRows = [
-    ...rows.map(r => ({
-      memberName: r.memberName || r.memberId || '—',
-      class:      r.class || '通常',
-      time:       r.time  || '',
-    })),
-    ...localRows,
-  ].sort((a, b) => b.time.localeCompare(a.time)); // 新しい順
-
+    ...rows.map(r => ({ memberName: r.memberName || r.memberId || '—', class: r.class || '通常', time: r.time || '' })),
+    ...todayAttendance.map(a => ({ memberName: a.member?.name || '—', class: a.class || '通常', time: a.time || '' })),
+  ].sort((a, b) => b.time.localeCompare(a.time));
   document.getElementById('todayCount').textContent = allRows.length + '名';
-
-  if (!allRows.length) {
-    list.innerHTML = '<div class="empty-state"><div class="empty-icon">📋</div><p>まだ出席者がいません</p></div>';
-    return;
-  }
-  list.innerHTML = allRows.map(r => `
-    <div class="attendance-item">
-      <span class="att-time">${r.time}</span>
-      <div class="member-avatar" style="width:34px;height:34px;font-size:1rem;">${(r.memberName||'?')[0]}</div>
-      <span class="att-name">${r.memberName}</span>
-      <span class="att-class">${r.class}</span>
-    </div>
-  `).join('');
+  if (!allRows.length) { list.innerHTML = '<div class="empty-state"><div class="empty-icon">📋</div><p>まだ出席者がいません</p></div>'; return; }
+  list.innerHTML = allRows.map(r => `<div class="attendance-item"><span class="att-time">${r.time}</span><div class="member-avatar" style="width:34px;height:34px;font-size:1rem;">${(r.memberName||'?')[0]}</div><span class="att-name">${r.memberName}</span><span class="att-class">${r.class}</span></div>`).join('');
 }
 
-function undoAttendance(i) {
-  todayAttendance.splice(i, 1);
-  renderTodayList();
-  showToast('取消しました');
+// コース選択肢 → スプレッドシートU列用の値に変換
+function courseToSheetValue(course) {
+  if (course.includes('月1回') || course === '通常クラス・月1回') return '月に1回の参加';
+  if (course.includes('月2回') || course === '通常クラス・月2回') return '月に2回の参加';
+  if (course === '特別コース' || course === '特別') return '特別';
+  return course;
 }
 
-// ── REGISTER ──
 function onRegCourseChange(val) {
-  const other = document.getElementById('regCourseOther');
-  other.style.display = val === 'その他' ? '' : 'none';
+  document.getElementById('regCourseOther').style.display = val === 'その他' ? '' : 'none';
 }
 
 function registerMember() {
   const name = document.getElementById('regName').value.trim();
   if (!name) { showToast('⚠ 氏名を入力してください', true); return; }
-
   let course = document.getElementById('regCourse').value;
   if (course === 'その他') {
     course = document.getElementById('regCourseOther').value.trim();
     if (!course) { showToast('⚠ コース名を入力してください', true); return; }
   }
-
-  // GASに送信
+  const sheetCourse = courseToSheetValue(course);
   const now = new Date();
   const startMonth = `${now.getFullYear()}/${String(now.getMonth()+1).padStart(2,'0')}`;
-
   fetch(GAS_URL, { method: 'POST', body: JSON.stringify({
-    action:   'addMember',
-    name,
+    action: 'addMember', name,
     furigana: document.getElementById('regFurigana').value.trim(),
     nfcId:    document.getElementById('regNfc').value.trim(),
     phone:    document.getElementById('regPhone').value.trim(),
     email:    document.getElementById('regEmail').value.trim(),
-    course,
+    course:   sheetCourse,
   })}).then(r => r.json()).then(d => {
     if (d.status === 'ok') {
-      // コース履歴も記録
       fetch(GAS_URL, { method: 'POST', body: JSON.stringify({
-        action:     'saveCourseHistory',
-        memberId:   d.rowIndex ? String(d.rowIndex) : '',
-        memberName: name,
-        course,
-        startMonth,
-        note:       '初回登録',
+        action: 'saveCourseHistory', memberId: d.rowIndex ? String(d.rowIndex) : '',
+        memberName: name, course: sheetCourse, startMonth, note: '初回登録',
       })}).catch(() => {});
       showToast(`✓ ${name} さんを登録しました`);
-      ['regName','regFurigana','regNfc','regPhone','regEmail'].forEach(
-        id => document.getElementById(id).value = ''
-      );
+      ['regName','regFurigana','regNfc','regPhone','regEmail'].forEach(id => document.getElementById(id).value = '');
       document.getElementById('regCourse').value = '';
       document.getElementById('regCourseOther').style.display = 'none';
       loadMembersFromGAS();
-    } else {
-      showToast('⚠ 登録失敗: ' + (d.message||''), true);
-    }
+    } else { showToast('⚠ 登録失敗: ' + (d.message||''), true); }
   }).catch(e => showToast('⚠ 通信エラー: ' + e.message, true));
 }
 
-// ── TABS ──
 function switchTab(name) {
   document.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('active'));
-  if (name === 'members') {
-    populateMlGradeFilter();
-    renderMlTab();
-  }
   document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
   document.getElementById('tab-'+name).classList.add('active');
   event.currentTarget.classList.add('active');
   if (name === 'today') renderTodayList();
+  if (name === 'stats') renderStats();
+  if (name === 'members') { populateMlGradeFilter(); renderMlTab(); }
 }
 
-// ── TOAST ──
 function showToast(msg, err=false) {
   const t = document.getElementById('toast');
-  t.textContent = msg;
-  t.style.background = err ? 'var(--warn)' : 'var(--accent)';
-  t.style.color = err ? '#fff' : '#0d0f1a';
-  t.classList.add('show');
-  setTimeout(() => t.classList.remove('show'), 3000);
+  t.textContent = msg; t.style.background = err ? 'var(--warn)' : 'var(--accent)'; t.style.color = err ? '#fff' : '#0d0f1a';
+  t.classList.add('show'); setTimeout(() => t.classList.remove('show'), 3000);
 }
 
-// ── MEMBER LIST ──
 let listOpen = false;
-
 function toggleMemberList() {
   listOpen = !listOpen;
   const panel = document.getElementById('memberListPanel');
@@ -1649,669 +723,269 @@ function toggleMemberList() {
   panel.style.display = listOpen ? '' : 'none';
   btn.textContent = listOpen ? '📋 リストを閉じる' : '📋 生徒リストを表示';
   btn.classList.toggle('open', listOpen);
-  if (listOpen) {
-    buildGradeFilter();
-    renderMemberList();
-  }
+  if (listOpen) { buildGradeFilter(); renderMemberList(); }
 }
 
 function buildGradeFilter() {
   const sel = document.getElementById('filterGrade');
   const grades = [...new Set(MEMBERS.map(m => m.grade).filter(Boolean))].sort();
-  sel.innerHTML = '<option value="">全学年</option>' +
-    grades.map(g => `<option value="${g}">${g}</option>`).join('');
+  sel.innerHTML = '<option value="">全学年</option>' + grades.map(g => `<option value="${g}">${g}</option>`).join('');
 }
 
 function renderMemberList() {
   const furiganaQ = document.getElementById('filterFurigana').value.trim();
   const gradeQ = document.getElementById('filterGrade').value;
-
-  let filtered = MEMBERS;
-  if (furiganaQ) filtered = filtered.filter(m =>
-    (m.furigana || '').includes(furiganaQ) || (m.name || '').includes(furiganaQ)
-  );
+  let filtered = [...MEMBERS];
+  if (furiganaQ) filtered = filtered.filter(m => (m.furigana||'').includes(furiganaQ) || (m.name||'').includes(furiganaQ));
   if (gradeQ) filtered = filtered.filter(m => m.grade === gradeQ);
-
-  // よみがな順でソート
-  filtered = [...filtered].sort((a, b) =>
-    (a.furigana || '').localeCompare(b.furigana || '', 'ja')
-  );
-
-  document.getElementById('listCount').textContent =
-    `${filtered.length}名 / 全${MEMBERS.length}名`;
-
+  filtered.sort((a, b) => (a.furigana||'').localeCompare(b.furigana||'', 'ja'));
+  document.getElementById('listCount').textContent = `${filtered.length}名 / 全${MEMBERS.length}名`;
   const body = document.getElementById('memberListBody');
-  if (!filtered.length) {
-    body.innerHTML = '<div style="text-align:center;padding:24px;color:var(--text3);font-size:0.85rem;">該当なし</div>';
-    return;
-  }
-
+  if (!filtered.length) { body.innerHTML = '<div style="text-align:center;padding:24px;color:var(--text3);font-size:0.85rem;">該当なし</div>'; return; }
   body.innerHTML = filtered.map(m => {
     const hasNfc = m.nfcId && m.nfcId.trim();
-    return `
-      <div class="member-list-row" onclick="selectFromList('${m.id}')">
-        <div class="list-avatar">${(m.name||'?')[0]}</div>
-        <div class="list-info">
-          <div class="list-name">${m.name || '—'}</div>
-          <div class="list-sub">${m.furigana || '—'} · ${m.grade || '—'} · ${m.course || '未設定'}</div>
-        </div>
-        <div class="list-nfc ${hasNfc ? 'has-nfc' : 'no-nfc'}">
-          ${hasNfc ? m.nfcId : 'NFC未登録'}
-        </div>
-      </div>`;
+    return `<div class="member-list-row" onclick="location.href='member.html?id=${encodeURIComponent(m.id)}'"><div class="list-avatar">${(m.name||'?')[0]}</div><div class="list-info"><div class="list-name">${m.name||'—'}</div><div class="list-sub">${m.furigana||'—'} · ${m.grade||'—'} · ${m.course||'未設定'}</div></div><div class="list-nfc ${hasNfc?'has-nfc':'no-nfc'}">${hasNfc?m.nfcId:'NFC未登録'}</div></div>`;
   }).join('');
 }
 
-function selectFromList(id) {
-  const member = MEMBERS.find(m => m.id === id);
-  if (member) {
-    location.href = 'member.html?id=' + encodeURIComponent(member.id);
-  }
-}
-
-// ── 五十音インデックス ──
 const AIUEO_ROWS = [
-  { label:'あ行', chars:['あ','い','う','え','お'] },
-  { label:'か行', chars:['か','き','く','け','こ'] },
-  { label:'さ行', chars:['さ','し','す','せ','そ'] },
-  { label:'た行', chars:['た','ち','つ','て','と'] },
-  { label:'な行', chars:['な','に','ぬ','ね','の'] },
-  { label:'は行', chars:['は','ひ','ふ','へ','ほ'] },
-  { label:'ま行', chars:['ま','み','む','め','も'] },
-  { label:'や行', chars:['や','ゆ','よ'] },
-  { label:'ら行', chars:['ら','り','る','れ','ろ'] },
-  { label:'わ行', chars:['わ','を','ん'] },
+  { chars:['あ','い','う','え','お'] }, { chars:['か','き','く','け','こ'] }, { chars:['さ','し','す','せ','そ'] },
+  { chars:['た','ち','つ','て','と'] }, { chars:['な','に','ぬ','ね','の'] }, { chars:['は','ひ','ふ','へ','ほ'] },
+  { chars:['ま','み','む','め','も'] }, { chars:['や','ゆ','よ'] }, { chars:['ら','り','る','れ','ろ'] }, { chars:['わ','を','ん'] },
 ];
-
-// 濁音・半濁音を清音に変換
-function toSeion(ch) {
-  const map = {'が':'か','ぎ':'き','ぐ':'く','げ':'け','ご':'こ','ざ':'さ','じ':'し','ず':'す','ぜ':'せ','ぞ':'そ','だ':'た','ぢ':'ち','づ':'つ','で':'て','ど':'と','ば':'は','び':'ひ','ぶ':'ふ','べ':'へ','ぼ':'ほ','ぱ':'は','ぴ':'ひ','ぷ':'ふ','ぺ':'へ','ぽ':'ほ'};
-  return map[ch] || ch;
-}
-
-let activeAiueo = null;
-
+function toSeion(ch) { const map={'が':'か','ぎ':'き','ぐ':'く','げ':'け','ご':'こ','ざ':'さ','じ':'し','ず':'す','ぜ':'せ','ぞ':'そ','だ':'た','ぢ':'ち','づ':'つ','で':'て','ど':'と','ば':'は','び':'ひ','ぶ':'ふ','べ':'へ','ぼ':'ほ','ぱ':'は','ぴ':'ひ','ぷ':'ふ','ぺ':'へ','ぽ':'ほ'}; return map[ch]||ch; }
 function buildAiueoGrid() {
-  const grid = document.getElementById('aiueoGrid');
-  if (!grid) return;
-  // どの文字に該当する生徒がいるか調べる
+  const grid = document.getElementById('aiueoGrid'); if (!grid) return;
   const usedChars = new Set(MEMBERS.map(m => toSeion((m.furigana||'')[0])));
   let html = '';
   AIUEO_ROWS.forEach(row => {
-    row.chars.forEach(ch => {
-      const has = usedChars.has(ch);
-      html += `<button class="aiueo-btn${has ? '' : ' empty'}"
-        onclick="${has ? `selectAiueo('${ch}')` : ''}">${ch}</button>`;
-    });
-    html += '<div style="width:100%;height:0;"></div>'; // 行区切り（flex wrap）
+    row.chars.forEach(ch => { const has = usedChars.has(ch); html += `<button class="aiueo-btn${has?'':' empty'}" onclick="${has?`selectAiueo('${ch}')`:''}"> ${ch}</button>`; });
+    html += '<div style="width:100%;height:0;"></div>';
   });
   grid.innerHTML = html;
 }
-
 function selectAiueo(ch) {
-  activeAiueo = ch;
   document.querySelectorAll('.aiueo-btn').forEach(b => b.classList.remove('active'));
-  document.querySelectorAll('.aiueo-btn').forEach(b => { if(b.textContent===ch) b.classList.add('active'); });
-
-  const matched = MEMBERS.filter(m => toSeion((m.furigana||'')[0]) === ch)
-    .sort((a,b) => (a.furigana||'').localeCompare(b.furigana||'','ja'));
-
-  const res = document.getElementById('aiueoResults');
-  const list = document.getElementById('aiueoList');
+  document.querySelectorAll('.aiueo-btn').forEach(b => { if(b.textContent.trim()===ch) b.classList.add('active'); });
+  const matched = MEMBERS.filter(m => toSeion((m.furigana||'')[0]) === ch).sort((a,b) => (a.furigana||'').localeCompare(b.furigana||'','ja'));
   document.getElementById('aiueoLabel').textContent = `「${ch}」— ${matched.length}名`;
-  res.style.display = '';
-
-  list.innerHTML = matched.map(m => `
-    <div class="aiueo-item" onclick="selectFromAiueo('${m.id}')">
-      <div class="aiueo-avatar">${(m.name||'?')[0]}</div>
-      <div style="flex:1;">
-        <div class="aiueo-name">${m.name||'—'}</div>
-        <div class="aiueo-sub">${m.furigana||'—'} · ${m.grade||'—'} · ${m.course||'未設定'}</div>
-      </div>
-      <div style="font-family:'DM Mono',monospace;font-size:0.7rem;color:${m.nfcId?'var(--accent)':'var(--warn)'};">
-        ${m.nfcId||'NFC未登録'}
-      </div>
-    </div>`).join('');
+  document.getElementById('aiueoResults').style.display = '';
+  document.getElementById('aiueoList').innerHTML = matched.map(m => `<div class="aiueo-item" onclick="selectFromAiueo('${m.id}')"><div class="aiueo-avatar">${(m.name||'?')[0]}</div><div style="flex:1;"><div class="aiueo-name">${m.name||'—'}</div><div class="aiueo-sub">${m.furigana||'—'} · ${m.grade||'—'}</div></div></div>`).join('');
 }
+function selectFromAiueo(id) { const m = MEMBERS.find(x => x.id === id); if(m){showMember(m);clearAiueo();} }
+function clearAiueo() { document.getElementById('aiueoResults').style.display='none'; document.querySelectorAll('.aiueo-btn').forEach(b=>b.classList.remove('active')); }
 
-function selectFromAiueo(id) {
-  const member = MEMBERS.find(m => m.id === id);
-  if (member) {
-    showMember(member);
-    clearAiueo();
-  }
-}
-
-function clearAiueo() {
-  activeAiueo = null;
-  document.getElementById('aiueoResults').style.display = 'none';
-  document.querySelectorAll('.aiueo-btn').forEach(b => b.classList.remove('active'));
-}
-
-// ── STATS ──
-let statsMonthOffset = 0; // 0 = 今月
-
-function getStatsMonth(offset) {
-  const now = new Date();
-  const d = new Date(now.getFullYear(), now.getMonth() + offset, 1);
-  return { year: d.getFullYear(), month: d.getMonth() + 1, key: `${d.getFullYear()}/${String(d.getMonth()+1).padStart(2,'0')}` };
-}
-
-function shiftStatsMonth(delta) {
-  statsMonthOffset += delta;
-  if (statsMonthOffset > 0) statsMonthOffset = 0; // 未来は見ない
-  renderStats();
-}
-
+let statsMonthOffset = 0;
+function getStatsMonth(offset) { const now=new Date(); const d=new Date(now.getFullYear(),now.getMonth()+offset,1); return {year:d.getFullYear(),month:d.getMonth()+1,key:`${d.getFullYear()}/${String(d.getMonth()+1).padStart(2,'0')}`}; }
+function shiftStatsMonth(delta) { statsMonthOffset+=delta; if(statsMonthOffset>0)statsMonthOffset=0; renderStats(); }
 async function renderStats() {
-  const { year, month, key } = getStatsMonth(statsMonthOffset);
+  const {year,month,key} = getStatsMonth(statsMonthOffset);
   document.getElementById('statsMonthLabel').textContent = `${year}年 ${month}月`;
-
-  const allAttendance = await getAttendanceHistory();
-  const thisMonthAtt = allAttendance.filter(a => a.dateKey && a.dateKey.startsWith(key));
-  const uniqueToday = new Set(thisMonthAtt.map(a => a.memberId || a.memberName));
-  const totalSessions = new Set(thisMonthAtt.map(a => a.date)).size || 1;
-  const attRate = MEMBERS.length > 0 ? Math.round(uniqueToday.size / MEMBERS.length * 100) : 0;
-
-  // Summary cards
+  const allAtt = await getAttendanceHistory();
+  const thisMonthAtt = allAtt.filter(a => a.dateKey && a.dateKey.startsWith(key));
+  const unique = new Set(thisMonthAtt.map(a => a.memberId || a.memberName));
+  const attRate = MEMBERS.length > 0 ? Math.round(unique.size / MEMBERS.length * 100) : 0;
   document.getElementById('statsSummaryGrid').innerHTML = `
-    <div class="stats-sum-card green">
-      <div class="stats-sum-val green">${thisMonthAtt.length}</div>
-      <div class="stats-sum-lbl">今月の出席件数</div>
-    </div>
-    <div class="stats-sum-card blue">
-      <div class="stats-sum-val blue">${uniqueToday.size}名</div>
-      <div class="stats-sum-lbl">出席ユニーク人数</div>
-    </div>
-    <div class="stats-sum-card gold">
-      <div class="stats-sum-val gold">${attRate}%</div>
-      <div class="stats-sum-lbl">出席率（全生徒比）</div>
-    </div>
-    <div class="stats-sum-card red">
-      <div class="stats-sum-val red">${MEMBERS.length - uniqueToday.size}名</div>
-      <div class="stats-sum-lbl">今月未出席</div>
-    </div>`;
-
-  // Bar chart (過去6ヶ月)
+    <div class="stats-sum-card green"><div class="stats-sum-val green">${thisMonthAtt.length}</div><div class="stats-sum-lbl">今月の出席件数</div></div>
+    <div class="stats-sum-card blue"><div class="stats-sum-val blue">${unique.size}名</div><div class="stats-sum-lbl">出席ユニーク人数</div></div>
+    <div class="stats-sum-card gold"><div class="stats-sum-val gold">${attRate}%</div><div class="stats-sum-lbl">出席率（全生徒比）</div></div>
+    <div class="stats-sum-card red"><div class="stats-sum-val red">${MEMBERS.length-unique.size}名</div><div class="stats-sum-lbl">今月未出席</div></div>`;
   const monthData = [];
-  for (let i = 5; i >= 0; i--) {
-    const { key: k, month: mo } = getStatsMonth(statsMonthOffset - i);
-    const cnt = allAttendance.filter(a => a.dateKey && a.dateKey.startsWith(k)).length;
-    monthData.push({ label: mo + '月', cnt, isCurrent: i === 0 });
-  }
-  const maxCnt = Math.max(...monthData.map(d => d.cnt), 1);
-  document.getElementById('statsBars').innerHTML = monthData.map(d => `
-    <div class="stats-bar-col">
-      <div class="stats-bar-val">${d.cnt || ''}</div>
-      <div class="stats-bar ${d.isCurrent ? 'current' : ''}" style="height:${Math.max(4, d.cnt/maxCnt*80)}px;"></div>
-      <div class="stats-bar-lbl">${d.label}</div>
-    </div>`).join('');
-
-  // Per-member table
-  const memberCounts = {};
-  thisMonthAtt.forEach(a => {
-    const k2 = a.memberId || a.memberName;
-    memberCounts[k2] = (memberCounts[k2] || 0) + 1;
-  });
-  const sorted = [...MEMBERS].sort((a, b) =>
-    (memberCounts[a.id] || 0) < (memberCounts[b.id] || 0) ? 1 : -1
-  );
-  // メンバー別の出席日リスト
-  const memberDates = {};
-  thisMonthAtt.forEach(a => {
-    const k2 = a.memberId || a.memberName;
-    if (!memberDates[k2]) memberDates[k2] = new Set();
-    if (a.dateKey) memberDates[k2].add(a.dateKey.slice(8,10).replace(/^0/,'') + '日');
-  });
-
-  document.getElementById('statsMemberTbody').innerHTML = sorted.map(m => {
-    const cnt = memberCounts[m.id] || memberCounts[m.name] || 0;
-    const datesKey = m.id || m.name;
-    const dates = [...(memberDates[datesKey] || new Set())].sort((a,b)=>parseInt(a)-parseInt(b)).join(', ');
-    return `<tr>
-      <td style="font-weight:600;">${m.name}</td>
-      <td style="color:var(--text2);font-size:0.78rem;">${m.furigana||'—'}</td>
-      <td style="font-family:'DM Mono',monospace;font-weight:700;">${cnt}回</td>
-      <td style="font-size:0.75rem;color:var(--text2);">${dates||'—'}</td>
-      <td><span class="attend-badge ${cnt>0?'good':'none'}">${cnt>0?'出席あり':'未出席'}</span></td>
-    </tr>`;
-  }).join('') || '<tr><td colspan="5" style="text-align:center;color:var(--text3);padding:16px;">データなし</td></tr>';
+  for (let i=5;i>=0;i--) { const {key:k,month:mo}=getStatsMonth(statsMonthOffset-i); const cnt=allAtt.filter(a=>a.dateKey&&a.dateKey.startsWith(k)).length; monthData.push({label:mo+'月',cnt,isCurrent:i===0}); }
+  const maxCnt = Math.max(...monthData.map(d=>d.cnt),1);
+  document.getElementById('statsBars').innerHTML = monthData.map(d => `<div class="stats-bar-col"><div class="stats-bar-val">${d.cnt||''}</div><div class="stats-bar ${d.isCurrent?'current':''}" style="height:${Math.max(4,d.cnt/maxCnt*80)}px;"></div><div class="stats-bar-lbl">${d.label}</div></div>`).join('');
+  const memberCounts={}, memberDates={};
+  thisMonthAtt.forEach(a=>{const k2=a.memberId||a.memberName;memberCounts[k2]=(memberCounts[k2]||0)+1;if(!memberDates[k2])memberDates[k2]=new Set();if(a.dateKey)memberDates[k2].add(a.dateKey.slice(8,10).replace(/^0/,'')+' 日');});
+  const sorted=[...MEMBERS].sort((a,b)=>(memberCounts[a.id]||0)<(memberCounts[b.id]||0)?1:-1);
+  document.getElementById('statsMemberTbody').innerHTML = sorted.map(m=>{
+    const cnt=memberCounts[m.id]||memberCounts[m.name]||0;
+    const dates=[...(memberDates[m.id||m.name]||new Set())].sort((a,b)=>parseInt(a)-parseInt(b)).join(', ');
+    return `<tr><td style="font-weight:600;">${m.name}</td><td style="color:var(--text2);font-size:0.78rem;">${m.furigana||'—'}</td><td style="font-family:'DM Mono',monospace;font-weight:700;">${cnt}回</td><td style="font-size:0.75rem;color:var(--text2);">${dates||'—'}</td><td><span class="attend-badge ${cnt>0?'good':'none'}">${cnt>0?'出席あり':'未出席'}</span></td></tr>`;
+  }).join('')||'<tr><td colspan="5" style="text-align:center;color:var(--text3);padding:16px;">データなし</td></tr>';
 }
-
-// 出席履歴を統合（今日のセッション + デモデータ）
 async function getAttendanceHistory() {
-  const now = new Date();
-  // JSTで正確な今日の日付を取得
-  const jstNow2    = new Date(now.getTime() + 9 * 60 * 60 * 1000);
-  const todayISO   = jstNow2.toISOString().slice(0, 10);       // JST YYYY-MM-DD
-  const todaySlash = todayISO.replace(/-/g, '/');              // YYYY/MM/DD
-  const todayMo    = todaySlash.slice(0, 7);                   // YYYY/MM
-
-  // ローカル分（attendance.htmlで登録した今日の出席）
-  const localRows = todayAttendance.map(a => ({
-    memberId:   a.member?.id   || '',
-    memberName: a.member?.name || '',
-    dateKey:    todaySlash,
-    date:       todayMo,
-  }));
-
+  const now=new Date(); const jst=new Date(now.getTime()+9*60*60*1000); const todayISO=jst.toISOString().slice(0,10); const todaySlash=todayISO.replace(/-/g,'/');
+  const localRows=todayAttendance.map(a=>({memberId:a.member?.id||'',memberName:a.member?.name||'',dateKey:todaySlash,date:todaySlash.slice(0,7)}));
   try {
-    const data = await jsonpFetch(GAS_URL + '?action=getAttendance');
-    const rows = (data.attendance || []).map(a => {
-      const d = (a.date || '').slice(0, 10).replace(/-/g, '/'); // YYYY/MM/DD
-      return {
-        memberId:   a.memberId   || '',
-        memberName: a.memberName || '',
-        dateKey:    d,
-        date:       d.slice(0, 7),
-      };
-    });
-    return [...rows, ...localRows];
-  } catch(e) {
-    console.warn('getAttendanceHistory error:', e);
-    return localRows;
-  }
+    const data=await jsonpFetch(GAS_URL+'?action=getAttendance');
+    const rows=(data.attendance||[]).map(a=>{const d=(a.date||'').slice(0,10).replace(/-/g,'/');return{memberId:a.memberId||'',memberName:a.memberName||'',dateKey:d,date:d.slice(0,7)};});
+    return [...rows,...localRows];
+  } catch(e){return localRows;}
 }
 
-// ── TABS ──
-function switchTab(name) {
-  document.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('active'));
-  if (name === 'members') {
-    populateMlGradeFilter();
-    renderMlTab();
-  }
-  document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
-  document.getElementById('tab-'+name).classList.add('active');
-  event.currentTarget.classList.add('active');
-  if (name === 'today') renderTodayList();
-  if (name === 'stats') renderStats();
-}
-
-// ── TOAST ──
-function showToast(msg, err=false) {
-  const t = document.getElementById('toast');
-  t.textContent = msg;
-  t.style.background = err ? 'var(--warn)' : 'var(--accent)';
-  t.style.color = err ? '#fff' : '#0d0f1a';
-  t.classList.add('show');
-  setTimeout(() => t.classList.remove('show'), 3000);
-}
-
-// ── INIT ──
-document.getElementById('regJoin').valueAsDate = new Date();
-renderTodayList();
-checkUrlParam();
-loadMembersFromGAS().then(() => buildAiueoGrid());
-buildAiueoGrid();
-
-// Close search on outside click
-document.addEventListener('click', e => {
-  if (!e.target.closest('.search-wrap')) {
-    document.getElementById('searchResults').classList.remove('show');
-  }
-});
-
-// ── MEMBER LIST TAB ──
-let mlSortKey = 'furigana';
-
-function setMlSort(key) {
-  mlSortKey = key;
-  document.querySelectorAll('.ml-sort-btn').forEach(b => b.classList.remove('active'));
-  const btn = document.getElementById('sort-' + key);
-  if (btn) btn.classList.add('active');
-  renderMlTab();
-}
-
+function setMlSort(key) { mlSortKey=key; document.querySelectorAll('.ml-sort-btn').forEach(b=>b.classList.remove('active')); const btn=document.getElementById('sort-'+key); if(btn)btn.classList.add('active'); renderMlTab(); }
 function renderMlTab() {
-  _mlCurrentList = [];
-  _mlCurrentIndex = -1;
-  const q = (document.getElementById('mlSearch')?.value || '').toLowerCase();
-  const gradeF = document.getElementById('mlGrade')?.value || '';
-  const genderF = document.getElementById('mlGender')?.value || '';
-  const nfcF = document.getElementById('mlNfc')?.value || '';
-
-  let list = [...(MEMBERS)];
-
-  // Filters
-  if (q) list = list.filter(m =>
-    (m.name || '').includes(q) || (m.furigana || '').includes(q)
-  );
-  if (gradeF) list = list.filter(m => (m.grade || '') === gradeF);
-  if (genderF) list = list.filter(m => (m.gender || '') === genderF);
-  if (nfcF === 'registered') list = list.filter(m => m.nfcId);
-  if (nfcF === 'none') list = list.filter(m => !m.nfcId);
-  const courseF = document.getElementById('mlCourse')?.value || '';
-  if (courseF) list = list.filter(m => (m.course || '') === courseF);
-
-  // Sort
-  list.sort((a, b) => {
-    if (mlSortKey === 'furigana') return (a.furigana || '').localeCompare(b.furigana || '', 'ja');
-    if (mlSortKey === 'grade') {
-      const ga = mlGradeNum(a.grade), gb = mlGradeNum(b.grade);
-      return ga !== gb ? ga - gb : (a.furigana || '').localeCompare(b.furigana || '', 'ja');
-    }
-    if (mlSortKey === 'gender') {
-      const cmp = (a.gender || '').localeCompare(b.gender || '', 'ja');
-      return cmp !== 0 ? cmp : (a.furigana || '').localeCompare(b.furigana || '', 'ja');
-    }
-    if (mlSortKey === 'age') {
-      const aa = parseInt(a.age) || 99, ab = parseInt(b.age) || 99;
-      return aa !== ab ? aa - ab : (a.furigana || '').localeCompare(b.furigana || '', 'ja');
-    }
-    if (mlSortKey === 'name') return (a.name || '').localeCompare(b.name || '', 'ja');
-    if (mlSortKey === 'id') return (a.nfcId || '').localeCompare(b.nfcId || '');
+  _mlCurrentList=[]; _mlCurrentIndex=-1;
+  const q=(document.getElementById('mlSearch')?.value||'').toLowerCase();
+  const gradeF=document.getElementById('mlGrade')?.value||'';
+  const genderF=document.getElementById('mlGender')?.value||'';
+  const nfcF=document.getElementById('mlNfc')?.value||'';
+  const courseF=document.getElementById('mlCourse')?.value||'';
+  let list=[...MEMBERS];
+  if(q) list=list.filter(m=>(m.name||'').includes(q)||(m.furigana||'').includes(q));
+  if(gradeF) list=list.filter(m=>(m.grade||'')===gradeF);
+  if(genderF) list=list.filter(m=>(m.gender||'').includes(genderF));
+  if(nfcF==='registered') list=list.filter(m=>m.nfcId);
+  if(nfcF==='none') list=list.filter(m=>!m.nfcId);
+  if(courseF) list=list.filter(m=>(m.course||'')===courseF);
+  list.sort((a,b)=>{
+    if(mlSortKey==='furigana') return (a.furigana||'').localeCompare(b.furigana||'','ja');
+    if(mlSortKey==='grade'){const ga=mlGradeNum(a.grade),gb=mlGradeNum(b.grade);return ga!==gb?ga-gb:(a.furigana||'').localeCompare(b.furigana||'','ja');}
+    if(mlSortKey==='gender'){const cmp=(a.gender||'').localeCompare(b.gender||'','ja');return cmp!==0?cmp:(a.furigana||'').localeCompare(b.furigana||'','ja');}
+    if(mlSortKey==='age'){const aa=parseInt(a.age)||99,ab=parseInt(b.age)||99;return aa!==ab?aa-ab:(a.furigana||'').localeCompare(b.furigana||'','ja');}
+    if(mlSortKey==='name') return (a.name||'').localeCompare(b.name||'','ja');
+    if(mlSortKey==='id') return (a.nfcId||'').localeCompare(b.nfcId||'');
     return 0;
   });
-
-  const countEl = document.getElementById('mlCount');
-  if (countEl) countEl.textContent = `${list.length}名 / 総登録 ${(MEMBERS).length}名`;
-
-  const container = document.getElementById('mlCards');
-  if (!container) return;
-
-  if (!list.length) {
-    container.innerHTML = '<div style="text-align:center;padding:32px;color:var(--text3);">該当するメンバーがいません</div>';
-    return;
-  }
-
-  // Store members in a map for safe lookup by rowIndex
-  window._mlMemberMap = {};
-  list.forEach(m => { window._mlMemberMap[m.rowIndex] = m; });
-  _mlCurrentList = list; // ナビゲーション用に保存
-
-  // 重複検出：よみがなが同じメンバーを検出
-  const furiganaCount = {};
-  list.forEach(m => {
-    const f = (m.furigana || '').trim();
-    if (f) furiganaCount[f] = (furiganaCount[f] || 0) + 1;
-  });
-
-  container.innerHTML = list.map(m => {
-    const hasNfc = !!m.nfcId;
-    const genderLabel = m.gender || '';
-    const isDuplicate = (furiganaCount[(m.furigana || '').trim()] || 0) > 1;
-    const courseShort = m.course
-      ? m.course.includes('1回') ? '月1回' : m.course.includes('2回') ? '月2回' : m.course
-      : '';
+  const countEl=document.getElementById('mlCount'); if(countEl)countEl.textContent=`${list.length}名 / 総登録 ${MEMBERS.length}名`;
+  const container=document.getElementById('mlCards'); if(!container)return;
+  if(!list.length){container.innerHTML='<div style="text-align:center;padding:32px;color:var(--text3);">該当するメンバーがいません</div>';return;}
+  window._mlMemberMap={};
+  list.forEach(m=>{window._mlMemberMap[m.rowIndex]=m;});
+  _mlCurrentList=list;
+  const furiganaCount={};
+  list.forEach(m=>{const f=(m.furigana||'').trim();if(f)furiganaCount[f]=(furiganaCount[f]||0)+1;});
+  container.innerHTML=list.map(m=>{
+    const hasNfc=!!m.nfcId; const genderLabel=m.gender||'';
+    const isDuplicate=(furiganaCount[(m.furigana||'').trim()]||0)>1;
+    const courseShort=m.course?(m.course.includes('1回')?'月1回':m.course.includes('2回')?'月2回':m.course):'';
     return `<div class="ml-card" onclick="location.href='member.html?id=${encodeURIComponent(m.id)}'" style="cursor:pointer;">
       <div style="flex:1;">
-        <div class="ml-furi">${m.furigana || '—'}</div>
-        <div class="ml-name">${m.name || '—'}</div>
+        <div class="ml-furi">${m.furigana||'—'}</div>
+        <div class="ml-name">${m.name||'—'}</div>
         <div class="ml-badges">
-          ${m.grade ? `<span class="ml-badge ml-badge-grade">${m.grade}</span>` : ''}
-          ${genderLabel ? `<span class="ml-badge ml-badge-gender">${genderLabel}</span>` : ''}
-          ${m.age ? `<span class="ml-badge ml-badge-grade">${m.age}歳</span>` : ''}
-          ${courseShort ? `<span class="ml-badge" style="background:rgba(123,111,255,0.18);color:var(--accent2);border:1px solid rgba(123,111,255,0.3);">${courseShort}</span>` : ''}
-          ${hasNfc
-            ? `<span class="ml-badge ml-badge-nfc">📡 NFC済</span>`
-            : `<span class="ml-badge ml-badge-nonfc">NFC未登録</span>`}
-          ${isDuplicate ? `<span class="ml-badge" style="background:rgba(255,107,107,0.2);color:var(--warn);border:1px solid rgba(255,107,107,0.4);">⚠ 重複</span>` : ''}
+          ${m.grade?`<span class="ml-badge ml-badge-grade">${m.grade}</span>`:''}
+          ${genderLabel?`<span class="ml-badge ml-badge-gender">${genderLabel}</span>`:''}
+          ${m.age?`<span class="ml-badge ml-badge-grade">${m.age}歳</span>`:''}
+          ${courseShort?`<span class="ml-badge" style="background:rgba(123,111,255,0.18);color:var(--accent2);border:1px solid rgba(123,111,255,0.3);">${courseShort}</span>`:''}
+          ${hasNfc?`<span class="ml-badge ml-badge-nfc">📡 NFC済</span>`:`<span class="ml-badge ml-badge-nonfc">NFC未登録</span>`}
+          ${isDuplicate?`<span class="ml-badge" style="background:rgba(255,107,107,0.2);color:var(--warn);border:1px solid rgba(255,107,107,0.4);">⚠ 重複</span>`:''}
         </div>
         <div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:4px;">
-          ${m.phone ? `<a href="tel:${m.phone}" onclick="event.stopPropagation()" style="font-size:0.7rem;color:var(--accent);text-decoration:none;background:rgba(79,255,176,0.1);padding:2px 8px;border-radius:8px;border:1px solid rgba(79,255,176,0.2);">📞 ${m.phone}</a>` : ''}
-          ${m.email ? `<a href="mailto:${m.email}" onclick="event.stopPropagation()" style="font-size:0.7rem;color:var(--accent2);text-decoration:none;background:rgba(123,111,255,0.1);padding:2px 8px;border-radius:8px;border:1px solid rgba(123,111,255,0.2);">✉ メール</a>` : ''}
+          ${m.phone?`<a href="tel:${m.phone}" onclick="event.stopPropagation()" style="font-size:0.7rem;color:var(--accent);text-decoration:none;background:rgba(79,255,176,0.1);padding:2px 8px;border-radius:8px;border:1px solid rgba(79,255,176,0.2);">📞 ${m.phone}</a>`:''}
+          ${m.email?`<a href="mailto:${m.email}" onclick="event.stopPropagation()" style="font-size:0.7rem;color:var(--accent2);text-decoration:none;background:rgba(123,111,255,0.1);padding:2px 8px;border-radius:8px;border:1px solid rgba(123,111,255,0.2);">✉ メール</a>`:''}
         </div>
-        ${m.parent ? `<div style="font-size:0.7rem;color:var(--text3);margin-top:3px;">👤 ${m.parent}</div>` : ''}
-        ${m.nfcId ? `<div style="display:flex;align-items:center;gap:6px;margin-top:4px;">
-          <span style="font-family:'DM Mono',monospace;font-size:0.68rem;color:var(--text3);">NFC: ${m.nfcId}</span>
-          <button onclick="event.stopPropagation();copyNfcId('${m.nfcId}')"
-            style="padding:1px 8px;background:rgba(79,255,176,0.1);border:1px solid rgba(79,255,176,0.2);border-radius:6px;color:var(--accent);font-family:inherit;font-size:0.65rem;cursor:pointer;">コピー</button>
-        </div>` : ''}
+        ${m.parent?`<div style="font-size:0.7rem;color:var(--text3);margin-top:3px;">👤 ${m.parent}</div>`:''}
+        ${m.nfcId?`<div style="display:flex;align-items:center;gap:6px;margin-top:4px;"><span style="font-family:'DM Mono',monospace;font-size:0.68rem;color:var(--text3);">NFC: ${m.nfcId}</span><button onclick="event.stopPropagation();copyNfcId('${m.nfcId}')" style="padding:1px 8px;background:rgba(79,255,176,0.1);border:1px solid rgba(79,255,176,0.2);border-radius:6px;color:var(--accent);font-family:inherit;font-size:0.65rem;cursor:pointer;">コピー</button></div>`:''}
       </div>
       <div style="display:flex;flex-direction:column;align-items:center;gap:6px;padding-left:8px;">
         <div style="color:var(--text3);font-size:1rem;">›</div>
-        <a href="member.html?id=${m.id}" onclick="event.stopPropagation()"
-          style="font-size:.62rem;color:var(--accent2);background:rgba(123,111,255,.12);
-          border:1px solid rgba(123,111,255,.25);border-radius:6px;padding:2px 6px;
-          text-decoration:none;white-space:nowrap;">詳細</a>
+        <a href="member.html?id=${m.id}" onclick="event.stopPropagation()" style="font-size:.62rem;color:var(--accent2);background:rgba(123,111,255,.12);border:1px solid rgba(123,111,255,.25);border-radius:6px;padding:2px 6px;text-decoration:none;white-space:nowrap;">詳細</a>
       </div>
     </div>`;
   }).join('');
 }
+function mlGradeNum(grade){if(!grade)return 99;if(grade.includes('中学'))return 20;const m=grade.match(/\d+/);return m?parseInt(m[0]):99;}
+function populateMlGradeFilter(){const sel=document.getElementById('mlGrade');if(!sel)return;const grades=[...new Set(MEMBERS.map(m=>m.grade).filter(Boolean))].sort((a,b)=>mlGradeNum(a)-mlGradeNum(b));sel.innerHTML='<option value="">全学年</option>'+grades.map(g=>`<option value="${g}">${g}</option>`).join('');}
 
-function mlGradeNum(grade) {
-  if (!grade) return 99;
-  if (grade.includes('中学')) return 20;
-  const m = grade.match(/\d+/);
-  return m ? parseInt(m[0]) : 99;
-}
-
-function populateMlGradeFilter() {
-  const sel = document.getElementById('mlGrade');
-  if (!sel) return;
-  const src = MEMBERS;
-  const grades = [...new Set(src.map(m => m.grade).filter(Boolean))].sort((a, b) => mlGradeNum(a) - mlGradeNum(b));
-  sel.innerHTML = '<option value="">全学年</option>' + grades.map(g => `<option value="${g}">${g}</option>`).join('');
-}
-
-
-// ── MEMBER EDIT / ADD ──
-let editingMember = null;
-
-function openEditByRow(rowIndex) {
-  const m = window._mlMemberMap && window._mlMemberMap[rowIndex];
-  if (!m) return;
-  _mlCurrentIndex = _mlCurrentList.findIndex(x => x.rowIndex === rowIndex);
-  openEditModal(m);
-}
-
-function openEditModal(m) {
-  editingMember = m;
-  document.getElementById('editModalTitle').textContent = 'メンバー編集';
-  document.getElementById('editRowIndex').value = m.rowIndex || '';
-  document.getElementById('editMemberId').value = m.id || '';
-  document.getElementById('editName').value = m.name || '';
-  document.getElementById('editFurigana').value = m.furigana || '';
-  document.getElementById('editGender').value = m.gender || '';
-  document.getElementById('editGrade').value = m.grade || '';
-  document.getElementById('editAge').value = m.age || '';
-  document.getElementById('editSchool').value = m.school || '';
-  document.getElementById('editNfcId').value = m.nfcId || '';
-  document.getElementById('editCourse').value = m.course || '';
-  document.getElementById('editParent').value = m.parent || '';
-  document.getElementById('editEmail').value  = m.email || '';
-  document.getElementById('editPhone').value  = m.phone || '';
-  document.getElementById('editLineId').value = m.lineId || '';
-  const hideBtn = document.getElementById('hideToggleBtn');
-  hideBtn.textContent = '🚫 非表示にする';
-  hideBtn.style.background = 'rgba(255,107,107,0.12)';
-  document.getElementById('editSaveBtn').onclick = saveMember;
-  // 編集時はナビゲーションボタンを表示
-  const prevBtn = document.getElementById('prevMemberBtn');
-  const nextBtn = document.getElementById('nextMemberBtn');
-  if (prevBtn) prevBtn.style.display = '';
-  if (nextBtn) nextBtn.style.display = '';
-  const modal = document.getElementById('editMemberModal');
-  modal.style.display = 'flex';
+let editingMember=null;
+function openEditModal(m){
+  editingMember=m;
+  document.getElementById('editModalTitle').textContent='メンバー編集';
+  document.getElementById('editRowIndex').value=m.rowIndex||'';
+  document.getElementById('editMemberId').value=m.id||'';
+  document.getElementById('editName').value=m.name||'';
+  document.getElementById('editFurigana').value=m.furigana||'';
+  document.getElementById('editGender').value=m.gender||'';
+  document.getElementById('editGrade').value=m.grade||'';
+  document.getElementById('editAge').value=m.age||'';
+  document.getElementById('editSchool').value=m.school||'';
+  document.getElementById('editNfcId').value=m.nfcId||'';
+  document.getElementById('editCourse').value=m.course||'';
+  document.getElementById('editParent').value=m.parent||'';
+  document.getElementById('editEmail').value=m.email||'';
+  document.getElementById('editPhone').value=m.phone||'';
+  document.getElementById('editLineId').value=m.lineId||'';
+  document.getElementById('hideToggleBtn').textContent='🚫 非表示にする';
+  document.getElementById('editSaveBtn').onclick=saveMember;
+  document.getElementById('prevMemberBtn').style.display='';
+  document.getElementById('nextMemberBtn').style.display='';
+  document.getElementById('editMemberModal').style.display='flex';
   updateNavButtons();
 }
-
-function openAddModal() {
-  editingMember = null;
-  document.getElementById('editModalTitle').textContent = '新規メンバー追加';
-  ['editRowIndex','editMemberId','editName','editFurigana','editGrade','editAge','editSchool','editNfcId','editParent','editEmail','editPhone','editLineId'].forEach(id => {
-    document.getElementById(id).value = '';
-  });
-  document.getElementById('editGender').value = '';
-  document.getElementById('editSaveBtn').onclick = addMemberSubmit;
-  // 新規追加時はナビゲーションボタンを非表示
-  const prev = document.getElementById('prevMemberBtn');
-  const next = document.getElementById('nextMemberBtn');
-  const counter = document.getElementById('mlNavCounter');
-  if (prev) prev.style.display = 'none';
-  if (next) next.style.display = 'none';
-  if (counter) counter.textContent = '';
-  const modal = document.getElementById('editMemberModal');
-  modal.style.display = 'flex';
+function openAddModal(){
+  editingMember=null;
+  document.getElementById('editModalTitle').textContent='新規メンバー追加';
+  ['editRowIndex','editMemberId','editName','editFurigana','editGrade','editAge','editSchool','editNfcId','editParent','editEmail','editPhone','editLineId'].forEach(id=>document.getElementById(id).value='');
+  document.getElementById('editGender').value='';
+  document.getElementById('editSaveBtn').onclick=addMemberSubmit;
+  document.getElementById('prevMemberBtn').style.display='none';
+  document.getElementById('nextMemberBtn').style.display='none';
+  document.getElementById('mlNavCounter').textContent='';
+  document.getElementById('editMemberModal').style.display='flex';
+}
+function closeEditModal(){document.getElementById('editMemberModal').style.display='none';editingMember=null;}
+async function saveMember(){
+  const name=document.getElementById('editName').value.trim();
+  const furigana=document.getElementById('editFurigana').value.trim();
+  if(!name||!furigana){showToast('⚠ 氏名とよみがなは必須です',true);return;}
+  const rowIndex=parseInt(document.getElementById('editRowIndex').value);
+  if(!rowIndex){showToast('⚠ 行番号が見つかりません',true);return;}
+  const btn=document.getElementById('editSaveBtn');
+  btn.disabled=true;btn.textContent='保存中...';
+  try{
+    const res=await fetch(GAS_URL,{method:'POST',body:JSON.stringify({action:'updateMember',rowIndex,name,furigana,gender:document.getElementById('editGender').value,grade:document.getElementById('editGrade').value.trim(),age:document.getElementById('editAge').value.trim(),school:document.getElementById('editSchool').value.trim(),nfcId:document.getElementById('editNfcId').value.trim(),course:document.getElementById('editCourse').value,parent:document.getElementById('editParent').value.trim(),email:document.getElementById('editEmail').value.trim(),phone:document.getElementById('editPhone').value.trim(),lineId:document.getElementById('editLineId').value.trim()})});
+    const d=await res.json();
+    if(d.status==='ok'){showToast('✓ 更新しました');closeEditModal();await loadMembersFromGAS();renderMlTab();}
+    else throw new Error(d.message||'Error');
+  }catch(e){showToast('⚠ 保存失敗: '+e.message,true);}
+  btn.disabled=false;btn.textContent='💾 保存';
+}
+async function addMemberSubmit(){
+  const name=document.getElementById('editName').value.trim();
+  const furigana=document.getElementById('editFurigana').value.trim();
+  if(!name||!furigana){showToast('⚠ 氏名とよみがなは必須です',true);return;}
+  const btn=document.getElementById('editSaveBtn');btn.disabled=true;btn.textContent='追加中...';
+  try{
+    const res=await fetch(GAS_URL,{method:'POST',body:JSON.stringify({action:'addMember',name,furigana,gender:document.getElementById('editGender').value,grade:document.getElementById('editGrade').value.trim(),age:document.getElementById('editAge').value.trim(),school:document.getElementById('editSchool').value.trim(),nfcId:document.getElementById('editNfcId').value.trim(),course:document.getElementById('editCourse').value,parent:document.getElementById('editParent').value.trim(),email:document.getElementById('editEmail').value.trim(),phone:document.getElementById('editPhone').value.trim(),lineId:document.getElementById('editLineId').value.trim()})});
+    const d=await res.json();
+    if(d.status==='ok'){showToast('✓ 新規メンバーを追加しました');closeEditModal();await loadMembersFromGAS();renderMlTab();}
+    else throw new Error(d.message||'Error');
+  }catch(e){showToast('⚠ 追加失敗: '+e.message,true);}
+  btn.disabled=false;btn.textContent='💾 保存';
+}
+async function toggleHiddenMember(){
+  if(!editingMember)return;
+  const rowIndex=parseInt(document.getElementById('editRowIndex').value);
+  if(!rowIndex)return;
+  if(!confirm('このメンバーを非表示にしますか？'))return;
+  try{
+    const res=await fetch(GAS_URL,{method:'POST',body:JSON.stringify({action:'toggleHidden',rowIndex})});
+    const d=await res.json();
+    if(d.status==='ok'){showToast(d.hidden?'🚫 非表示にしました':'✓ 表示に戻しました');closeEditModal();await loadMembersFromGAS();renderMlTab();}
+    else throw new Error(d.message);
+  }catch(e){showToast('⚠ 失敗: '+e.message,true);}
+}
+function copyNfcId(id){
+  navigator.clipboard.writeText(id).then(()=>showToast('✓ NFCカードID をコピーしました: '+id)).catch(()=>{const el=document.createElement('textarea');el.value=id;document.body.appendChild(el);el.select();document.execCommand('copy');document.body.removeChild(el);showToast('✓ コピーしました: '+id);});
+}
+function navigateMember(dir){
+  const newIndex=_mlCurrentIndex+dir;
+  if(newIndex<0||newIndex>=_mlCurrentList.length)return;
+  _mlCurrentIndex=newIndex;openEditModal(_mlCurrentList[newIndex]);
+}
+function updateNavButtons(){
+  const prev=document.getElementById('prevMemberBtn'),next=document.getElementById('nextMemberBtn'),counter=document.getElementById('mlNavCounter');
+  if(prev)prev.style.opacity=_mlCurrentIndex<=0?'0.3':'1';
+  if(next)next.style.opacity=_mlCurrentIndex>=_mlCurrentList.length-1?'0.3':'1';
+  if(counter&&_mlCurrentList.length>0)counter.textContent=`${_mlCurrentIndex+1} / ${_mlCurrentList.length}`;
 }
 
-function closeEditModal() {
-  document.getElementById('editMemberModal').style.display = 'none';
-  editingMember = null;
+const AUTH_KEY='ac_auth',AUTH_PASS='1223';
+function checkAuth(){
+  const v=document.getElementById('authInput').value;
+  if(v===AUTH_PASS){sessionStorage.setItem(AUTH_KEY,'1');document.getElementById('authOverlay').style.display='none';}
+  else{document.getElementById('authErr').style.display='block';document.getElementById('authInput').value='';document.getElementById('authInput').focus();}
 }
+if(!sessionStorage.getItem(AUTH_KEY)){document.getElementById('authInput').focus();}
+else{document.getElementById('authOverlay').style.display='none';}
 
-async function saveMember() {
-  const name = document.getElementById('editName').value.trim();
-  const furigana = document.getElementById('editFurigana').value.trim();
-  if (!name || !furigana) { showToast('⚠ 氏名とよみがなは必須です', true); return; }
-
-  const rowIndex = parseInt(document.getElementById('editRowIndex').value);
-  if (!rowIndex) { showToast('⚠ 行番号が見つかりません', true); return; }
-
-  const btn = document.getElementById('editSaveBtn');
-  btn.disabled = true; btn.textContent = '保存中...';
-
-  try {
-    const res = await fetch(GAS_URL, { method: 'POST', body: JSON.stringify({
-      action: 'updateMember',
-      rowIndex,
-      name,
-      furigana,
-      gender:  document.getElementById('editGender').value,
-      grade:   document.getElementById('editGrade').value.trim(),
-      age:     document.getElementById('editAge').value.trim(),
-      school:  document.getElementById('editSchool').value.trim(),
-      nfcId:   document.getElementById('editNfcId').value.trim(),
-      course:  document.getElementById('editCourse').value,
-      parent:  document.getElementById('editParent').value.trim(),
-      email:   document.getElementById('editEmail').value.trim(),
-      phone:   document.getElementById('editPhone').value.trim(),
-      lineId:  document.getElementById('editLineId').value.trim(),
-    })});
-    const d = await res.json();
-    if (d.status === 'ok') {
-      showToast('✓ 更新しました');
-      closeEditModal();
-      await loadMembersFromGAS();
-      renderMlTab();
-    } else throw new Error(d.message || 'Error');
-  } catch(e) { showToast('⚠ 保存失敗: ' + e.message, true); }
-  btn.disabled = false; btn.textContent = '💾 保存';
-}
-
-async function addMemberSubmit() {
-  const name = document.getElementById('editName').value.trim();
-  const furigana = document.getElementById('editFurigana').value.trim();
-  if (!name || !furigana) { showToast('⚠ 氏名とよみがなは必須です', true); return; }
-
-  const btn = document.getElementById('editSaveBtn');
-  btn.disabled = true; btn.textContent = '追加中...';
-
-  try {
-    const res = await fetch(GAS_URL, { method: 'POST', body: JSON.stringify({
-      action: 'addMember',
-      name,
-      furigana,
-      gender:  document.getElementById('editGender').value,
-      grade:   document.getElementById('editGrade').value.trim(),
-      age:     document.getElementById('editAge').value.trim(),
-      school:  document.getElementById('editSchool').value.trim(),
-      nfcId:   document.getElementById('editNfcId').value.trim(),
-      course:  document.getElementById('editCourse').value,
-      parent:  document.getElementById('editParent').value.trim(),
-      email:   document.getElementById('editEmail').value.trim(),
-      phone:   document.getElementById('editPhone').value.trim(),
-      lineId:  document.getElementById('editLineId').value.trim(),
-    })});
-    const d = await res.json();
-    if (d.status === 'ok') {
-      showToast('✓ 新規メンバーを追加しました');
-      closeEditModal();
-      await loadMembersFromGAS();
-      renderMlTab();
-    } else throw new Error(d.message || 'Error');
-  } catch(e) { showToast('⚠ 追加失敗: ' + e.message, true); }
-  btn.disabled = false; btn.textContent = '💾 保存';
-}
-
-
-async function toggleHiddenMember() {
-  if (!editingMember) return;
-  const rowIndex = parseInt(document.getElementById('editRowIndex').value);
-  if (!rowIndex) return;
-  if (!confirm('このメンバーを非表示にしますか？\n（スプレッドシートのV列に「非表示」と書き込まれます。\n解除するにはスプレッドシートから直接削除してください）')) return;
-  try {
-    const res = await fetch(GAS_URL, { method: 'POST', body: JSON.stringify({
-      action: 'toggleHidden', rowIndex
-    })});
-    const d = await res.json();
-    if (d.status === 'ok') {
-      showToast(d.hidden ? '🚫 非表示にしました' : '✓ 表示に戻しました');
-      closeEditModal();
-      await loadMembersFromGAS();
-      renderMlTab();
-    } else throw new Error(d.message);
-  } catch(e) { showToast('⚠ 失敗: ' + e.message, true); }
-}
-
-
-function autoResizeTextarea(el) {
-  el.style.height = 'auto';
-  el.style.height = (el.scrollHeight) + 'px';
-}
-
-
-function copyNfcId(id) {
-  navigator.clipboard.writeText(id).then(() => {
-    showToast('✓ NFCカードID をコピーしました: ' + id);
-  }).catch(() => {
-    // fallback for older browsers
-    const el = document.createElement('textarea');
-    el.value = id;
-    document.body.appendChild(el);
-    el.select();
-    document.execCommand('copy');
-    document.body.removeChild(el);
-    showToast('✓ コピーしました: ' + id);
-  });
-}
-
-
-function navigateMember(dir) {
-  if (!_mlCurrentList.length) return;
-  const newIndex = _mlCurrentIndex + dir;
-  if (newIndex < 0 || newIndex >= _mlCurrentList.length) return;
-  _mlCurrentIndex = newIndex;
-  openEditModal(_mlCurrentList[newIndex]);
-}
-
-function updateNavButtons() {
-  const prev = document.getElementById('prevMemberBtn');
-  const next = document.getElementById('nextMemberBtn');
-  const counter = document.getElementById('mlNavCounter');
-  if (prev) prev.style.opacity = _mlCurrentIndex <= 0 ? '0.3' : '1';
-  if (next) next.style.opacity = _mlCurrentIndex >= _mlCurrentList.length - 1 ? '0.3' : '1';
-  if (counter && _mlCurrentList.length > 0) {
-    counter.textContent = `${_mlCurrentIndex + 1} / ${_mlCurrentList.length}`;
-  }
-}
-
-
-
-// ── AUTH ──
-const AUTH_KEY = 'ac_auth';
-const AUTH_PASS = '1223';
-
-function checkAuth() {
-  const v = document.getElementById('authInput').value;
-  if (v === AUTH_PASS) {
-    sessionStorage.setItem(AUTH_KEY, '1');
-    document.getElementById('authOverlay').style.display = 'none';
-  } else {
-    document.getElementById('authErr').style.display = 'block';
-    document.getElementById('authInput').value = '';
-    document.getElementById('authInput').focus();
-  }
-}
-
-// 認証チェック
-if (!sessionStorage.getItem(AUTH_KEY)) {
-  // オーバーレイを表示（すでにHTML内にある）
-  document.getElementById('authInput').focus();
-} else {
-  document.getElementById('authOverlay').style.display = 'none';
-}
-
+document.getElementById('regJoin').valueAsDate=new Date();
+renderTodayList();
+checkUrlParam();
+loadMembersFromGAS().then(()=>buildAiueoGrid());
+buildAiueoGrid();
+document.addEventListener('click',e=>{if(!e.target.closest('.search-wrap'))document.getElementById('searchResults').classList.remove('show');});
 </script>
 </body>
 </html>
