@@ -20,16 +20,10 @@
 *{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent;}
 body{font-family:'Noto Sans JP',sans-serif;background:var(--bg);color:var(--tx);min-height:100dvh;overflow-x:hidden;}
 
-/* HERO */
 .hero{position:relative;padding:calc(var(--st)+60px) 20px 32px;overflow:hidden;}
 .hero::before{content:'';position:absolute;inset:0;
   background:radial-gradient(ellipse 80% 60% at 50% 0%,rgba(0,229,255,0.12),transparent 70%);
   pointer-events:none;}
-.hero-back{position:absolute;top:calc(var(--st)+14px);left:16px;
-  background:rgba(255,255,255,0.06);border:1px solid var(--bd2);
-  border-radius:20px;padding:6px 14px;color:var(--tx2);font-size:.8rem;
-  text-decoration:none;backdrop-filter:blur(10px);z-index:10;}
-.hero-back:hover{color:var(--cyan);border-color:var(--cyan);}
 .avatar-wrap{display:flex;align-items:center;gap:18px;margin-bottom:16px;}
 .avatar{width:72px;height:72px;border-radius:50%;
   background:linear-gradient(135deg,var(--cyan),var(--pu));
@@ -37,9 +31,6 @@ body{font-family:'Noto Sans JP',sans-serif;background:var(--bg);color:var(--tx);
   font-family:'Oswald',sans-serif;font-size:2rem;font-weight:700;
   color:var(--bg);flex-shrink:0;position:relative;
   box-shadow:0 0 24px rgba(0,229,255,0.3);}
-.avatar::after{content:'';position:absolute;inset:-3px;border-radius:50%;
-  background:linear-gradient(135deg,var(--cyan),var(--pu));z-index:-1;opacity:.3;}
-.hero-info{}
 .hero-furi{font-size:.72rem;color:var(--tx3);letter-spacing:.04em;}
 .hero-name{font-family:'Oswald',sans-serif;font-size:1.7rem;font-weight:700;
   letter-spacing:.02em;line-height:1.1;margin:.2rem 0 .4rem;}
@@ -51,7 +42,6 @@ body{font-family:'Noto Sans JP',sans-serif;background:var(--bg);color:var(--tx);
 .badge-cont{background:rgba(29,209,161,.12);color:var(--tl);border:1px solid rgba(29,209,161,.25);}
 .badge-nfc{background:rgba(79,255,176,.1);color:#4fffb0;border:1px solid rgba(79,255,176,.2);}
 
-/* CONTACT BAR */
 .contact-bar{display:flex;gap:8px;padding:0 20px 20px;flex-wrap:wrap;}
 .contact-btn{display:flex;align-items:center;gap:6px;padding:9px 16px;
   background:var(--sur2);border:1px solid var(--bd2);border-radius:var(--rs);
@@ -61,7 +51,6 @@ body{font-family:'Noto Sans JP',sans-serif;background:var(--bg);color:var(--tx);
 .contact-btn.phone{border-color:rgba(29,209,161,.3);color:var(--tl);}
 .contact-btn.email{border-color:rgba(155,89,255,.3);color:var(--pu);}
 
-/* MAIN */
 .main{padding:0 16px calc(var(--sb)+32px);max-width:760px;margin:0 auto;}
 .section{margin-bottom:20px;}
 .sec-title{font-family:'Oswald',sans-serif;font-size:.72rem;font-weight:600;
@@ -70,7 +59,6 @@ body{font-family:'Noto Sans JP',sans-serif;background:var(--bg);color:var(--tx);
   display:flex;align-items:center;gap:8px;}
 .sec-title span{font-size:.9rem;}
 
-/* STATS ROW */
 .stats-row{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:14px;}
 .stat-card{background:var(--sur);border:1px solid var(--bd2);border-radius:var(--rs);
   padding:12px;text-align:center;}
@@ -79,7 +67,6 @@ body{font-family:'Noto Sans JP',sans-serif;background:var(--bg);color:var(--tx);
 .stat-val.gd{color:var(--gd);}.stat-val.tl{color:var(--tl);}
 .stat-lbl{font-size:.6rem;color:var(--tx3);margin-top:3px;text-transform:uppercase;letter-spacing:.05em;}
 
-/* CALENDAR */
 .cal-wrap{background:var(--sur);border:1px solid var(--bd2);border-radius:var(--r);overflow:hidden;margin-bottom:10px;}
 .cal-head{display:flex;justify-content:space-between;align-items:center;padding:10px 14px;
   background:var(--sur2);border-bottom:1px solid var(--bd);}
@@ -90,39 +77,31 @@ body{font-family:'Noto Sans JP',sans-serif;background:var(--bg);color:var(--tx);
 .cal-cell.att{background:rgba(0,229,255,.15);border-color:rgba(0,229,255,.35);}
 .cal-cell.paid{background:rgba(29,209,161,.15);border-color:rgba(29,209,161,.3);}
 .cal-cell.unpaid{background:rgba(255,71,87,.08);border-color:rgba(255,71,87,.25);}
-.cal-cell.noact{background:rgba(155,89,255,.1);border-color:rgba(155,89,255,.25);}
 .cal-cell.future{opacity:.3;}
 .cal-cell.now{outline:2px solid var(--gd);outline-offset:1px;}
 .cal-mo{font-family:'DM Mono',monospace;font-size:.58rem;color:var(--tx3);}
 .cal-mk{font-size:.75rem;}
 
-/* PAYMENT CALENDAR */
 .pay-cal-grid{display:grid;grid-template-columns:repeat(12,1fr);gap:3px;margin-bottom:8px;}
 .pay-cell{border-radius:5px;padding:5px 2px;text-align:center;border:1px solid var(--bd);transition:all .15s;}
 .pay-cell.paid{background:rgba(29,209,161,.15);border-color:rgba(29,209,161,.3);}
 .pay-cell.unpaid{background:rgba(255,71,87,.08);border-color:rgba(255,71,87,.25);}
-.pay-cell.noact{background:rgba(155,89,255,.1);border-color:rgba(155,89,255,.25);}
 .pay-cell.future{opacity:.3;}
 .pay-cell.now{outline:2px solid var(--gd);outline-offset:1px;}
 .pay-mo{font-size:.58rem;color:var(--tx3);display:block;font-family:'DM Mono',monospace;}
 .pay-mk{font-size:.72rem;display:block;margin-top:1px;}
 
-/* PERFORMANCE */
 .perf-item{background:var(--sur);border:1px solid var(--bd2);border-radius:var(--rs);
   padding:12px 14px;margin-bottom:8px;}
 .perf-ev{font-weight:700;font-size:.9rem;margin-bottom:3px;}
 .perf-meta{font-size:.72rem;color:var(--tx2);margin-bottom:6px;}
 .perf-stats{display:flex;gap:10px;flex-wrap:wrap;}
 .perf-stat{font-family:'DM Mono',monospace;font-size:.78rem;}
-.perf-stat.fast{color:var(--lime);}
-.perf-stat.slow{color:var(--or);}
-.perf-stat.avg{color:var(--tx2);}
+.perf-stat.fast{color:var(--lime);}.perf-stat.slow{color:var(--or);}.perf-stat.avg{color:var(--tx2);}
 
-/* TREND */
 .trend-wrap{background:var(--sur2);border-radius:var(--rs);padding:10px;margin-top:8px;}
 .trend-svg{width:100%;height:70px;overflow:visible;}
 
-/* INFO LIST */
 .info-list{background:var(--sur);border:1px solid var(--bd2);border-radius:var(--r);overflow:hidden;}
 .info-row{display:flex;align-items:center;padding:11px 14px;border-bottom:1px solid var(--bd);}
 .info-row:last-child{border-bottom:none;}
@@ -132,7 +111,6 @@ body{font-family:'Noto Sans JP',sans-serif;background:var(--bg);color:var(--tx);
 .info-val a{color:var(--cyan);text-decoration:none;}
 .info-val.mono{font-family:'DM Mono',monospace;font-size:.8rem;color:var(--tx2);}
 
-/* MEMO */
 .memo-box{background:var(--sur);border:1px solid var(--bd2);border-radius:var(--r);padding:14px;}
 .memo-textarea{width:100%;min-height:80px;background:var(--sur2);border:1px solid var(--bd2);
   border-radius:var(--rs);color:var(--tx);font-family:inherit;font-size:.88rem;
@@ -144,27 +122,21 @@ body{font-family:'Noto Sans JP',sans-serif;background:var(--bg);color:var(--tx);
   color:#fff;font-family:inherit;font-size:.82rem;font-weight:700;cursor:pointer;transition:all .2s;}
 .memo-save:hover{background:#b07fff;}
 
-/* LOADING */
 .ld{text-align:center;padding:60px 20px;color:var(--tx3);}
 .spin{width:32px;height:32px;border:2px solid var(--bd2);border-top-color:var(--cyan);
   border-radius:50%;animation:sp .7s linear infinite;margin:0 auto 12px;}
 @keyframes sp{to{transform:rotate(360deg);}}
 
-/* LEGEND */
 .legend{display:flex;gap:10px;flex-wrap:wrap;margin-bottom:8px;}
 .leg{display:flex;align-items:center;gap:4px;font-size:.65rem;color:var(--tx2);}
 .leg-dot{width:10px;height:10px;border-radius:3px;flex-shrink:0;}
 
-/* UNPAID ALERT */
 .unpaid-alert{background:rgba(255,71,87,.08);border:1px solid rgba(255,71,87,.25);
   border-radius:var(--rs);padding:10px 14px;margin-top:8px;}
 .unpaid-title{font-size:.72rem;font-weight:700;color:var(--rd);margin-bottom:4px;}
 .unpaid-months{font-family:'DM Mono',monospace;font-size:.72rem;color:var(--tx2);line-height:1.8;}
 
-/* ATTENDANCE TODAY BTN */
-.att-today-bar{
-  padding:0 20px 16px;
-}
+.att-today-bar{padding:0 20px 16px;}
 .att-today-btn{
   width:100%;padding:13px;border:none;border-radius:var(--rs);
   background:var(--tl);color:var(--bg);
@@ -176,49 +148,6 @@ body{font-family:'Noto Sans JP',sans-serif;background:var(--bg);color:var(--tx);
 .att-today-btn:disabled{background:var(--tx3);color:var(--sur);cursor:not-allowed;box-shadow:none;}
 .att-today-btn.done{background:rgba(29,209,161,.15);color:var(--tl);border:1px solid rgba(29,209,161,.3);box-shadow:none;cursor:default;}
 
-/* FACE PHOTO */
-.face-section{
-  background:var(--sur);border:1px solid var(--bd2);border-radius:var(--r);
-  padding:14px;margin-bottom:10px;
-}
-.face-top{display:flex;align-items:flex-start;gap:16px;margin-bottom:12px;}
-.face-img{
-  width:90px;height:120px;border-radius:8px;object-fit:cover;
-  border:2px solid var(--cyan);display:none;flex-shrink:0;
-  box-shadow:0 0 14px rgba(0,229,255,.25);
-}
-.face-img.show{display:block;}
-.face-none{
-  width:90px;height:120px;border-radius:8px;flex-shrink:0;
-  background:var(--sur2);border:2px dashed var(--bd2);
-  display:flex;flex-direction:column;align-items:center;justify-content:center;
-  color:var(--tx3);font-size:2rem;gap:4px;
-}
-.face-none small{font-size:.58rem;color:var(--tx3);}
-.face-info{flex:1;padding-top:2px;}
-.face-status{font-size:.82rem;font-weight:700;color:var(--tx2);margin-bottom:4px;}
-.face-date{font-size:.65rem;color:var(--tx3);margin-bottom:10px;}
-.face-cam-wrap{
-  position:relative;border-radius:var(--rs);overflow:hidden;
-  background:#000;border:1px solid var(--bd2);margin-bottom:8px;
-  display:none;
-}
-.face-cam-wrap.show{display:block;}
-.face-video{width:100%;max-height:55dvh;object-fit:contain;display:block;}
-.face-flash{position:absolute;inset:0;background:white;opacity:0;pointer-events:none;transition:opacity .06s;}
-.face-flash.go{opacity:.7;}
-.face-btns{display:flex;gap:8px;flex-wrap:wrap;}
-.face-btn{
-  flex:1;padding:9px 12px;border:1px solid var(--bd2);border-radius:var(--rs);
-  background:var(--sur2);color:var(--tx2);font-family:inherit;font-size:.78rem;
-  font-weight:600;cursor:pointer;transition:all .2s;
-}
-.face-btn:hover{border-color:var(--cyan);color:var(--cyan);}
-.face-btn.shoot{background:var(--tl);border-color:var(--tl);color:var(--bg);}
-.face-btn.shoot:hover{background:#3df5c0;}
-.face-btn:disabled{opacity:.35;cursor:not-allowed;}
-
-/* TOAST */
 .toast{position:fixed;bottom:calc(var(--sb)+24px);left:50%;
   transform:translateX(-50%) translateY(20px);
   background:var(--cyan);color:var(--bg);padding:10px 22px;border-radius:20px;
@@ -235,7 +164,6 @@ body{font-family:'Noto Sans JP',sans-serif;background:var(--bg);color:var(--tx);
   .pay-cal-grid{grid-template-columns:repeat(12,1fr);}
 }
 
-/* ── AUTH OVERLAY ── */
 #authOverlay{
   position:fixed;inset:0;background:#070810;z-index:9999;
   display:flex;align-items:center;justify-content:center;padding:20px;
@@ -261,7 +189,6 @@ body{font-family:'Noto Sans JP',sans-serif;background:var(--bg);color:var(--tx);
 }
 .auth-btn:hover{background:#33eeff;}
 .auth-err{color:#ff4757;font-size:.8rem;margin-top:8px;display:none;}
-
 </style>
 </head>
 <body>
@@ -272,14 +199,13 @@ body{font-family:'Noto Sans JP',sans-serif;background:var(--bg);color:var(--tx);
     <div class="auth-logo">🔐</div>
     <div class="auth-title">Athletic Club</div>
     <div class="auth-sub">管理者パスワードを入力してください</div>
-    <input class="auth-input" type="password" id="authInput" 
+    <input class="auth-input" type="password" id="authInput"
       placeholder="••••" maxlength="20"
       onkeydown="if(event.key==='Enter')checkAuth()">
     <button class="auth-btn" onclick="checkAuth()">ログイン</button>
     <div class="auth-err" id="authErr">パスワードが違います</div>
   </div>
 </div>
-
 
 <div id="loadingScreen" class="ld">
   <div class="spin"></div>
@@ -288,12 +214,11 @@ body{font-family:'Noto Sans JP',sans-serif;background:var(--bg);color:var(--tx);
 
 <div id="mainContent" style="display:none;">
 
-<!-- HERO -->
 <div class="hero">
   <div style="position:absolute;top:calc(var(--st)+14px);left:16px;display:flex;gap:8px;z-index:10;">
-  <a href="index.html" style="background:rgba(255,255,255,0.06);border:1px solid var(--bd2);border-radius:20px;padding:6px 12px;color:var(--tx2);font-size:.75rem;backdrop-filter:blur(10px);text-decoration:none;">🏠 HOME</a>
-  <a href="attendance.html" style="background:rgba(255,255,255,0.06);border:1px solid var(--bd2);border-radius:20px;padding:6px 12px;color:var(--tx2);font-size:.75rem;backdrop-filter:blur(10px);text-decoration:none;">← 一覧へ</a>
-</div>
+    <a href="index.html" style="background:rgba(255,255,255,0.06);border:1px solid var(--bd2);border-radius:20px;padding:6px 12px;color:var(--tx2);font-size:.75rem;backdrop-filter:blur(10px);text-decoration:none;">🏠 HOME</a>
+    <a href="attendance.html" style="background:rgba(255,255,255,0.06);border:1px solid var(--bd2);border-radius:20px;padding:6px 12px;color:var(--tx2);font-size:.75rem;backdrop-filter:blur(10px);text-decoration:none;">← 一覧へ</a>
+  </div>
   <div class="avatar-wrap">
     <div class="avatar" id="hAvatar">?</div>
     <div class="hero-info">
@@ -304,25 +229,21 @@ body{font-family:'Noto Sans JP',sans-serif;background:var(--bg);color:var(--tx);
   </div>
 </div>
 
-<!-- 本日の出席登録 -->
 <div class="att-today-bar">
   <button class="att-today-btn" id="attTodayBtn" onclick="registerToday()">
     <span>✓</span> 本日の出席をつける
   </button>
 </div>
 
-<!-- CONTACT -->
 <div class="contact-bar" id="contactBar"></div>
 
 <div class="main">
 
-  <!-- 基本情報 -->
   <div class="section">
     <div class="sec-title"><span>👤</span> 基本情報</div>
     <div class="info-list" id="infoList"></div>
   </div>
 
-  <!-- 出席 -->
   <div class="section">
     <div class="sec-title"><span>📅</span> 出席状況</div>
     <div class="stats-row" id="attStats"></div>
@@ -333,20 +254,17 @@ body{font-family:'Noto Sans JP',sans-serif;background:var(--bg);color:var(--tx);
     <div id="attCalendar"></div>
   </div>
 
-  <!-- 支払い -->
   <div class="section">
     <div class="sec-title"><span>💴</span> 支払い状況</div>
     <div class="stats-row" id="payStats"></div>
     <div class="legend">
       <div class="leg"><div class="leg-dot" style="background:rgba(29,209,161,.4);"></div>支払済 ○</div>
       <div class="leg"><div class="leg-dot" style="background:rgba(255,71,87,.3);"></div>未払い ✗</div>
-      <div class="leg"><div class="leg-dot" style="background:rgba(155,89,255,.3);"></div>活動なし △</div>
     </div>
     <div id="payCalendar"></div>
     <div id="unpaidAlert"></div>
   </div>
 
-  <!-- 計測 -->
   <div class="section">
     <div class="sec-title"><span>⚡</span> 計測記録</div>
     <div class="stats-row" id="perfStats"></div>
@@ -354,71 +272,6 @@ body{font-family:'Noto Sans JP',sans-serif;background:var(--bg);color:var(--tx);
     <div id="perfHistory"></div>
   </div>
 
-  <!-- 顔写真 -->
-  <div class="section" id="faceSection">
-    <div class="sec-title"><span>📷</span> 顔写真</div>
-    <div class="face-section">
-      <div class="face-top">
-        <img class="face-img" id="faceImg" src="" alt="顔写真">
-        <div class="face-none" id="faceNone">👤<small>未登録</small></div>
-        <div class="face-info">
-          <div class="face-status" id="faceStatus">未登録</div>
-          <div class="face-date" id="faceDate">カメラで撮影して登録してください</div>
-          <div class="face-btns" style="margin-top:8px;">
-            <button class="face-btn" id="faceCamBtn" onclick="toggleFaceCam()">📷 撮影して登録</button>
-          </div>
-        </div>
-      </div>
-      <div class="face-cam-wrap" id="faceCamWrap">
-        <video class="face-video" id="faceVideo" autoplay playsinline muted></video>
-        <div class="face-flash" id="faceFlash"></div>
-      </div>
-      <div class="face-btns" id="faceShootBtns" style="display:none;">
-        <button class="face-btn shoot" id="faceShootBtn" onclick="doFaceShoot()">📸 シャッター</button>
-        <button class="face-btn" onclick="cancelFaceCam()">キャンセル</button>
-      </div>
-    </div>
-  </div>
-
-  <!-- ビブス管理 -->
-  <div class="section" id="bibSection">
-    <div class="sec-title"><span>🎽</span> ビブス管理</div>
-    <div class="bib-section">
-      <div class="bib-status">
-        <div class="bib-badge none" id="bibBadge">🎽 未貸出</div>
-      </div>
-      <div class="bib-form">
-        <div>
-          <div class="bib-lbl">色</div>
-          <select class="bib-sel" id="bibColor">
-            <option value="">— 選択 —</option>
-            <option value="赤">🔴 赤</option>
-            <option value="青">🔵 青</option>
-            <option value="黄">🟡 黄</option>
-            <option value="緑">🟢 緑</option>
-            <option value="白">⚪ 白</option>
-            <option value="黒">⚫ 黒</option>
-            <option value="橙">🟠 橙</option>
-            <option value="紫">🟣 紫</option>
-            <option value="ピンク">🩷 ピンク</option>
-            <option value="水色">🩵 水色</option>
-          </select>
-        </div>
-        <div>
-          <div class="bib-lbl">番号</div>
-          <select class="bib-sel" id="bibNumber">
-            <option value="">— 選択 —</option>
-            ${Array.from({length:30},(_,i)=>`<option value="${i+1}">${i+1}</option>`).join('')}
-          </select>
-        </div>
-        <button class="bib-save" onclick="saveBib()">貸出登録</button>
-      </div>
-      <button class="bib-return" id="bibReturnBtn" style="display:none;" onclick="returnBib()">✓ 返却済みにする</button>
-      <div class="bib-history" id="bibHistory"></div>
-    </div>
-  </div>
-
-  <!-- メモ -->
   <div class="section">
     <div class="sec-title"><span>📝</span> メモ</div>
     <div class="memo-box">
@@ -442,42 +295,72 @@ let ATTENDANCE = [];
 let PAYMENTS = [];
 let SESSIONS = [];
 
+// JSONP fetch（CORSリダイレクト回避）
+function jsonpFetch(url) {
+  return new Promise((resolve, reject) => {
+    const cbName = '_cb_' + Date.now() + '_' + Math.random().toString(36).slice(2,7);
+    const script = document.createElement('script');
+    const timer = setTimeout(() => {
+      delete window[cbName]; script.remove();
+      reject(new Error('JSONP timeout'));
+    }, 12000);
+    window[cbName] = (data) => {
+      clearTimeout(timer); delete window[cbName]; script.remove();
+      resolve(data);
+    };
+    script.src = url + (url.includes('?') ? '&' : '?') + 'callback=' + cbName;
+    script.onerror = () => {
+      clearTimeout(timer); delete window[cbName]; script.remove();
+      reject(new Error('Script load error'));
+    };
+    document.head.appendChild(script);
+  });
+}
+
 // ── INIT ──
 async function init() {
   const id = new URLSearchParams(location.search).get('id');
-  if (!id) { document.getElementById('loadingScreen').innerHTML = '<div style="color:var(--rd);padding:40px;">IDが指定されていません</div>'; return; }
+  if (!id) {
+    document.getElementById('loadingScreen').innerHTML =
+      '<div style="color:var(--rd);padding:40px;">IDが指定されていません</div>';
+    return;
+  }
 
   try {
-    // 並列でデータ取得
-    const [mRes, aRes, pRes, sRes] = await Promise.all([
-      fetch(GAS + '?action=getMembers'),
-      fetch(GAS + '?action=getAttendance&date=all').catch(() => ({ json: () => ({}) })),
-      fetch(GAS + '?action=getAllPayments').catch(() => ({ json: () => ({}) })),
-      fetch(GAS + '?action=getSessions').catch(() => ({ json: () => ({}) })),
+    const [mData, aData, pData, sData] = await Promise.all([
+      jsonpFetch(GAS + '?action=getMembers'),
+      jsonpFetch(GAS + '?action=getAttendance&date=all').catch(() => ({})),
+      jsonpFetch(GAS + '?action=getAllPayments').catch(() => ({})),
+      jsonpFetch(GAS + '?action=getSessions').catch(() => ({})),
     ]);
-    const [mData, aData, pData, sData] = await Promise.all([mRes.json(), aRes.json(), pRes.json(), sRes.json()]);
 
     MEMBER = (mData.members || []).find(m => m.id === id || m.nfcId === id);
-    if (!MEMBER) { document.getElementById('loadingScreen').innerHTML = '<div style="color:var(--rd);padding:40px;">メンバーが見つかりません</div>'; return; }
+    if (!MEMBER) {
+      document.getElementById('loadingScreen').innerHTML =
+        '<div style="color:var(--rd);padding:40px;">メンバーが見つかりません</div>';
+      return;
+    }
 
-    ATTENDANCE = (aData.attendance || []).filter(a => a.memberId === id || a.nfcId === id);
-    PAYMENTS = (pData.payments || []).filter(p => p.memberId === id || p.nfcId === id);
+    ATTENDANCE = (aData.attendance || []).filter(a =>
+      a.memberId === id || a.nfcId === id
+    );
+    PAYMENTS = (pData.payments || []).filter(p =>
+      p.memberId === id || p.nfcId === id
+    );
     SESSIONS = (sData.sessions || []);
 
     renderAll();
     loadMemo(id);
-    loadBib();
-    renderFacePhoto();
     checkTodayAttendance();
 
     document.getElementById('loadingScreen').style.display = 'none';
     document.getElementById('mainContent').style.display = '';
   } catch(e) {
-    document.getElementById('loadingScreen').innerHTML = `<div style="color:var(--rd);padding:40px;">読み込みに失敗しました<br><small>${e.message}</small></div>`;
+    document.getElementById('loadingScreen').innerHTML =
+      `<div style="color:var(--rd);padding:40px;">読み込みに失敗しました<br><small>${e.message}</small></div>`;
   }
 }
 
-// ── RENDER ALL ──
 function renderAll() {
   renderHero();
   renderContact();
@@ -490,28 +373,24 @@ function renderAll() {
 // ── HERO ──
 function renderHero() {
   const m = MEMBER;
-  // アバター：顔写真があれば表示
-  const av = document.getElementById('hAvatar');
-  if (m.facePhoto) {
-    av.innerHTML = `<img src="${m.facePhoto}" style="width:100%;height:100%;object-fit:cover;border-radius:50%;">`;
-  } else {
-    av.textContent = (m.name || '?')[0];
-  }
+  document.getElementById('hAvatar').textContent = (m.name || '?')[0];
   document.getElementById('hFuri').textContent = m.furigana || '—';
   document.getElementById('hName').textContent = m.name || '—';
 
   const courseLabel = m.course
     ? (m.course.includes('1回') ? '月1回コース' : m.course.includes('2回') ? '月2回コース' : m.course)
     : 'コース未設定';
-  const regLabel = m.isFirstTime ? '初めての登録' : (m.regType && m.regType.includes('継続') ? '継続' : '');
+  const regLabel = m.isFirstTime ? '初めての登録'
+    : (m.regType && m.regType.includes('継続') ? '継続' : '');
 
-  const badges = [
-    m.grade ? `<span class="badge badge-grade">${m.grade}</span>` : '',
-    m.course ? `<span class="badge badge-course">${courseLabel}</span>` : '',
-    m.isFirstTime ? `<span class="badge badge-first">★ 初回登録</span>` : (regLabel ? `<span class="badge badge-cont">${regLabel}</span>` : ''),
-    m.nfcId ? `<span class="badge badge-nfc">📡 NFC登録済</span>` : '',
+  document.getElementById('hBadges').innerHTML = [
+    m.grade    ? `<span class="badge badge-grade">${m.grade}</span>` : '',
+    m.course   ? `<span class="badge badge-course">${courseLabel}</span>` : '',
+    m.isFirstTime
+      ? `<span class="badge badge-first">★ 初回登録</span>`
+      : (regLabel ? `<span class="badge badge-cont">${regLabel}</span>` : ''),
+    m.nfcId    ? `<span class="badge badge-nfc">📡 NFC登録済</span>` : '',
   ].filter(Boolean).join('');
-  document.getElementById('hBadges').innerHTML = badges;
 }
 
 // ── CONTACT ──
@@ -527,31 +406,32 @@ function renderContact() {
 function renderInfo() {
   const m = MEMBER;
   const rows = [
-    ['学年', m.grade || '—'],
-    ['年齢', m.age ? m.age + '歳' : '—'],
-    ['性別', m.gender || '—'],
+    ['学年',   m.grade  || '—'],
+    ['年齢',   m.age    ? m.age + '歳' : '—'],
+    ['性別',   m.gender || '—'],
     ['小学校', m.school || '—'],
     ['保護者', m.parent || '—'],
-    ['NFC ID', m.nfcId ? `<span class="mono">${m.nfcId}</span>` : '未登録'],
+    ['NFC ID', m.nfcId  ? `<span class="mono">${m.nfcId}</span>` : '未登録'],
   ];
-  document.getElementById('infoList').innerHTML = rows.map(([l, v]) =>
+  document.getElementById('infoList').innerHTML = rows.map(([l,v]) =>
     `<div class="info-row"><div class="info-lbl">${l}</div><div class="info-val">${v}</div></div>`
   ).join('');
 }
 
 // ── ATTENDANCE ──
 function renderAttendance() {
-  const attDates = new Set(ATTENDANCE.map(a => a.date ? a.date.slice(0,7).replace(/-/g,'/') : '').filter(Boolean));
-  const total = ATTENDANCE.length;
-  const lastAtt = ATTENDANCE.length ? ATTENDANCE.sort((a,b) => (b.date||'').localeCompare(a.date||''))[0].date : null;
+  const attDates = new Set(
+    ATTENDANCE.map(a => a.date ? a.date.slice(0,7).replace(/-/g,'/') : '').filter(Boolean)
+  );
+  const total  = ATTENDANCE.length;
+  const sorted = [...ATTENDANCE].sort((a,b) => (b.date||'').localeCompare(a.date||''));
+  const lastAtt = sorted.length ? sorted[0].date : null;
 
-  // Stats
   document.getElementById('attStats').innerHTML = `
     <div class="stat-card"><div class="stat-val cy">${total}</div><div class="stat-lbl">参加回数</div></div>
     <div class="stat-card"><div class="stat-val lm">${lastAtt ? lastAtt.slice(5,10) : '—'}</div><div class="stat-lbl">最終参加</div></div>
     <div class="stat-card"><div class="stat-val gd">${attDates.size}</div><div class="stat-lbl">参加月数</div></div>`;
 
-  // Calendar (fiscal year)
   const now = new Date();
   const nowKey = `${now.getFullYear()}/${String(now.getMonth()+1).padStart(2,'0')}`;
   const fiscalEndYear = now.getMonth() >= 3 ? now.getFullYear() + 1 : now.getFullYear();
@@ -571,8 +451,8 @@ function renderAttendance() {
         ${months.map(key => {
           const mo = parseInt(key.split('/')[1]);
           const isFuture = key > nowKey;
-          const isNow = key === nowKey;
-          const hasAtt = attDates.has(key);
+          const isNow    = key === nowKey;
+          const hasAtt   = attDates.has(key);
           let cls = isFuture ? 'future' : hasAtt ? 'att' : '';
           if (isNow) cls += ' now';
           return `<div class="cal-cell ${cls}">
@@ -586,24 +466,22 @@ function renderAttendance() {
 
 // ── PAYMENTS ──
 function renderPayments() {
-  // 支払済月を収集
   const paidMonths = new Set();
   PAYMENTS.forEach(p => {
     if (!p.months) return;
-    const months = Array.isArray(p.months) ? p.months : String(p.months).split(',').filter(Boolean);
+    const months = Array.isArray(p.months)
+      ? p.months
+      : String(p.months).split(',').filter(Boolean);
     months.forEach(m => paidMonths.add(m.trim()));
   });
 
-  const totalPaid = paidMonths.size;
-  const fee = MEMBER.course && MEMBER.course.includes('1回') ? 1500 : 2400;
-  const totalAmt = PAYMENTS.reduce((s, p) => s + (parseInt(p.amount) || 0), 0);
+  const totalAmt = PAYMENTS.reduce((s,p) => s + (parseInt(p.amount)||0), 0);
 
   document.getElementById('payStats').innerHTML = `
-    <div class="stat-card"><div class="stat-val tl">${totalPaid}</div><div class="stat-lbl">支払済月数</div></div>
+    <div class="stat-card"><div class="stat-val tl">${paidMonths.size}</div><div class="stat-lbl">支払済月数</div></div>
     <div class="stat-card"><div class="stat-val cy">¥${totalAmt.toLocaleString()}</div><div class="stat-lbl">累計支払額</div></div>
     <div class="stat-card"><div class="stat-val gd">${PAYMENTS.length}</div><div class="stat-lbl">支払回数</div></div>`;
 
-  // 年度カレンダー
   const now = new Date();
   const nowKey = `${now.getFullYear()}/${String(now.getMonth()+1).padStart(2,'0')}`;
   const fiscalEndYear = now.getMonth() >= 3 ? now.getFullYear() + 1 : now.getFullYear();
@@ -620,12 +498,12 @@ function renderPayments() {
   const cells = months.map(key => {
     const mo = parseInt(key.split('/')[1]);
     const isFuture = key > nowKey;
-    const isNow = key === nowKey;
-    const isPaid = paidMonths.has(key);
+    const isNow    = key === nowKey;
+    const isPaid   = paidMonths.has(key);
     let cls = 'future', mk = '·';
     if (!isFuture) {
       cls = isPaid ? 'paid' : 'unpaid';
-      mk = isPaid ? '○' : '✗';
+      mk  = isPaid ? '○' : '✗';
       if (!isPaid) unpaid.push(key);
     }
     if (isNow) cls += ' now';
@@ -655,7 +533,8 @@ function renderPayments() {
 function renderPerformance() {
   const memberId = MEMBER.id || MEMBER.nfcId;
   const entries = SESSIONS.flatMap(s =>
-    (s.entries || []).filter(e => e.memberId === memberId)
+    (s.entries || [])
+      .filter(e => e.memberId === memberId)
       .map(e => ({ ...e, date: s.date, eventName: s.eventName }))
   ).sort((a,b) => (a.date||'').localeCompare(b.date||''));
 
@@ -669,10 +548,14 @@ function renderPerformance() {
     return;
   }
 
-  const times = entries.map(e => parseFloat(e.time));
-  const best = Math.min(...times);
-  const avgRel = Math.round(entries.reduce((s,e) => s + (parseFloat(e.relative)||0), 0) / entries.length);
-  const improve = times.length > 1 ? ((times[0]-times[times.length-1])/times[0]*100).toFixed(1) : null;
+  const times  = entries.map(e => parseFloat(e.time));
+  const best   = Math.min(...times);
+  const avgRel = Math.round(
+    entries.reduce((s,e) => s + (parseFloat(e.relative)||0), 0) / entries.length
+  );
+  const improve = times.length > 1
+    ? ((times[0]-times[times.length-1])/times[0]*100).toFixed(1)
+    : null;
 
   document.getElementById('perfStats').innerHTML = `
     <div class="stat-card"><div class="stat-val cy">${entries.length}</div><div class="stat-lbl">参加回数</div></div>
@@ -680,13 +563,12 @@ function renderPerformance() {
     <div class="stat-card"><div class="stat-val cy">${avgRel}</div><div class="stat-lbl">平均相対値</div></div>
     ${improve ? `<div class="stat-card"><div class="stat-val ${parseFloat(improve)>0?'tl':'or'}">${parseFloat(improve)>0?'▲':'▼'}${Math.abs(improve)}%</div><div class="stat-lbl">改善率</div></div>` : ''}`;
 
-  // Trend SVG
   if (entries.length >= 2) {
     const W=600,H=60,P=6;
     const mn=Math.min(...times),mx=Math.max(...times),rng=mx-mn||1;
     const pts=entries.map((e,i)=>({
-      x:P+(i/(entries.length-1))*(W-P*2),
-      y:P+((parseFloat(e.time)-mn)/rng)*(H-P*2)
+      x: P+(i/(entries.length-1))*(W-P*2),
+      y: P+((parseFloat(e.time)-mn)/rng)*(H-P*2)
     }));
     const ld=pts.map((p,i)=>`${i===0?'M':'L'}${p.x},${p.y}`).join(' ');
     document.getElementById('perfTrend').innerHTML = `
@@ -706,10 +588,9 @@ function renderPerformance() {
       </div>`;
   }
 
-  // History
   document.getElementById('perfHistory').innerHTML = [...entries].reverse().map(e => {
     const rel = parseFloat(e.relative||0);
-    const rc = rel<=25?'fast':rel>=75?'slow':'avg';
+    const rc  = rel<=25?'fast':rel>=75?'slow':'avg';
     return `<div class="perf-item">
       <div class="perf-ev">${e.eventName||'—'}</div>
       <div class="perf-meta">${e.date||'—'}</div>
@@ -730,115 +611,18 @@ function loadMemo(id) {
 
 function saveMemo() {
   const id = new URLSearchParams(location.search).get('id');
-  const val = document.getElementById('memoArea').value;
-  localStorage.setItem('memo_' + id, val);
+  localStorage.setItem('memo_' + id, document.getElementById('memoArea').value);
   showToast('✓ メモを保存しました');
 }
 
-function showToast(msg, err=false) {
-  const t = document.getElementById('toast');
-  t.textContent = msg;
-  t.style.background = err ? 'var(--rd)' : 'var(--cyan)';
-  t.style.color = err ? '#fff' : 'var(--bg)';
-  t.classList.add('show');
-  setTimeout(() => t.classList.remove('show'), 3000);
-}
-
-
-// ── BIBS ──
-const BIB_COLORS = {'赤':'#e74c3c','青':'#3498db','黄':'#f1c40f','緑':'#2ecc71',
-  '白':'#ecf0f1','黒':'#2c3e50','橙':'#e67e22','紫':'#9b59b6','ピンク':'#ff6eb4','水色':'#5dade2'};
-
-let BIB_DATA = null; // { color, number, lentDate, history:[] }
-
-async function loadBib() {
-  try {
-    const d = await fetch(GAS + '?action=getBib&memberId=' + encodeURIComponent(MEMBER.id)).then(r=>r.json());
-    if (d.status === 'ok') { BIB_DATA = d.bib || null; renderBib(); }
-  } catch(e) { renderBib(); }
-}
-
-function renderBib() {
-  const badge = document.getElementById('bibBadge');
-  const returnBtn = document.getElementById('bibReturnBtn');
-  const hist = document.getElementById('bibHistory');
-
-  if (BIB_DATA && BIB_DATA.color && BIB_DATA.number && !BIB_DATA.returned) {
-    const dot = BIB_COLORS[BIB_DATA.color] || '#888';
-    badge.className = 'bib-badge active';
-    badge.innerHTML = `<div class="bib-color-dot" style="background:${dot};"></div>🎽 ${BIB_DATA.color} #${BIB_DATA.number} 貸出中`;
-    document.getElementById('bibColor').value = BIB_DATA.color;
-    document.getElementById('bibNumber').value = BIB_DATA.number;
-    returnBtn.style.display = '';
-  } else {
-    badge.className = 'bib-badge none';
-    badge.textContent = '🎽 未貸出';
-    returnBtn.style.display = 'none';
-  }
-
-  // 履歴
-  const history = BIB_DATA?.history || [];
-  if (history.length) {
-    hist.innerHTML = '<div style="margin-bottom:6px;font-size:.65rem;color:var(--tx3);letter-spacing:.05em;text-transform:uppercase;">貸出履歴</div>' +
-      history.slice(0,5).map(h => `<div class="bib-hist-row">
-        <span>${h.color} #${h.number}</span>
-        <span>${h.lentDate} → ${h.returnDate || '貸出中'}</span>
-      </div>`).join('');
-  } else {
-    hist.innerHTML = '';
-  }
-}
-
-async function saveBib() {
-  const color = document.getElementById('bibColor').value;
-  const number = document.getElementById('bibNumber').value;
-  if (!color || !number) { showToast('色と番号を選択してください', true); return; }
-  const today = new Date().toISOString().slice(0,10);
-  try {
-    const d = await fetch(GAS, { method:'POST', body: JSON.stringify({
-      action:'saveBib', memberId:MEMBER.id, memberName:MEMBER.name,
-      color, number, lentDate:today
-    })}).then(r=>r.json());
-    if (d.status === 'ok') {
-      BIB_DATA = { color, number, lentDate:today, history: BIB_DATA?.history || [] };
-      if (!BIB_DATA.history.find(h=>h.color===color&&h.number==number&&!h.returnDate)) {
-        BIB_DATA.history.unshift({ color, number, lentDate:today, returnDate:null });
-      }
-      renderBib(); showToast('ビブスを登録しました');
-    }
-  } catch(e) { showToast('保存に失敗しました', true); }
-}
-
-async function returnBib() {
-  if (!confirm('ビブスを返却済みにしますか？')) return;
-  const today = new Date().toISOString().slice(0,10);
-  try {
-    const d = await fetch(GAS, { method:'POST', body: JSON.stringify({
-      action:'returnBib', memberId:MEMBER.id, returnDate:today
-    })}).then(r=>r.json());
-    if (d.status === 'ok') {
-      if (BIB_DATA?.history?.[0]) BIB_DATA.history[0].returnDate = today;
-      BIB_DATA = { ...BIB_DATA, returned:true };
-      renderBib(); showToast('返却を記録しました');
-    }
-  } catch(e) { showToast('保存に失敗しました', true); }
-}
-
 // ── 本日の出席登録 ──
-function todayStr() {
-  const d = new Date();
-  return `${d.getFullYear()}/${String(d.getMonth()+1).padStart(2,'0')}/${String(d.getDate()).padStart(2,'0')}`;
-}
-
 function checkTodayAttendance() {
   const now = new Date();
   const jst = new Date(now.getTime() + 9 * 60 * 60 * 1000);
-  const todayISO = jst.toISOString().slice(0, 10); // YYYY-MM-DD
+  const todayISO = jst.toISOString().slice(0,10);
   const btn = document.getElementById('attTodayBtn');
   const alreadyIn = ATTENDANCE.some(a => {
-    const d = a.date instanceof Date
-      ? a.date.toISOString().slice(0,10)
-      : String(a.date||'').slice(0,10).replace(/\//g,'-');
+    const d = String(a.date||'').slice(0,10).replace(/\//g,'-');
     return d === todayISO;
   });
   if (alreadyIn) {
@@ -848,42 +632,23 @@ function checkTodayAttendance() {
   }
 }
 
-// JSONP fetch（GASのCORSリダイレクト問題を回避）
-function jsonpFetch(url) {
-  return new Promise((resolve, reject) => {
-    const cbName = '_cb_' + Date.now() + '_' + Math.random().toString(36).slice(2,7);
-    const script = document.createElement('script');
-    const timer = setTimeout(() => {
-      delete window[cbName]; script.remove();
-      reject(new Error('JSONP timeout'));
-    }, 12000);
-    window[cbName] = (data) => {
-      clearTimeout(timer); delete window[cbName]; script.remove();
-      resolve(data);
-    };
-    script.src = url + (url.includes('?') ? '&' : '?') + 'callback=' + cbName;
-    script.onerror = () => { clearTimeout(timer); delete window[cbName]; script.remove(); reject(new Error('Script load error')); };
-    document.head.appendChild(script);
-  });
-}
-
 async function registerToday() {
   const btn = document.getElementById('attTodayBtn');
   btn.disabled = true;
   btn.textContent = '登録中...';
   const now = new Date();
   const jst = new Date(now.getTime() + 9 * 60 * 60 * 1000);
-  const todayISO = jst.toISOString().slice(0, 10); // JST YYYY-MM-DD
+  const todayISO = jst.toISOString().slice(0,10);
   const time = `${String(now.getHours()).padStart(2,'0')}:${String(now.getMinutes()).padStart(2,'0')}`;
   try {
     const url = GAS
       + '?action=recordAttendance'
-      + '&memberId=' + encodeURIComponent(MEMBER.id)
+      + '&memberId='   + encodeURIComponent(MEMBER.id)
       + '&memberName=' + encodeURIComponent(MEMBER.name)
-      + '&nfcId=' + encodeURIComponent(MEMBER.nfcId || MEMBER.id)
-      + '&class=' + encodeURIComponent('通常')
-      + '&date=' + todayISO
-      + '&time=' + encodeURIComponent(time);
+      + '&nfcId='      + encodeURIComponent(MEMBER.nfcId || MEMBER.id)
+      + '&class='      + encodeURIComponent('通常')
+      + '&date='       + todayISO
+      + '&time='       + encodeURIComponent(time);
     const d = await jsonpFetch(url);
     if (d.status === 'ok' || d.status === 'success') {
       ATTENDANCE.push({ memberId: MEMBER.id, date: todayISO, time });
@@ -908,144 +673,18 @@ async function registerToday() {
   }
 }
 
-// ── 顔写真 ──
-let faceCamStream = null;
-
-function renderFacePhoto() {
-  const m = MEMBER;
-  if (m.facePhoto) {
-    document.getElementById('faceImg').src = m.facePhoto;
-    document.getElementById('faceImg').classList.add('show');
-    document.getElementById('faceNone').style.display = 'none';
-    document.getElementById('faceStatus').textContent = '登録済み';
-    document.getElementById('faceDate').textContent = m.facePhotoDate ? '撮影日: ' + m.facePhotoDate : '';
-    document.getElementById('faceCamBtn').textContent = '📷 写真を更新する';
-  } else {
-    document.getElementById('faceImg').classList.remove('show');
-    document.getElementById('faceNone').style.display = 'flex';
-    document.getElementById('faceStatus').textContent = '未登録';
-    document.getElementById('faceDate').textContent = 'カメラで撮影して登録してください';
-    document.getElementById('faceCamBtn').textContent = '📷 撮影して登録';
-  }
+// ── TOAST ──
+function showToast(msg, err=false) {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.style.background = err ? 'var(--rd)' : 'var(--cyan)';
+  t.style.color = err ? '#fff' : 'var(--bg)';
+  t.classList.add('show');
+  setTimeout(() => t.classList.remove('show'), 3000);
 }
-
-async function toggleFaceCam() {
-  const wrap = document.getElementById('faceCamWrap');
-  if (faceCamStream) { cancelFaceCam(); return; }
-  try {
-    faceCamStream = await navigator.mediaDevices.getUserMedia({
-      video: { facingMode:'user' }, audio:false
-    });
-    document.getElementById('faceVideo').srcObject = faceCamStream;
-    wrap.classList.add('show');
-    document.getElementById('faceCamBtn').style.display = 'none';
-    document.getElementById('faceShootBtns').style.display = 'flex';
-  } catch(e) {
-    showToast('カメラにアクセスできません', true);
-  }
-}
-
-function cancelFaceCam() {
-  if (faceCamStream) { faceCamStream.getTracks().forEach(t=>t.stop()); faceCamStream = null; }
-  document.getElementById('faceCamWrap').classList.remove('show');
-  document.getElementById('faceCamBtn').style.display = '';
-  document.getElementById('faceShootBtns').style.display = 'none';
-}
-
-async function doFaceShoot() {
-  const video = document.getElementById('faceVideo');
-  // フラッシュ
-  const fl = document.getElementById('faceFlash');
-  fl.classList.add('go'); setTimeout(() => fl.classList.remove('go'), 140);
-
-  // ビデオ中央を正方形クロップ（変換なし・歪みなし）
-  const vw   = video.videoWidth  || 640;
-  const vh   = video.videoHeight || 480;
-  const side = Math.min(vw, vh);
-  const ox   = Math.round((vw - side) / 2);
-  const oy   = Math.round((vh - side) / 2);
-
-  const canvas = document.createElement('canvas');
-  canvas.width  = 400;
-  canvas.height = 400;
-  canvas.getContext('2d').drawImage(video, ox, oy, side, side, 0, 0, 400, 400);
-  const photo = canvas.toDataURL('image/jpeg', 0.82);
-
-  // カメラ停止 → プレビュー確認
-  cancelFaceCam();
-  showPhotoPreview(photo);
-}
-
-function showPhotoPreview(photo) {
-  const old = document.getElementById('facePreviewWrap');
-  if (old) old.remove();
-
-  const wrap = document.createElement('div');
-  wrap.id = 'facePreviewWrap';
-  wrap.style.cssText = 'margin-top:10px;';
-  wrap.innerHTML = `
-    <div style="display:flex;justify-content:center;margin-bottom:10px;">
-      <div style="width:160px;height:160px;border-radius:10px;overflow:hidden;
-        border:2px solid var(--cyan);box-shadow:0 0 16px rgba(0,229,255,.2);">
-        <img src="${photo}" style="width:100%;height:100%;object-fit:cover;display:block;">
-      </div>
-    </div>
-    <div style="display:flex;gap:8px;">
-      <button class="face-btn" onclick="retakeFacePhoto()">🔄 撮り直す</button>
-      <button class="face-btn shoot" id="faceRegBtn">✓ この写真で登録する</button>
-    </div>
-  `;
-  document.getElementById('faceSection').querySelector('.face-section').appendChild(wrap);
-  // onclickをJSで直接セット（文字列エスケープ問題を回避）
-  document.getElementById('faceRegBtn').onclick = () => saveFacePhotoToGAS(photo);
-}
-
-function retakeFacePhoto() {
-  const old = document.getElementById('facePreviewWrap');
-  if (old) old.remove();
-  toggleFaceCam();
-}
-
-async function saveFacePhotoToGAS(photo) {
-  const btn = document.getElementById('faceRegBtn');
-  if (btn) { btn.disabled = true; btn.textContent = '保存中...'; }
-
-  const today = new Date().toISOString().slice(0, 10);
-  let gasOk = false;
-
-  try {
-    const res = await fetch(GAS, {
-      method: 'POST',
-      body: JSON.stringify({
-        action:        'saveFacePhoto',
-        memberId:      MEMBER.id,
-        facePhoto:     photo,
-        facePhotoDate: today,
-      })
-    });
-    const d = await res.json();
-    gasOk = (d.status === 'ok' || d.status === 'success');
-    if (!gasOk) console.warn('saveFacePhoto:', d.message);
-  } catch(e) {
-    console.warn('saveFacePhoto fetch error:', e.message);
-  }
-
-  // GAS成否に関わらずUIに即反映
-  MEMBER.facePhoto     = photo;
-  MEMBER.facePhotoDate = today;
-  renderFacePhoto();
-  document.getElementById('hAvatar').innerHTML =
-    `<img src="${photo}" style="width:100%;height:100%;object-fit:cover;border-radius:50%;">`;
-  const prev = document.getElementById('facePreviewWrap');
-  if (prev) prev.remove();
-  showToast(gasOk ? '✓ 顔写真を登録しました' : '⚠ 表示しました（GAS再デプロイが必要です）');
-}
-
-init();
-
 
 // ── AUTH ──
-const AUTH_KEY = 'ac_auth';
+const AUTH_KEY  = 'ac_auth';
 const AUTH_PASS = '1223';
 
 function checkAuth() {
@@ -1060,14 +699,13 @@ function checkAuth() {
   }
 }
 
-// 認証チェック
 if (!sessionStorage.getItem(AUTH_KEY)) {
-  // オーバーレイを表示（すでにHTML内にある）
   document.getElementById('authInput').focus();
 } else {
   document.getElementById('authOverlay').style.display = 'none';
 }
 
+init();
 </script>
 </body>
 </html>
