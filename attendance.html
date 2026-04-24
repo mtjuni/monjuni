@@ -1565,11 +1565,55 @@ function undoAttendance(i) {
 }
 
 // ── REGISTER ──
+function onRegCourseChange(val) {
+  const other = document.getElementById('regCourseOther');
+  other.style.display = val === 'その他' ? '' : 'none';
+}
+
 function registerMember() {
   const name = document.getElementById('regName').value.trim();
   if (!name) { showToast('⚠ 氏名を入力してください', true); return; }
-  showToast(`✓ ${name} さんを登録しました`);
-  ['regName','regFurigana','regNfc','regPhone','regEmail'].forEach(id => document.getElementById(id).value = '');
+
+  let course = document.getElementById('regCourse').value;
+  if (course === 'その他') {
+    course = document.getElementById('regCourseOther').value.trim();
+    if (!course) { showToast('⚠ コース名を入力してください', true); return; }
+  }
+
+  // GASに送信
+  const now = new Date();
+  const startMonth = `${now.getFullYear()}/${String(now.getMonth()+1).padStart(2,'0')}`;
+
+  fetch(GAS_URL, { method: 'POST', body: JSON.stringify({
+    action:   'addMember',
+    name,
+    furigana: document.getElementById('regFurigana').value.trim(),
+    nfcId:    document.getElementById('regNfc').value.trim(),
+    phone:    document.getElementById('regPhone').value.trim(),
+    email:    document.getElementById('regEmail').value.trim(),
+    course,
+  })}).then(r => r.json()).then(d => {
+    if (d.status === 'ok') {
+      // コース履歴も記録
+      fetch(GAS_URL, { method: 'POST', body: JSON.stringify({
+        action:     'saveCourseHistory',
+        memberId:   d.rowIndex ? String(d.rowIndex) : '',
+        memberName: name,
+        course,
+        startMonth,
+        note:       '初回登録',
+      })}).catch(() => {});
+      showToast(`✓ ${name} さんを登録しました`);
+      ['regName','regFurigana','regNfc','regPhone','regEmail'].forEach(
+        id => document.getElementById(id).value = ''
+      );
+      document.getElementById('regCourse').value = '';
+      document.getElementById('regCourseOther').style.display = 'none';
+      loadMembersFromGAS();
+    } else {
+      showToast('⚠ 登録失敗: ' + (d.message||''), true);
+    }
+  }).catch(e => showToast('⚠ 通信エラー: ' + e.message, true));
 }
 
 // ── TABS ──
