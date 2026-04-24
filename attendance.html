@@ -985,16 +985,19 @@
         <label class="form-label">NFCカードID</label>
         <input class="form-input" id="regNfc" type="text" placeholder="NFC007">
       </div>
-      <div>
+     <div>
         <label class="form-label">コース</label>
-        <select class="form-select" id="regCourse">
-          <option>基礎コース</option>
-          <option>中級コース</option>
-          <option>上級コース</option>
-          <option>プライベート</option>
+        <select class="form-select" id="regCourse" onchange="onRegCourseChange(this.value)">
+          <option value="">— 選択 —</option>
+          <option value="通常クラス・月1回">通常クラス・月1回</option>
+          <option value="通常クラス・月2回">通常クラス・月2回</option>
+          <option value="特別コース">特別コース</option>
+          <option value="その他">その他（自由入力）</option>
         </select>
+        <input class="form-input" id="regCourseOther" type="text"
+          placeholder="コース名を入力..."
+          style="display:none;margin-top:8px;">
       </div>
-    </div>
     <div class="form-section">
       <label class="form-label">電話番号</label>
       <input class="form-input" id="regPhone" type="tel" placeholder="090-0000-0000">
