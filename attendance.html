@@ -1422,21 +1422,47 @@ function selectClass(btn, cls) {
 
 function confirmAttendance() {
   if (!selectedMember) return;
+  const btn = document.getElementById('confirmBtn');
+  btn.disabled = true;
+  btn.textContent = '登録中...';
+
   const now = new Date();
   const time = `${String(now.getHours()).padStart(2,'0')}:${String(now.getMinutes()).padStart(2,'0')}`;
-  todayAttendance.unshift({ member: selectedMember, class: selectedClass, time });
-  renderTodayList();
-  showToast(`✓ ${selectedMember.name} さんの出席を登録しました`);
+  
+  // selectedMemberを先にローカル変数に保存
+  const member = selectedMember;
+  const cls = selectedClass;
 
-  // Reset
+  // GASに送信（非同期・メイン処理）
+  jsonpFetch(GAS_URL + '?action=recordAttendance'
+    + '&memberId=' + encodeURIComponent(member.id)
+    + '&nfcId='    + encodeURIComponent(member.nfcId || '')
+    + '&memberName=' + encodeURIComponent(member.name)
+    + '&class='    + encodeURIComponent(cls)
+  ).then(res => {
+    if (res.status === 'duplicate') {
+      showToast('⚠ ' + member.name + ' さんは本日すでに登録済みです', true);
+    } else {
+      todayAttendance.unshift({ member, class: cls, time });
+      renderTodayList();
+      showToast('✓ ' + member.name + ' さんの出席を登録しました');
+    }
+  }).catch(() => {
+    // GAS失敗時はローカルだけ記録
+    todayAttendance.unshift({ member, class: cls, time });
+    renderTodayList();
+    showToast('✓ ' + member.name + ' さんの出席を登録しました（オフライン）');
+  }).finally(() => {
+    btn.disabled = false;
+    btn.textContent = '✓ 出席を登録する';
+  });
+
+  // 画面リセット
   document.getElementById('memberCard').classList.remove('show');
   document.getElementById('noMemberState').style.display = '';
   document.getElementById('searchInput').value = '';
   document.getElementById('searchResults').classList.remove('show');
   selectedMember = null;
-
-  // GAS push (non-blocking)
-  sendToGAS({ action:'attendance', memberId: selectedMember?.id, memberName: selectedMember?.name, class: selectedClass, time });
 }
 
 function sendToGAS(data) {
