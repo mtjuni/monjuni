@@ -10,433 +10,192 @@
 <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@300;400;500;700;900&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
 <style>
   :root {
-    --bg: #0a0f1e;
-    --surface: #131828;
-    --surface2: #1a2035;
-    --border: #252d45;
-    --gold: #ffd166;
-    --teal: #06d6a0;
-    --purple: #a855f7;
-    --warn: #ff6b6b;
-    --text: #e8eaf6;
-    --text2: #8892b0;
-    --text3: #404870;
-    --radius: 16px;
-    --radius-sm: 10px;
-    --safe-top: env(safe-area-inset-top, 0px);
-    --safe-bottom: env(safe-area-inset-bottom, 0px);
+    --bg:#0a0f1e; --surface:#131828; --surface2:#1a2035; --border:#252d45;
+    --gold:#ffd166; --teal:#06d6a0; --purple:#a855f7; --warn:#ff6b6b;
+    --text:#e8eaf6; --text2:#8892b0; --text3:#404870;
+    --radius:16px; --radius-sm:10px;
+    --safe-top:env(safe-area-inset-top,0px); --safe-bottom:env(safe-area-inset-bottom,0px);
   }
-
-  * { margin:0; padding:0; box-sizing:border-box; -webkit-tap-highlight-color:transparent; }
-
-  body {
-    font-family:'Noto Sans JP', sans-serif;
-    background:var(--bg);
-    color:var(--text);
-    min-height:100dvh;
-    overflow-x:hidden;
+  *{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent;}
+  body{font-family:'Noto Sans JP',sans-serif;background:var(--bg);color:var(--text);min-height:100dvh;overflow-x:hidden;}
+  .app-header{position:sticky;top:0;z-index:100;background:rgba(10,15,30,0.92);backdrop-filter:blur(20px);-webkit-backdrop-filter:blur(20px);border-bottom:1px solid var(--border);padding:calc(var(--safe-top)+12px) 20px 12px;display:flex;align-items:center;justify-content:space-between;}
+  .app-title{font-size:1.05rem;font-weight:700;letter-spacing:0.05em;color:var(--gold);}
+  .app-title span{color:var(--text2);font-weight:300;}
+  .header-link{background:var(--surface2);border:1px solid var(--border);color:var(--text2);padding:6px 14px;border-radius:20px;font-size:0.78rem;font-weight:500;text-decoration:none;transition:all 0.2s;}
+  .header-link:hover{color:var(--gold);border-color:var(--gold);}
+  .tab-bar{display:flex;background:var(--surface);border-bottom:1px solid var(--border);overflow-x:auto;scrollbar-width:none;-webkit-overflow-scrolling:touch;}
+  .tab-bar::-webkit-scrollbar{display:none;}
+  .tab-btn{flex:1;min-width:90px;padding:12px 10px;background:none;border:none;color:var(--text3);font-family:inherit;font-size:0.78rem;font-weight:500;cursor:pointer;transition:all 0.2s;white-space:nowrap;position:relative;}
+  .tab-btn.active{color:var(--gold);}
+  .tab-btn.active::after{content:'';position:absolute;bottom:0;left:20%;right:20%;height:2px;background:var(--gold);border-radius:2px 2px 0 0;}
+  .main{padding:20px;max-width:680px;margin:0 auto;}
+  .tab-panel{display:none;}
+  .tab-panel.active{display:block;}
+  .section-title{font-size:0.7rem;font-weight:700;letter-spacing:0.1em;text-transform:uppercase;color:var(--text3);margin-bottom:12px;padding-bottom:8px;border-bottom:1px solid var(--border);}
+  .member-select-bar{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:18px;margin-bottom:16px;}
+  .search-wrap{position:relative;}
+  .search-icon{position:absolute;left:14px;top:50%;transform:translateY(-50%);color:var(--text3);pointer-events:none;}
+  .search-input{width:100%;padding:13px 13px 13px 40px;background:var(--surface2);border:1px solid var(--border);border-radius:var(--radius-sm);color:var(--text);font-family:inherit;font-size:0.95rem;outline:none;transition:border-color 0.2s;}
+  .search-input:focus{border-color:var(--gold);}
+  .search-input::placeholder{color:var(--text3);}
+  .search-results{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius-sm);margin-top:6px;display:none;overflow:hidden;}
+  .search-results.show{display:block;}
+  .search-result-item{padding:11px 14px;cursor:pointer;transition:background 0.15s;display:flex;align-items:center;gap:10px;border-bottom:1px solid var(--border);}
+  .search-result-item:last-child{border-bottom:none;}
+  .search-result-item:hover{background:var(--surface2);}
+  .result-avatar{width:36px;height:36px;border-radius:50%;background:var(--purple);display:flex;align-items:center;justify-content:center;font-weight:700;color:#fff;font-size:0.95rem;flex-shrink:0;}
+  .result-name{font-weight:600;font-size:0.9rem;}
+  .result-meta{font-size:0.75rem;color:var(--text2);margin-top:1px;}
+  .selected-member-chip{display:none;align-items:center;gap:12px;background:rgba(255,209,102,0.1);border:1px solid rgba(255,209,102,0.3);border-radius:var(--radius-sm);padding:12px 14px;margin-bottom:16px;}
+  .selected-member-chip.show{display:flex;}
+  .chip-avatar{width:40px;height:40px;border-radius:50%;background:linear-gradient(135deg,var(--purple),var(--gold));display:flex;align-items:center;justify-content:center;font-weight:700;color:#0a0f1e;}
+  .chip-name{flex:1;font-weight:700;}
+  .chip-sub{font-size:0.78rem;color:var(--text2);}
+  .chip-clear{background:none;border:none;color:var(--text3);cursor:pointer;font-size:1.1rem;padding:4px;}
+  .form-card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:18px;margin-bottom:16px;}
+  .form-label{font-size:0.75rem;font-weight:600;letter-spacing:0.06em;text-transform:uppercase;color:var(--text2);display:block;margin-bottom:6px;}
+  .form-input,.form-select{width:100%;padding:12px 13px;background:var(--surface2);border:1px solid var(--border);border-radius:var(--radius-sm);color:var(--text);font-family:inherit;font-size:0.95rem;outline:none;transition:border-color 0.2s;appearance:none;-webkit-appearance:none;}
+  .form-input:focus,.form-select:focus{border-color:var(--gold);}
+  .form-select{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' fill='none'%3E%3Cpath d='M1 1l5 5 5-5' stroke='%238892b0' stroke-width='2' stroke-linecap='round'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right 14px center;padding-right:36px;}
+  .form-section{margin-bottom:14px;}
+  .form-row{display:grid;grid-template-columns:1fr 1fr;gap:10px;}
+  .course-pills{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:4px;}
+  .course-pill{padding:14px 12px;background:var(--surface2);border:2px solid var(--border);border-radius:var(--radius-sm);color:var(--text2);font-family:inherit;cursor:pointer;transition:all 0.2s;text-align:center;}
+  .course-pill.active{background:rgba(255,209,102,0.12);border-color:var(--gold);color:var(--gold);}
+  .course-name{font-size:0.88rem;font-weight:700;margin-bottom:4px;}
+  .course-price{font-size:0.72rem;font-family:'DM Mono',monospace;opacity:0.8;}
+  .fee-breakdown{background:rgba(6,214,160,0.06);border:1px solid rgba(6,214,160,0.2);border-radius:var(--radius-sm);padding:14px;margin-bottom:14px;}
+  .breakdown-title{font-size:0.7rem;font-weight:700;letter-spacing:0.08em;text-transform:uppercase;color:var(--teal);margin-bottom:10px;}
+  .breakdown-line{display:flex;justify-content:space-between;font-size:0.82rem;padding:4px 0;color:var(--text2);}
+  .breakdown-line.skip{text-decoration:line-through;color:var(--text3);}
+  .breakdown-line .bl-amt{font-family:'DM Mono',monospace;}
+  .breakdown-line .bl-badge{font-size:0.68rem;background:rgba(255,107,107,0.2);color:var(--warn);border-radius:4px;padding:1px 5px;margin-left:6px;}
+  .breakdown-line .bl-badge.paid-badge{background:rgba(168,85,247,0.2);color:var(--purple);}
+  .breakdown-sep{border:none;border-top:1px solid rgba(6,214,160,0.2);margin:8px 0;}
+  .breakdown-total{display:flex;justify-content:space-between;font-weight:700;font-size:0.95rem;padding-top:4px;}
+  .breakdown-total .bt-label{color:var(--text);}
+  .breakdown-total .bt-val{font-family:'DM Mono',monospace;color:var(--teal);font-size:1.1rem;}
+  .months-preview{display:flex;gap:6px;flex-wrap:wrap;padding:12px;background:var(--surface2);border-radius:var(--radius-sm);margin-top:10px;min-height:48px;}
+  .month-chip{padding:4px 10px;border-radius:12px;font-size:0.75rem;font-weight:600;font-family:'DM Mono',monospace;cursor:pointer;user-select:none;transition:all 0.15s;}
+  .month-chip.new{background:rgba(6,214,160,0.2);color:var(--teal);border:1px solid rgba(6,214,160,0.3);}
+  .month-chip.dup{background:rgba(255,107,107,0.2);color:var(--warn);border:1px solid rgba(255,107,107,0.3);text-decoration:line-through;}
+  .month-chip.skipped{background:rgba(255,107,107,0.15);color:var(--warn);border:1px solid rgba(255,107,107,0.3);text-decoration:line-through;opacity:0.7;}
+  .camera-zone{border-radius:var(--radius-sm);overflow:hidden;background:var(--surface2);border:1px solid var(--border);margin-bottom:10px;}
+  .camera-video{width:100%;max-height:240px;display:none;object-fit:cover;}
+  .camera-placeholder{min-height:80px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:8px;color:var(--text3);font-size:0.85rem;padding:20px;}
+  .camera-controls{display:flex;gap:8px;margin-bottom:10px;}
+  .cam-btn{flex:1;padding:11px;border:none;border-radius:var(--radius-sm);font-family:inherit;font-size:0.85rem;font-weight:700;cursor:pointer;transition:all 0.2s;}
+  .cam-btn-start{background:var(--surface2);border:1px solid var(--border);color:var(--text2);}
+  .cam-btn-start:hover{border-color:var(--teal);color:var(--teal);}
+  .cam-btn-shoot{background:var(--teal);color:#0a0f1e;}
+  .cam-btn-shoot:disabled{background:var(--text3);color:var(--surface);cursor:not-allowed;}
+  .file-input{display:none;}
+  .photo-strip{display:flex;gap:6px;flex-wrap:wrap;margin-top:8px;}
+  .photo-thumb{position:relative;width:68px;height:51px;border-radius:6px;overflow:hidden;border:1px solid var(--border);cursor:pointer;flex-shrink:0;}
+  .photo-thumb img{width:100%;height:100%;object-fit:cover;}
+  .photo-del{position:absolute;top:2px;right:2px;width:18px;height:18px;border-radius:50%;background:rgba(0,0,0,0.7);border:none;color:#fff;font-size:0.65rem;cursor:pointer;display:flex;align-items:center;justify-content:center;}
+  .lightbox{display:none;position:fixed;inset:0;background:rgba(0,0,0,0.9);z-index:999;align-items:center;justify-content:center;cursor:zoom-out;}
+  .lightbox.show{display:flex;}
+  .lightbox img{max-width:95vw;max-height:90vh;border-radius:8px;object-fit:contain;}
+  .confirm-box{background:rgba(255,209,102,0.06);border:1px solid rgba(255,209,102,0.25);border-radius:var(--radius);padding:18px;margin-bottom:16px;display:none;}
+  .confirm-box.show{display:block;}
+  .confirm-row{display:flex;justify-content:space-between;align-items:center;padding:6px 0;border-bottom:1px solid var(--border);font-size:0.88rem;}
+  .confirm-row:last-of-type{border-bottom:none;}
+  .confirm-row .clabel{color:var(--text2);}
+  .confirm-row .cval{font-weight:600;font-family:'DM Mono',monospace;color:var(--text);}
+  .confirm-row .cval.big{font-size:1.2rem;color:var(--gold);}
+  .confirm-row .cval.warn{color:var(--warn);}
+  .submit-btn{width:100%;padding:16px;background:var(--gold);color:#0a0f1e;border:none;border-radius:var(--radius-sm);font-family:inherit;font-size:1rem;font-weight:800;cursor:pointer;letter-spacing:0.05em;transition:all 0.2s;margin-top:12px;}
+  .submit-btn:active{transform:scale(0.98);}
+  .submit-btn:hover{background:#ffe08a;}
+  .submit-btn:disabled{background:var(--text3);cursor:not-allowed;}
+  .member-detail{display:none;}
+  .member-detail.show{display:block;}
+  .detail-header{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:18px;margin-bottom:14px;}
+  .detail-header-row{display:flex;align-items:center;gap:14px;margin-bottom:14px;}
+  .detail-avatar{width:60px;height:60px;border-radius:50%;background:linear-gradient(135deg,var(--purple),var(--gold));display:flex;align-items:center;justify-content:center;font-size:1.6rem;font-weight:900;color:#0a0f1e;flex-shrink:0;}
+  .detail-name{font-size:1.15rem;font-weight:700;}
+  .detail-sub{font-size:0.78rem;color:var(--text2);margin-top:2px;}
+  .stats-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;}
+  .stat-card{background:var(--surface2);border-radius:10px;padding:12px;text-align:center;}
+  .stat-val{font-family:'DM Mono',monospace;font-size:1rem;font-weight:700;color:var(--gold);}
+  .stat-lbl{font-size:0.62rem;color:var(--text3);margin-top:3px;}
+  .cal-year-block{margin-bottom:16px;}
+  .cal-year-label{font-size:0.7rem;font-weight:700;letter-spacing:0.1em;color:var(--text3);text-transform:uppercase;font-family:'DM Mono',monospace;margin-bottom:6px;}
+  .cal-grid{display:grid;grid-template-columns:repeat(12,1fr);gap:3px;}
+  .cal-cell{border-radius:6px;padding:7px 2px;text-align:center;border:1px solid var(--border);cursor:pointer;transition:all 0.15s;}
+  .cal-cell:hover{filter:brightness(1.2);}
+  .cal-cell.paid{background:rgba(6,214,160,0.18);border-color:rgba(6,214,160,0.4);}
+  .cal-cell.unpaid{background:rgba(255,107,107,0.1);border-color:rgba(255,107,107,0.3);}
+  .cal-cell.no-act{background:rgba(123,111,255,0.1);border-color:rgba(123,111,255,0.3);}
+  .cal-cell.future{background:var(--surface2);border-color:var(--border);opacity:0.45;cursor:default;}
+  .cal-cell.current{outline:2px solid var(--gold);outline-offset:1px;}
+  .cal-month{font-family:'DM Mono',monospace;font-size:0.62rem;font-weight:700;color:var(--text2);display:block;}
+  .cal-cell.paid .cal-month{color:var(--teal);}
+  .cal-cell.unpaid .cal-month{color:var(--warn);}
+  .cal-mark{font-size:0.8rem;display:block;margin-top:1px;}
+  .cal-legend{display:flex;gap:10px;flex-wrap:wrap;margin-bottom:10px;}
+  .cal-leg-item{display:flex;align-items:center;gap:4px;font-size:0.68rem;color:var(--text2);}
+  .cal-leg-dot{width:10px;height:10px;border-radius:3px;flex-shrink:0;}
+  .annual-fee-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px;}
+  .annual-fee-card{background:var(--surface2);border:1px solid var(--border);border-radius:var(--radius-sm);padding:12px 14px;display:flex;flex-direction:column;gap:6px;}
+  .annual-fee-card.paid{border-color:rgba(6,214,160,0.4);background:rgba(6,214,160,0.06);}
+  .annual-fee-card.unpaid{border-color:rgba(255,107,107,0.4);background:rgba(255,107,107,0.06);}
+  .annual-fee-title{font-size:0.72rem;font-weight:700;letter-spacing:0.05em;color:var(--text2);}
+  .annual-fee-badge{display:inline-flex;align-items:center;gap:4px;padding:3px 10px;border-radius:12px;font-size:0.75rem;font-weight:700;width:fit-content;}
+  .annual-fee-badge.paid{background:rgba(6,214,160,0.18);color:var(--teal);}
+  .annual-fee-badge.unpaid{background:rgba(255,107,107,0.18);color:var(--warn);}
+  .annual-fee-year{font-size:0.7rem;color:var(--text3);font-family:'DM Mono',monospace;}
+  .annual-fee-toggle{margin-top:4px;padding:4px 10px;font-size:0.7rem;font-weight:700;border:none;border-radius:8px;cursor:pointer;font-family:inherit;transition:all 0.15s;}
+  .annual-fee-toggle.mark-paid{background:rgba(6,214,160,0.2);color:var(--teal);}
+  .annual-fee-toggle.mark-unpaid{background:rgba(255,107,107,0.15);color:var(--warn);}
+  .history-table{width:100%;border-collapse:collapse;font-size:0.82rem;}
+  .history-table th{text-align:left;padding:8px 10px;font-size:0.7rem;font-weight:700;text-transform:uppercase;letter-spacing:0.06em;color:var(--text3);border-bottom:1px solid var(--border);}
+  .history-table td{padding:10px;border-bottom:1px solid var(--border);}
+  .history-table tr:last-child td{border-bottom:none;}
+  .history-table tr:hover td{background:var(--surface2);}
+  .h-amount{font-family:'DM Mono',monospace;color:var(--gold);font-weight:600;}
+  .h-period{font-family:'DM Mono',monospace;font-size:0.75rem;color:var(--teal);}
+  .summary-stats{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:20px;}
+  .sum-card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:16px;position:relative;overflow:hidden;}
+  .sum-card::before{content:'';position:absolute;top:0;left:0;right:0;height:3px;}
+  .sum-card.gold::before{background:var(--gold);}
+  .sum-card.teal::before{background:var(--teal);}
+  .sum-card.purple::before{background:var(--purple);}
+  .sum-card.red::before{background:var(--warn);}
+  .sum-val{font-family:'DM Mono',monospace;font-size:1.4rem;font-weight:700;margin-bottom:4px;}
+  .sum-val.gold{color:var(--gold);} .sum-val.teal{color:var(--teal);} .sum-val.purple{color:var(--purple);} .sum-val.red{color:var(--warn);}
+  .sum-lbl{font-size:0.75rem;color:var(--text2);}
+  .bar-chart{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:16px;margin-bottom:20px;}
+  .bar-chart-title{font-size:0.78rem;color:var(--text2);margin-bottom:12px;font-weight:600;}
+  .bars{display:flex;gap:6px;align-items:flex-end;height:100px;}
+  .bar-col{flex:1;display:flex;flex-direction:column;align-items:center;gap:4px;}
+  .bar{width:100%;border-radius:4px 4px 0 0;background:var(--gold);opacity:0.85;transition:opacity 0.2s;min-height:4px;}
+  .bar:hover{opacity:1;}
+  .bar-lbl{font-size:0.62rem;color:var(--text3);font-family:'DM Mono',monospace;}
+  .bar-amt{font-size:0.6rem;color:var(--gold);font-family:'DM Mono',monospace;}
+  .records-table-wrap{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);overflow:hidden;}
+  .records-table{width:100%;border-collapse:collapse;font-size:0.82rem;}
+  .records-table th{text-align:left;padding:10px 12px;font-size:0.7rem;font-weight:700;text-transform:uppercase;letter-spacing:0.06em;color:var(--text3);border-bottom:1px solid var(--border);background:var(--surface2);}
+  .records-table td{padding:10px 12px;border-bottom:1px solid var(--border);}
+  .records-table tr:last-child td{border-bottom:none;}
+  .records-table tr:hover td{background:var(--surface2);}
+  .rt-amount{font-family:'DM Mono',monospace;color:var(--gold);font-weight:600;}
+  .rt-period{font-family:'DM Mono',monospace;font-size:0.75rem;color:var(--teal);}
+  .filter-input{width:100%;padding:11px 14px;background:var(--surface2);border:1px solid var(--border);border-radius:var(--radius-sm);color:var(--text);font-family:inherit;font-size:0.9rem;outline:none;margin-bottom:12px;}
+  .filter-input:focus{border-color:var(--gold);}
+  .table-footer{padding:10px 14px;font-size:0.78rem;color:var(--text3);border-top:1px solid var(--border);display:flex;justify-content:space-between;}
+  .table-footer strong{color:var(--gold);font-family:'DM Mono',monospace;}
+  .toast{position:fixed;bottom:calc(var(--safe-bottom)+24px);left:50%;transform:translateX(-50%) translateY(100px);background:var(--gold);color:#0a0f1e;padding:12px 24px;border-radius:30px;font-weight:700;font-size:0.9rem;z-index:998;transition:transform 0.35s cubic-bezier(0.34,1.56,0.64,1);white-space:nowrap;box-shadow:0 8px 32px rgba(255,209,102,0.35);}
+  .toast.show{transform:translateX(-50%) translateY(0);}
+  @media(min-width:768px){
+    .app-header{padding:16px 32px;}
+    .main{padding:28px 32px;max-width:1000px;}
+    .tab-btn{min-width:110px;font-size:0.85rem;}
+    .pay-layout{display:grid;grid-template-columns:1fr 1fr;gap:24px;align-items:start;}
+    .summary-stats{grid-template-columns:repeat(4,1fr);}
   }
-
-  .app-header {
-    position:sticky; top:0; z-index:100;
-    background:rgba(10,15,30,0.92);
-    backdrop-filter:blur(20px);
-    -webkit-backdrop-filter:blur(20px);
-    border-bottom:1px solid var(--border);
-    padding:calc(var(--safe-top) + 12px) 20px 12px;
-    display:flex; align-items:center; justify-content:space-between;
-  }
-  .app-title { font-size:1.05rem; font-weight:700; letter-spacing:0.05em; color:var(--gold); }
-  .app-title span { color:var(--text2); font-weight:300; }
-  .header-link {
-    background:var(--surface2); border:1px solid var(--border);
-    color:var(--text2); padding:6px 14px; border-radius:20px;
-    font-size:0.78rem; font-weight:500; text-decoration:none; transition:all 0.2s;
-  }
-  .header-link:hover { color:var(--gold); border-color:var(--gold); }
-
-  .tab-bar {
-    display:flex; background:var(--surface); border-bottom:1px solid var(--border);
-    overflow-x:auto; scrollbar-width:none; -webkit-overflow-scrolling:touch;
-  }
-  .tab-bar::-webkit-scrollbar { display:none; }
-  .tab-btn {
-    flex:1; min-width:90px; padding:12px 10px;
-    background:none; border:none; color:var(--text3);
-    font-family:inherit; font-size:0.78rem; font-weight:500; cursor:pointer;
-    transition:all 0.2s; white-space:nowrap; position:relative;
-  }
-  .tab-btn.active { color:var(--gold); }
-  .tab-btn.active::after {
-    content:''; position:absolute; bottom:0; left:20%; right:20%;
-    height:2px; background:var(--gold); border-radius:2px 2px 0 0;
-  }
-
-  .main { padding:20px; max-width:680px; margin:0 auto; }
-  .tab-panel { display:none; }
-  .tab-panel.active { display:block; }
-
-  /* ── SECTION TITLES ── */
-  .section-title {
-    font-size:0.7rem; font-weight:700; letter-spacing:0.1em; text-transform:uppercase;
-    color:var(--text3); margin-bottom:12px; padding-bottom:8px; border-bottom:1px solid var(--border);
-  }
-
-  /* ── MEMBER SELECT ── */
-  .member-select-bar {
-    background:var(--surface); border:1px solid var(--border); border-radius:var(--radius);
-    padding:18px; margin-bottom:16px;
-  }
-  .demo-row { display:flex; gap:6px; flex-wrap:wrap; margin-bottom:12px; }
-  .demo-btn {
-    padding:8px 12px; background:var(--surface2); border:1px solid var(--border);
-    border-radius:8px; color:var(--text2); font-family:inherit; font-size:0.78rem;
-    cursor:pointer; transition:all 0.15s;
-  }
-  .demo-btn:hover, .demo-btn:active { border-color:var(--gold); color:var(--gold); }
-
-  .search-wrap { position:relative; }
-  .search-icon { position:absolute; left:14px; top:50%; transform:translateY(-50%); color:var(--text3); pointer-events:none; }
-  .search-input {
-    width:100%; padding:13px 13px 13px 40px;
-    background:var(--surface2); border:1px solid var(--border); border-radius:var(--radius-sm);
-    color:var(--text); font-family:inherit; font-size:0.95rem; outline:none; transition:border-color 0.2s;
-  }
-  .search-input:focus { border-color:var(--gold); }
-  .search-input::placeholder { color:var(--text3); }
-  .search-results {
-    background:var(--surface); border:1px solid var(--border); border-radius:var(--radius-sm);
-    margin-top:6px; display:none; overflow:hidden;
-  }
-  .search-results.show { display:block; }
-  .search-result-item {
-    padding:11px 14px; cursor:pointer; transition:background 0.15s;
-    display:flex; align-items:center; gap:10px; border-bottom:1px solid var(--border);
-  }
-  .search-result-item:last-child { border-bottom:none; }
-  .search-result-item:hover { background:var(--surface2); }
-  .result-avatar {
-    width:36px; height:36px; border-radius:50%; background:var(--purple);
-    display:flex; align-items:center; justify-content:center;
-    font-weight:700; color:#fff; font-size:0.95rem; flex-shrink:0;
-  }
-  .result-name { font-weight:600; font-size:0.9rem; }
-  .result-meta { font-size:0.75rem; color:var(--text2); margin-top:1px; }
-
-  /* ── SELECTED MEMBER CHIP ── */
-  .selected-member-chip {
-    display:none; align-items:center; gap:12px;
-    background:rgba(255,209,102,0.1); border:1px solid rgba(255,209,102,0.3);
-    border-radius:var(--radius-sm); padding:12px 14px; margin-bottom:16px;
-  }
-  .selected-member-chip.show { display:flex; }
-  .chip-avatar {
-    width:40px; height:40px; border-radius:50%; background:linear-gradient(135deg,var(--purple),var(--gold));
-    display:flex; align-items:center; justify-content:center; font-weight:700; color:#0a0f1e;
-  }
-  .chip-name { flex:1; font-weight:700; }
-  .chip-sub { font-size:0.78rem; color:var(--text2); }
-  .chip-clear { background:none; border:none; color:var(--text3); cursor:pointer; font-size:1.1rem; padding:4px; }
-
-  /* ── FORM ── */
-  .form-card { background:var(--surface); border:1px solid var(--border); border-radius:var(--radius); padding:18px; margin-bottom:16px; }
-  .form-label { font-size:0.75rem; font-weight:600; letter-spacing:0.06em; text-transform:uppercase; color:var(--text2); display:block; margin-bottom:6px; }
-  .form-input, .form-select {
-    width:100%; padding:12px 13px; background:var(--surface2); border:1px solid var(--border);
-    border-radius:var(--radius-sm); color:var(--text); font-family:inherit; font-size:0.95rem;
-    outline:none; transition:border-color 0.2s; appearance:none; -webkit-appearance:none;
-  }
-  .form-input:focus, .form-select:focus { border-color:var(--gold); }
-  .form-select { background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' fill='none'%3E%3Cpath d='M1 1l5 5 5-5' stroke='%238892b0' stroke-width='2' stroke-linecap='round'/%3E%3C/svg%3E"); background-repeat:no-repeat; background-position:right 14px center; padding-right:36px; }
-  .form-section { margin-bottom:14px; }
-  .form-row { display:grid; grid-template-columns:1fr 1fr; gap:10px; }
-
-  /* ── COURSE PILLS ── */
-  .course-pills { display:grid; grid-template-columns:1fr 1fr; gap:10px; margin-bottom:4px; }
-  .course-pill {
-    padding:14px 12px; background:var(--surface2); border:2px solid var(--border);
-    border-radius:var(--radius-sm); color:var(--text2); font-family:inherit;
-    cursor:pointer; transition:all 0.2s; text-align:center;
-  }
-  .course-pill.active { background:rgba(255,209,102,0.12); border-color:var(--gold); color:var(--gold); }
-  .course-name { font-size:0.88rem; font-weight:700; margin-bottom:4px; }
-  .course-price { font-size:0.72rem; font-family:'DM Mono', monospace; opacity:0.8; }
-
-  /* ── FEE BREAKDOWN ── */
-  .fee-breakdown {
-    background:rgba(6,214,160,0.06); border:1px solid rgba(6,214,160,0.2);
-    border-radius:var(--radius-sm); padding:14px; margin-bottom:14px;
-  }
-  .breakdown-title { font-size:0.7rem; font-weight:700; letter-spacing:0.08em; text-transform:uppercase; color:var(--teal); margin-bottom:10px; }
-  .breakdown-line { display:flex; justify-content:space-between; font-size:0.82rem; padding:4px 0; color:var(--text2); }
-  .breakdown-line.skip { text-decoration:line-through; color:var(--text3); }
-  .breakdown-line .bl-amt { font-family:'DM Mono', monospace; }
-  .breakdown-line .bl-badge { font-size:0.68rem; background:rgba(255,107,107,0.2); color:var(--warn); border-radius:4px; padding:1px 5px; margin-left:6px; }
-  .breakdown-line .bl-badge.paid-badge { background:rgba(168,85,247,0.2); color:var(--purple); }
-
-  /* annual fee status */
-  .annual-fee-grid { display:grid; grid-template-columns:1fr 1fr; gap:8px; }
-  .annual-fee-card {
-    background:var(--surface2); border:1px solid var(--border);
-    border-radius:var(--radius-sm); padding:12px 14px;
-    display:flex; flex-direction:column; gap:6px;
-  }
-  .annual-fee-card.paid { border-color:rgba(6,214,160,0.4); background:rgba(6,214,160,0.06); }
-  .annual-fee-card.unpaid { border-color:rgba(255,107,107,0.4); background:rgba(255,107,107,0.06); }
-  .annual-fee-title { font-size:0.72rem; font-weight:700; letter-spacing:0.05em; color:var(--text2); }
-  .annual-fee-badge {
-    display:inline-flex; align-items:center; gap:4px;
-    padding:3px 10px; border-radius:12px; font-size:0.75rem; font-weight:700; width:fit-content;
-  }
-  .annual-fee-badge.paid { background:rgba(6,214,160,0.18); color:var(--teal); }
-  .annual-fee-badge.unpaid { background:rgba(255,107,107,0.18); color:var(--warn); }
-  .annual-fee-year { font-size:0.7rem; color:var(--text3); font-family:'DM Mono',monospace; }
-  .annual-fee-toggle {
-    margin-top:4px; padding:4px 10px; font-size:0.7rem; font-weight:700;
-    border:none; border-radius:8px; cursor:pointer; font-family:inherit; transition:all 0.15s;
-  }
-  .annual-fee-toggle.mark-paid { background:rgba(6,214,160,0.2); color:var(--teal); }
-  .annual-fee-toggle.mark-unpaid { background:rgba(255,107,107,0.15); color:var(--warn); }
-  .breakdown-sep { border:none; border-top:1px solid rgba(6,214,160,0.2); margin:8px 0; }
-  .breakdown-total { display:flex; justify-content:space-between; font-weight:700; font-size:0.95rem; padding-top:4px; }
-  .breakdown-total .bt-label { color:var(--text); }
-  .breakdown-total .bt-val { font-family:'DM Mono', monospace; color:var(--teal); font-size:1.1rem; }
-
-  /* clickable month chips */
-  .month-chip { cursor:pointer; user-select:none; transition:all 0.15s; }
-  .month-chip.skipped { background:rgba(255,107,107,0.15); color:var(--warn); border:1px solid rgba(255,107,107,0.3); text-decoration:line-through; opacity:0.7; }
-
-
-  .months-preview {
-    display:flex; gap:6px; flex-wrap:wrap; padding:12px;
-    background:var(--surface2); border-radius:var(--radius-sm); margin-top:10px; min-height:80px;
-  }
-  .month-chip {
-    padding:4px 10px; border-radius:12px; font-size:0.75rem; font-weight:600;
-    font-family:'DM Mono', monospace;
-  }
-  .month-chip.new { background:rgba(6,214,160,0.2); color:var(--teal); border:1px solid rgba(6,214,160,0.3); }
-  .month-chip.dup { background:rgba(255,107,107,0.2); color:var(--warn); border:1px solid rgba(255,107,107,0.3); text-decoration:line-through; }
-  .month-chip.paid-already { background:rgba(168,85,247,0.2); color:var(--purple); border:1px solid rgba(168,85,247,0.3); }
-
-  /* ── CAMERA ── */
-  .camera-zone { border-radius:var(--radius-sm); overflow:hidden; background:var(--surface2); border:1px solid var(--border); margin-bottom:10px; }
-  .camera-video { width:100%; max-height:240px; display:block; object-fit:cover; display:none; }
-  .camera-placeholder {
-    min-height:100px; display:flex; flex-direction:column; align-items:center; justify-content:center;
-    gap:8px; color:var(--text3); font-size:0.85rem; padding:20px;
-  }
-  .camera-placeholder .cam-icon { font-size:2.5rem; }
-  .camera-controls { display:flex; gap:8px; margin-bottom:10px; }
-  .cam-btn {
-    flex:1; padding:11px; border:none; border-radius:var(--radius-sm);
-    font-family:inherit; font-size:0.85rem; font-weight:700; cursor:pointer; transition:all 0.2s;
-  }
-  .cam-btn-start { background:var(--surface2); border:1px solid var(--border); color:var(--text2); }
-  .cam-btn-start:hover { border-color:var(--teal); color:var(--teal); }
-  .cam-btn-shoot { background:var(--teal); color:#0a0f1e; }
-  .cam-btn-shoot:disabled { background:var(--text3); color:var(--surface); cursor:not-allowed; }
-  .cam-btn-input { background:var(--surface2); border:1px solid var(--border); color:var(--text2); }
-  .file-input { display:none; }
-  .photo-strip { display:flex; gap:6px; flex-wrap:wrap; margin-top:8px; }
-  .photo-thumb {
-    position:relative; width:68px; height:51px; border-radius:6px; overflow:hidden;
-    border:1px solid var(--border); cursor:pointer; flex-shrink:0;
-  }
-  .photo-thumb img { width:100%; height:100%; object-fit:cover; }
-  .photo-del {
-    position:absolute; top:2px; right:2px; width:18px; height:18px; border-radius:50%;
-    background:rgba(0,0,0,0.7); border:none; color:#fff; font-size:0.65rem; cursor:pointer;
-    display:flex; align-items:center; justify-content:center;
-  }
-
-  /* lightbox */
-  .lightbox {
-    display:none; position:fixed; inset:0; background:rgba(0,0,0,0.9); z-index:999;
-    align-items:center; justify-content:center; cursor:zoom-out;
-  }
-  .lightbox.show { display:flex; }
-  .lightbox img { max-width:95vw; max-height:90vh; border-radius:8px; object-fit:contain; }
-
-  /* ── CONFIRM BOX ── */
-  .confirm-box {
-    background:rgba(255,209,102,0.06); border:1px solid rgba(255,209,102,0.25);
-    border-radius:var(--radius); padding:18px; margin-bottom:16px; display:none;
-  }
-  .confirm-box.show { display:block; }
-  .confirm-row { display:flex; justify-content:space-between; align-items:center; padding:6px 0; border-bottom:1px solid var(--border); font-size:0.88rem; }
-  .confirm-row:last-of-type { border-bottom:none; }
-  .confirm-row .clabel { color:var(--text2); }
-  .confirm-row .cval { font-weight:600; font-family:'DM Mono', monospace; color:var(--text); }
-  .confirm-row .cval.big { font-size:1.2rem; color:var(--gold); }
-  .confirm-row .cval.warn { color:var(--warn); }
-  .submit-btn {
-    width:100%; padding:16px; background:var(--gold); color:#0a0f1e; border:none;
-    border-radius:var(--radius-sm); font-family:inherit; font-size:1rem; font-weight:800;
-    cursor:pointer; letter-spacing:0.05em; transition:all 0.2s; margin-top:12px;
-  }
-  .submit-btn:active { transform:scale(0.98); }
-  .submit-btn:hover { background:#ffe08a; }
-
-  /* ── INDIVIDUAL LOOKUP ── */
-  .member-detail { display:none; }
-  .member-detail.show { display:block; }
-  .detail-header {
-    background:var(--surface); border:1px solid var(--border); border-radius:var(--radius);
-    padding:18px; margin-bottom:14px;
-  }
-  .detail-header-row { display:flex; align-items:center; gap:14px; margin-bottom:14px; }
-  .detail-avatar {
-    width:60px; height:60px; border-radius:50%;
-    background:linear-gradient(135deg,var(--purple),var(--gold));
-    display:flex; align-items:center; justify-content:center;
-    font-size:1.6rem; font-weight:900; color:#0a0f1e; flex-shrink:0;
-  }
-  .detail-name { font-size:1.15rem; font-weight:700; }
-  .detail-sub { font-size:0.78rem; color:var(--text2); margin-top:2px; }
-
-  .stats-grid { display:grid; grid-template-columns:repeat(3,1fr); gap:8px; }
-  .stat-card { background:var(--surface2); border-radius:10px; padding:12px; text-align:center; }
-  .stat-val { font-family:'DM Mono', monospace; font-size:1rem; font-weight:700; color:var(--gold); }
-  .stat-lbl { font-size:0.62rem; color:var(--text3); margin-top:3px; }
-
-  /* 12-month calendar */
-  /* ── PAYMENT CALENDAR ── */
-  .cal-year-block { margin-bottom:16px; }
-  .cal-year-label { font-size:0.7rem; font-weight:700; letter-spacing:0.1em; color:var(--text3); text-transform:uppercase; font-family:'DM Mono',monospace; margin-bottom:6px; }
-  .cal-grid { display:grid; grid-template-columns:repeat(12,1fr); gap:3px; }
-  .cal-cell {
-    border-radius:6px; padding:7px 2px; text-align:center;
-    border:1px solid var(--border); cursor:pointer; transition:all 0.15s;
-  }
-  .cal-cell:hover { filter:brightness(1.2); }
-  .cal-cell.paid    { background:rgba(6,214,160,0.18); border-color:rgba(6,214,160,0.4); }
-  .cal-cell.unpaid  { background:rgba(255,107,107,0.1); border-color:rgba(255,107,107,0.3); }
-  .cal-cell.no-act  { background:rgba(123,111,255,0.1); border-color:rgba(123,111,255,0.3); }
-  .cal-cell.half    { background:rgba(255,209,102,0.15); border-color:rgba(255,209,102,0.4); }
-  .cal-cell.future  { background:var(--surface2); border-color:var(--border); opacity:0.45; cursor:default; }
-  .cal-cell.current { outline:2px solid var(--gold); outline-offset:1px; }
-  .cal-cell.q-end   { border-right:3px solid rgba(255,209,102,0.5); }
-  .cal-month { font-family:'DM Mono',monospace; font-size:0.62rem; font-weight:700; color:var(--text2); display:block; }
-  .cal-cell.paid   .cal-month { color:var(--teal); }
-  .cal-cell.unpaid .cal-month { color:var(--warn); }
-  .cal-cell.no-act .cal-month { color:var(--accent2); }
-  .cal-cell.half   .cal-month { color:var(--gold); }
-  .cal-mark { font-size:0.8rem; display:block; margin-top:1px; }
-  .cal-legend { display:flex; gap:10px; flex-wrap:wrap; margin-bottom:10px; }
-  .cal-leg-item { display:flex; align-items:center; gap:4px; font-size:0.68rem; color:var(--text2); }
-  .cal-leg-dot { width:10px; height:10px; border-radius:3px; flex-shrink:0; }
-  .cal-exc-btn { padding:5px 12px; border-radius:8px; border:1px solid var(--border); background:var(--surface2); color:var(--text2); font-family:inherit; font-size:0.72rem; font-weight:600; cursor:pointer; transition:all 0.15s; }
-  .cal-exc-btn:hover { border-color:var(--gold); color:var(--gold); }
-
-  /* payment history table */
-  .history-table { width:100%; border-collapse:collapse; font-size:0.82rem; }
-  .history-table th {
-    text-align:left; padding:8px 10px; font-size:0.7rem; font-weight:700;
-    text-transform:uppercase; letter-spacing:0.06em; color:var(--text3);
-    border-bottom:1px solid var(--border);
-  }
-  .history-table td { padding:10px; border-bottom:1px solid var(--border); }
-  .history-table tr:last-child td { border-bottom:none; }
-  .history-table tr:hover td { background:var(--surface2); }
-  .h-amount { font-family:'DM Mono', monospace; color:var(--gold); font-weight:600; }
-  .h-photo { cursor:pointer; font-size:1.1rem; }
-  .h-period { font-family:'DM Mono', monospace; font-size:0.75rem; color:var(--teal); }
-
-  /* ── SUMMARY TAB ── */
-  .summary-stats { display:grid; grid-template-columns:1fr 1fr; gap:10px; margin-bottom:20px; }
-  .sum-card {
-    background:var(--surface); border:1px solid var(--border); border-radius:var(--radius); padding:16px;
-    position:relative; overflow:hidden;
-  }
-  .sum-card::before {
-    content:''; position:absolute; top:0; left:0; right:0; height:3px;
-  }
-  .sum-card.gold::before { background:var(--gold); }
-  .sum-card.teal::before { background:var(--teal); }
-  .sum-card.purple::before { background:var(--purple); }
-  .sum-card.red::before { background:var(--warn); }
-  .sum-val { font-family:'DM Mono', monospace; font-size:1.4rem; font-weight:700; margin-bottom:4px; }
-  .sum-val.gold { color:var(--gold); }
-  .sum-val.teal { color:var(--teal); }
-  .sum-val.purple { color:var(--purple); }
-  .sum-val.red { color:var(--warn); }
-  .sum-lbl { font-size:0.75rem; color:var(--text2); }
-
-  /* bar chart */
-  .bar-chart { background:var(--surface); border:1px solid var(--border); border-radius:var(--radius); padding:16px; margin-bottom:20px; }
-  .bar-chart-title { font-size:0.78rem; color:var(--text2); margin-bottom:12px; font-weight:600; }
-  .bars { display:flex; gap:6px; align-items:flex-end; height:100px; }
-  .bar-col { flex:1; display:flex; flex-direction:column; align-items:center; gap:4px; }
-  .bar { width:100%; border-radius:4px 4px 0 0; background:var(--gold); opacity:0.85; transition:opacity 0.2s; min-height:4px; }
-  .bar:hover { opacity:1; }
-  .bar-lbl { font-size:0.62rem; color:var(--text3); font-family:'DM Mono', monospace; }
-  .bar-amt { font-size:0.6rem; color:var(--gold); font-family:'DM Mono', monospace; }
-
-  /* payment records table */
-  .records-table-wrap { background:var(--surface); border:1px solid var(--border); border-radius:var(--radius); overflow:hidden; }
-  .records-table { width:100%; border-collapse:collapse; font-size:0.82rem; }
-  .records-table th { text-align:left; padding:10px 12px; font-size:0.7rem; font-weight:700; text-transform:uppercase; letter-spacing:0.06em; color:var(--text3); border-bottom:1px solid var(--border); background:var(--surface2); }
-  .records-table td { padding:10px 12px; border-bottom:1px solid var(--border); }
-  .records-table tr:last-child td { border-bottom:none; }
-  .records-table tr:hover td { background:var(--surface2); }
-  .rt-amount { font-family:'DM Mono', monospace; color:var(--gold); font-weight:600; }
-  .rt-period { font-family:'DM Mono', monospace; font-size:0.75rem; color:var(--teal); }
-  .filter-input {
-    width:100%; padding:11px 14px; background:var(--surface2); border:1px solid var(--border);
-    border-radius:var(--radius-sm); color:var(--text); font-family:inherit; font-size:0.9rem;
-    outline:none; margin-bottom:12px;
-  }
-  .filter-input:focus { border-color:var(--gold); }
-  .table-footer { padding:10px 14px; font-size:0.78rem; color:var(--text3); border-top:1px solid var(--border); display:flex; justify-content:space-between; }
-  .table-footer strong { color:var(--gold); font-family:'DM Mono', monospace; }
-
-  /* ── TOAST ── */
-  .toast {
-    position:fixed; bottom:calc(var(--safe-bottom) + 24px); left:50%; transform:translateX(-50%) translateY(100px);
-    background:var(--gold); color:#0a0f1e; padding:12px 24px; border-radius:30px;
-    font-weight:700; font-size:0.9rem; z-index:998; transition:transform 0.35s cubic-bezier(0.34,1.56,0.64,1);
-    white-space:nowrap; box-shadow:0 8px 32px rgba(255,209,102,0.35);
-  }
-  .toast.show { transform:translateX(-50%) translateY(0); }
-
-  /* ── DESKTOP ── */
-  @media (min-width:768px) {
-    .app-header { padding:16px 32px; }
-    .main { padding:28px 32px; max-width:1000px; }
-    .tab-btn { min-width:110px; font-size:0.85rem; }
-    .pay-layout { display:grid; grid-template-columns:1fr 1fr; gap:24px; align-items:start; }
-    .summary-stats { grid-template-columns:repeat(4,1fr); }
-    .cal-grid { grid-template-columns:repeat(12,1fr); }
-  }
-
-  @media (min-width:1024px) {
-    .main { max-width:1200px; }
-  }
-
-  .memo-textarea {
-    width: 100%;
-    min-height: 80px;
-    padding: 10px 12px;
-    background: var(--surface2, #1e2235);
-    border: 1px solid var(--border2, #2a2f45);
-    border-radius: 10px;
-    color: var(--text, #e8eaf6);
-    font-family: inherit;
-    font-size: 0.88rem;
-    line-height: 1.6;
-    outline: none;
-    resize: none;
-    overflow: hidden;
-    transition: border-color 0.2s;
-    white-space: pre-wrap;
-  }
-  .memo-textarea:focus {
-    border-color: var(--accent, #00e5ff);
-    box-shadow: 0 0 0 2px rgba(0,229,255,0.1);
-  }
-  .memo-textarea::placeholder { color: var(--text3, #4a5380); }
-
+  @media(min-width:1024px){.main{max-width:1200px;}}
 </style>
 </head>
 <body>
@@ -444,30 +203,27 @@
 <header class="app-header">
   <div class="app-title">💴 会計管理 <span>Athletic Club</span></div>
   <div style="display:flex;gap:6px;">
+    <a href="index.html" class="header-link">🏠 HOME</a>
     <a href="attendance.html" class="header-link">⚡ 出席</a>
-    <a href="performance.html" class="header-link">📊 計測</a>
     <a href="coach.html" class="header-link">🏃 コーチ</a>
   </div>
 </header>
 
 <div class="tab-bar">
-  <button class="tab-btn active" onclick="switchTab('payment')">💰 月謝登録</button>
-  <button class="tab-btn" onclick="switchTab('lookup')">🔍 個人参照</button>
-  <button class="tab-btn" onclick="switchTab('records')">📄 一覧</button>
-  <button class="tab-btn" onclick="switchTab('summary')">📊 集計</button>
+  <button class="tab-btn active" onclick="switchTab('payment',this)">💰 月謝登録</button>
+  <button class="tab-btn" onclick="switchTab('lookup',this)">🔍 個人参照</button>
+  <button class="tab-btn" onclick="switchTab('records',this)">📄 一覧</button>
+  <button class="tab-btn" onclick="switchTab('summary',this)">📊 集計</button>
 </div>
 
 <div class="main">
 
-  <!-- ── TAB: PAYMENT ── -->
+  <!-- TAB: PAYMENT -->
   <div id="tab-payment" class="tab-panel active">
     <div class="pay-layout">
       <div class="pay-left">
-
-        <!-- Member Select -->
         <div class="section-title">会員選択</div>
         <div class="member-select-bar">
-
           <div class="search-wrap">
             <span class="search-icon">🔍</span>
             <input class="search-input" id="paySearch" type="text" placeholder="名前で検索..." autocomplete="off" oninput="onPaySearch(this.value)">
@@ -475,7 +231,6 @@
           </div>
         </div>
 
-        <!-- Selected chip -->
         <div class="selected-member-chip" id="selectedChip">
           <div class="chip-avatar" id="chipAvatar">?</div>
           <div>
@@ -485,18 +240,14 @@
           <button class="chip-clear" onclick="clearMember()">✕</button>
         </div>
 
-        <!-- 年間費用バッジ（支払登録画面用） -->
-        <div id="annualBadges" style="display:none; margin-bottom:12px; display:none;">
+        <div id="annualBadges" style="display:none;margin-bottom:12px;">
           <div id="annualBadgeContent"></div>
         </div>
 
-        <!-- Payment form -->
         <div class="form-card">
-
-          <!-- コース選択 -->
           <div class="form-section">
             <label class="form-label">コース選択</label>
-            <div class="course-pills" id="coursePills">
+            <div class="course-pills">
               <button class="course-pill" id="course-1" onclick="selectCourse(1)">
                 <div class="course-name">月1回コース</div>
                 <div class="course-price">¥1,500 / 月</div>
@@ -508,42 +259,38 @@
             </div>
           </div>
 
-          <!-- 支払い種別 -->
           <div class="form-section">
             <label class="form-label">支払い種別</label>
             <select class="form-select" id="payType" onchange="onPayTypeChange()">
-              <optgroup label="── 初めての登録（月1回目参加）──">
-                <option value="init_first_3">初回セット・月1回目参加＋翌2ヶ月（計3ヶ月）</option>
-                <option value="init_first_2">初回セット・月1回目参加＋翌1ヶ月（計2ヶ月）</option>
-                <option value="init_first_1">初回セット・月1回目参加のみ（計1ヶ月）</option>
+              <optgroup label="── 月謝 ──">
+                <option value="月謝_1">月謝 1ヶ月分</option>
+                <option value="月謝_2">月謝 2ヶ月分</option>
+                <option value="月謝_3" selected>月謝 3ヶ月分</option>
+                <option value="月謝_4">月謝 4ヶ月分</option>
+                <option value="月謝_5">月謝 5ヶ月分</option>
+                <option value="月謝_6">月謝 6ヶ月分</option>
               </optgroup>
-              <optgroup label="── 初めての登録（月2回目参加）──">
-                <option value="init_second_3">初回セット・月2回目参加＋翌2ヶ月（計3ヶ月）</option>
-                <option value="init_second_2">初回セット・月2回目参加＋翌1ヶ月（計2ヶ月）</option>
-                <option value="init_second_1">初回セット・月2回目参加のみ（協会費＋保険のみ）</option>
-              </optgroup>
-              <optgroup label="── 月謝のみ ──">
-                <option value="月謝_2">月謝2ヶ月分</option>
-                <option value="月謝_3">月謝3ヶ月分</option>
-                <option value="月謝_4">月謝4ヶ月分</option>
-                <option value="月謝_5">月謝5ヶ月分</option>
-                <option value="月謝_6">月謝6ヶ月分</option>
+              <optgroup label="── 初回セット ──">
+                <option value="init_first_3">初回セット・1回目参加＋翌2ヶ月（計3ヶ月）</option>
+                <option value="init_first_2">初回セット・1回目参加＋翌1ヶ月（計2ヶ月）</option>
+                <option value="init_first_1">初回セット・1回目参加のみ</option>
+                <option value="init_second_3">初回セット・2回目参加＋翌2ヶ月（計3ヶ月）</option>
+                <option value="init_second_2">初回セット・2回目参加＋翌1ヶ月（計2ヶ月）</option>
+                <option value="init_second_1">初回セット・2回目参加のみ（協会費＋保険）</option>
               </optgroup>
               <optgroup label="── 年間費用のみ ──">
-                <option value="協会登録費">協会登録費（¥600固定）</option>
-                <option value="保険料">スポーツ保険（¥800固定）</option>
+                <option value="協会登録費">協会登録費（¥600）</option>
+                <option value="保険料">スポーツ保険（¥800）</option>
               </optgroup>
               <option value="その他">その他</option>
             </select>
           </div>
 
-          <!-- 月謝セクション（月謝・初回セットのみ表示） -->
           <div id="monthlySection">
             <div class="form-section">
               <label class="form-label">開始月</label>
               <input class="form-input" id="startMonth" type="month" oninput="updateMonthsPreview()">
             </div>
-
             <div class="form-section">
               <label class="form-label" id="monthsLabel">対象月 — タップして休会月を除外</label>
               <div class="months-preview" id="monthsPreview">
@@ -553,14 +300,12 @@
             </div>
           </div>
 
-          <!-- 料金内訳 -->
           <div class="fee-breakdown" id="feeBreakdown" style="display:none;">
             <div class="breakdown-title">料金内訳</div>
             <div id="breakdownLines"></div>
             <div class="breakdown-total" id="breakdownTotal"></div>
           </div>
 
-          <!-- 金額・支払方法 -->
           <div class="form-section form-row">
             <div>
               <label class="form-label">金額 (¥)</label>
@@ -569,9 +314,7 @@
             <div>
               <label class="form-label">支払方法</label>
               <select class="form-select" id="payMethod" onchange="updateSummary()">
-                <option>現金</option>
-                <option>振込</option>
-                <option>カード</option>
+                <option>現金</option><option>振込</option><option>カード</option>
               </select>
             </div>
           </div>
@@ -588,12 +331,11 @@
           </div>
         </div>
 
-        <!-- Camera -->
         <div class="form-card">
-          <div class="section-title">領収書・証明写真</div>
+          <div class="section-title">領収書写真（任意）</div>
           <div class="camera-zone" id="cameraZone">
             <div class="camera-placeholder" id="cameraPlaceholder">
-              <div class="cam-icon">📷</div>
+              <div style="font-size:2rem;">📷</div>
               <div>カメラで撮影または画像を選択</div>
             </div>
             <video class="camera-video" id="cameraVideo" autoplay playsinline muted></video>
@@ -602,7 +344,7 @@
           <div class="camera-controls">
             <button class="cam-btn cam-btn-start" onclick="toggleCamera()">📷 カメラ</button>
             <button class="cam-btn cam-btn-shoot" id="shootBtn" onclick="capturePhoto()" disabled>● 撮影</button>
-            <label class="cam-btn cam-btn-input" style="display:flex;align-items:center;justify-content:center;cursor:pointer;">
+            <label class="cam-btn cam-btn-start" style="display:flex;align-items:center;justify-content:center;cursor:pointer;">
               🖼 選択
               <input type="file" accept="image/*" class="file-input" id="fileInput" onchange="onFileSelect(event)">
             </label>
@@ -612,7 +354,6 @@
       </div>
 
       <div class="pay-right">
-        <!-- Confirm box -->
         <div class="confirm-box" id="confirmBox">
           <div class="section-title">確認</div>
           <div class="confirm-row"><span class="clabel">会員</span><span class="cval" id="cfMember">—</span></div>
@@ -622,10 +363,8 @@
           <div class="confirm-row"><span class="clabel">写真</span><span class="cval" id="cfPhotos">0枚</span></div>
           <div class="confirm-row" id="dupWarningRow" style="display:none;"><span class="clabel">⚠ 重複</span><span class="cval warn" id="cfDupWarning">—</span></div>
           <div class="confirm-row"><span class="clabel">合計</span><span class="cval big" id="cfAmount">¥—</span></div>
-          <button class="submit-btn" onclick="submitPayment()">💰 支払いを登録する</button>
+          <button class="submit-btn" id="submitBtn" onclick="submitPayment()">💰 支払いを登録する</button>
         </div>
-
-        <!-- placeholder when no member -->
         <div id="noMemberHint" style="text-align:center;padding:40px 20px;color:var(--text3);">
           <div style="font-size:3rem;margin-bottom:12px;">💴</div>
           <p style="font-size:0.85rem;line-height:1.6;">会員を選択して<br>支払い情報を入力してください</p>
@@ -634,20 +373,15 @@
     </div>
   </div>
 
-  <!-- ── TAB: LOOKUP ── -->
+  <!-- TAB: LOOKUP -->
   <div id="tab-lookup" class="tab-panel">
     <div class="section-title">会員を選択</div>
-    <div class="member-select-bar lookup-search-wrap" style="margin-bottom:16px;position:relative;">
-      <div style="position:relative;">
-        <span style="position:absolute;left:12px;top:50%;transform:translateY(-50%);color:var(--text3);pointer-events:none;">🔍</span>
-        <input type="text" id="lookupSearchInput" placeholder="名前・よみがなで検索..." autocomplete="off"
-          oninput="onLookupSearch(this.value)"
-          style="width:100%;padding:12px 12px 12px 36px;background:var(--surface);border:1px solid var(--border);
-            border-radius:var(--radius-sm);color:var(--text);font-family:inherit;font-size:0.95rem;outline:none;">
-      </div>
-      <div id="lookupSearchResults" style="display:none;position:absolute;top:100%;left:0;right:0;
-        background:var(--surface);border:1px solid var(--border);border-radius:var(--radius-sm);
-        margin-top:4px;z-index:50;overflow:hidden;max-height:280px;overflow-y:auto;"></div>
+    <div style="position:relative;margin-bottom:16px;">
+      <span style="position:absolute;left:12px;top:50%;transform:translateY(-50%);color:var(--text3);pointer-events:none;">🔍</span>
+      <input type="text" id="lookupSearchInput" placeholder="名前・よみがなで検索..." autocomplete="off"
+        oninput="onLookupSearch(this.value)"
+        style="width:100%;padding:12px 12px 12px 36px;background:var(--surface);border:1px solid var(--border);border-radius:var(--radius-sm);color:var(--text);font-family:inherit;font-size:0.95rem;outline:none;">
+      <div id="lookupSearchResults" style="display:none;position:absolute;top:100%;left:0;right:0;background:var(--surface);border:1px solid var(--border);border-radius:var(--radius-sm);margin-top:4px;z-index:50;overflow:hidden;max-height:280px;overflow-y:auto;"></div>
     </div>
 
     <div class="member-detail" id="memberDetail">
@@ -665,58 +399,44 @@
           <div class="stat-card"><div class="stat-val" id="dStatMonths">—</div><div class="stat-lbl">支払済月数</div></div>
           <div class="stat-card"><div class="stat-val" id="dStatLast">—</div><div class="stat-lbl">最終支払</div></div>
         </div>
-
-        <!-- 年間費用ステータス -->
         <div style="margin-top:14px;">
           <div class="section-title" style="margin-bottom:10px;">年間費用ステータス</div>
           <div id="annualFeeStatus"></div>
         </div>
       </div>
 
-      <div class="section-title" style="display:flex;justify-content:space-between;align-items:center;">
-        <span>支払いカレンダー</span>
-        <div style="display:flex;gap:6px;">
-          <button onclick="addCalException('skip')" class="cal-exc-btn">＋ 活動なし月</button>
-          <button onclick="addCalException('half')" class="cal-exc-btn">＋ 途中参加月</button>
-        </div>
-      </div>
+      <div class="section-title">支払いカレンダー</div>
       <div class="cal-legend">
         <div class="cal-leg-item"><div class="cal-leg-dot" style="background:rgba(6,214,160,0.5);"></div>支払済 ○</div>
         <div class="cal-leg-item"><div class="cal-leg-dot" style="background:rgba(255,107,107,0.4);"></div>未払い ✗</div>
-        <div class="cal-leg-item"><div class="cal-leg-dot" style="background:rgba(123,111,255,0.4);"></div>活動なし △</div>
-        <div class="cal-leg-item"><div class="cal-leg-dot" style="background:rgba(255,209,102,0.4);"></div>途中参加 ½</div>
         <div class="cal-leg-item"><div class="cal-leg-dot" style="background:var(--surface2);opacity:0.5;"></div>未来</div>
       </div>
       <div id="monthCalendar"></div>
 
-      <div class="section-title">支払い履歴</div>
+      <div class="section-title" style="margin-top:16px;">支払い履歴</div>
       <div class="records-table-wrap">
         <table class="history-table">
-          <thead>
-            <tr><th>日付</th><th>種別</th><th>対象月</th><th>金額</th><th>方法</th><th>写真</th></tr>
-          </thead>
+          <thead><tr><th>日付</th><th>種別</th><th>対象月</th><th>金額</th><th>方法</th></tr></thead>
           <tbody id="historyTbody"></tbody>
         </table>
       </div>
     </div>
   </div>
 
-  <!-- ── TAB: RECORDS ── -->
+  <!-- TAB: RECORDS -->
   <div id="tab-records" class="tab-panel">
     <div class="section-title">全支払い記録</div>
     <input class="filter-input" id="filterInput" type="text" placeholder="名前・種別・月で絞り込み..." oninput="filterRecords(this.value)">
     <div class="records-table-wrap">
       <table class="records-table">
-        <thead>
-          <tr><th>日付</th><th>会員</th><th>種別</th><th>対象月</th><th>金額</th><th>方法</th><th>写真</th></tr>
-        </thead>
+        <thead><tr><th>日付</th><th>会員</th><th>種別</th><th>対象月</th><th>金額</th><th>方法</th></tr></thead>
         <tbody id="recordsTbody"></tbody>
       </table>
       <div class="table-footer"><span id="recordsCount">0件</span><span>合計: <strong id="recordsTotal">¥0</strong></span></div>
     </div>
   </div>
 
-  <!-- ── TAB: SUMMARY ── -->
+  <!-- TAB: SUMMARY -->
   <div id="tab-summary" class="tab-panel">
     <div class="section-title">集計</div>
     <div class="summary-stats">
@@ -725,188 +445,184 @@
       <div class="sum-card purple"><div class="sum-val purple" id="sumAll">¥0</div><div class="sum-lbl">全種別合計</div></div>
       <div class="sum-card red"><div class="sum-val red" id="sumUnpaid">0名</div><div class="sum-lbl">今月未払い</div></div>
     </div>
-
     <div class="bar-chart">
       <div class="bar-chart-title">月謝収入推移（過去6ヶ月）</div>
       <div class="bars" id="barChart"></div>
     </div>
-
     <div class="section-title">今月未払い会員</div>
     <div id="unpaidList" style="display:flex;flex-direction:column;gap:8px;"></div>
   </div>
 
-</div><!-- /main -->
+</div>
 
-<!-- Lightbox -->
 <div class="lightbox" id="lightbox" onclick="closeLightbox()">
   <img id="lightboxImg" src="" alt="拡大">
 </div>
-
 <div class="toast" id="toast"></div>
 
 <script>
-// ── CONFIG ──
 const GAS_URL = 'https://script.google.com/macros/s/AKfycbyVH4yXtC0PsG4gwbWITAnsMFUdwvMSij2hNsZ9z4bfRTRS0RxHzqvZZeaN3AVIEOte/exec';
 
 function jsonpFetch(url) {
   return new Promise((resolve, reject) => {
     const cbName = '_cb_' + Date.now() + '_' + Math.random().toString(36).slice(2,7);
     const script = document.createElement('script');
-    const timer = setTimeout(() => {
-      delete window[cbName]; script.remove();
-      reject(new Error('JSONP timeout'));
-    }, 12000);
-    window[cbName] = (data) => {
-      clearTimeout(timer); delete window[cbName]; script.remove();
-      resolve(data);
-    };
+    const timer = setTimeout(() => { delete window[cbName]; script.remove(); reject(new Error('JSONP timeout')); }, 15000);
+    window[cbName] = (data) => { clearTimeout(timer); delete window[cbName]; script.remove(); resolve(data); };
     script.src = url + (url.includes('?') ? '&' : '?') + 'callback=' + cbName;
     script.onerror = () => { clearTimeout(timer); delete window[cbName]; script.remove(); reject(new Error('Script load error')); };
     document.head.appendChild(script);
   });
 }
 
-// ── 料金定数（固定値）──
-const COURSE_FEES = { 1: 1500, 2: 2400 }; // 月1回・月2回
-const ASSOC_FEE = 600;   // 協会登録費（年間固定）
-const INSURANCE_FEE = 800; // スポーツ保険（年間固定）
-const MONTHS_PER_PERIOD = 3; // 3ヶ月固定
+// ── 定数 ──
+const COURSE_FEES = { 1: 1500, 2: 2400 };
+const ASSOC_FEE   = 600;
+const INSURANCE_FEE = 800;
+const FISCAL_START = '2026/04';
 
-// ── 年度ヘルパー ──
-// 年度キー: '2025' = 2025年4月〜2026年3月
 function getFiscalYear(date) {
   const d = date || new Date();
   const y = d.getFullYear(), m = d.getMonth() + 1;
   return String(m >= 4 ? y : y - 1);
 }
-function getFiscalYearLabel(fy) {
-  return `${fy}年度（${fy}/4〜${parseInt(fy)+1}/3）`;
-}
+function getFiscalYearLabel(fy) { return `${fy}年度（${fy}/4〜${parseInt(fy)+1}/3）`; }
 function currentFiscalYear() { return getFiscalYear(new Date()); }
 
-// ── データ（GASから読み込む）──
-let MEMBERS = []; // GASから読み込む
-let PAYMENTS = []; // GASから読み込む
+// ── データ ──
+let MEMBERS  = [];
+let PAYMENTS = [];
 
-// GASから会員リストと支払い記録を取得
 async function loadAccountingData() {
   try {
-    // まず会員データだけ読み込む（支払いは別途）
-    const mData = await jsonpFetch(GAS_URL + '?action=getMembers');
+    showToast('データを読み込み中...', false, true);
+    const [mData, pData] = await Promise.all([
+      jsonpFetch(GAS_URL + '?action=getMembers'),
+      jsonpFetch(GAS_URL + '?action=getAllPayments').catch(() => ({ payments: [] })),
+    ]);
+
     if (mData.members && mData.members.length) {
       MEMBERS = mData.members.map(m => ({
         ...m,
-        courseType: m.course && m.course.includes('1回') ? 1 : 2,
+        courseType: m.course && (m.course.includes('1回') || m.course === '月に1回の参加') ? 1 : 2,
         paidMonths: [],
         skippedMonths: [],
         halfMonths: [],
         assocPaidYears: [],
         insurancePaidYears: [],
-        isFirstTime: m.isFirstTime || false,
       }));
     }
-    // 支払い記録を読み込んで月謝支払い済みを反映
-    try {
-      const pData = await jsonpFetch(GAS_URL + '?action=getAllPayments');
-      if (pData.payments && pData.payments.length) {
-        PAYMENTS = pData.payments;
-        PAYMENTS.forEach(p => {
-          const m = MEMBERS.find(x => 
-            String(x.id) === String(p.memberId) || 
-            String(x.nfcId) === String(p.nfcId)
-          );
-          if (!m) return;
-          if (p.months) {
-            const months = Array.isArray(p.months) ? p.months : p.months.split(',').filter(Boolean);
-            months.forEach(mo => {
-              if (mo && !m.paidMonths.includes(mo)) m.paidMonths.push(mo);
-            });
-          }
-        });
-      }
-    } catch(e2) { /* 支払い記録なくても会員データは使える */ }
-    // 検索窓を再構築
-    buildPaySearchList();
-    buildLookupSearchList();
+
+    if (pData.payments && pData.payments.length) {
+      PAYMENTS = pData.payments.map(p => ({
+        ...p,
+        amount: parseFloat(p.amount) || 0,
+        photoIds: p.photoIds || '',
+      }));
+      // paidMonths を会員に反映
+      PAYMENTS.forEach(p => {
+        const m = MEMBERS.find(x =>
+          String(x.id) === String(p.memberId) ||
+          String(x.nfcId) === String(p.nfcId) ||
+          String(x.nfcId) === String(p.memberId)
+        );
+        if (!m) return;
+        if (p.months) {
+          const months = Array.isArray(p.months)
+            ? p.months
+            : String(p.months).split(',').filter(Boolean);
+          months.forEach(mo => {
+            const clean = mo.trim();
+            if (clean && !m.paidMonths.includes(clean)) m.paidMonths.push(clean);
+          });
+        }
+        // 初回セットで協会費・保険を支払済に
+        const ty = (p.type || '');
+        if (ty.includes('初回') || ty.startsWith('init_')) {
+          const fy = getFiscalYear(p.date ? new Date(p.date) : new Date());
+          if (!m.assocPaidYears.includes(fy)) m.assocPaidYears.push(fy);
+          if (!m.insurancePaidYears.includes(fy)) m.insurancePaidYears.push(fy);
+        }
+        if (ty === '協会登録費') {
+          const fy = getFiscalYear(p.date ? new Date(p.date) : new Date());
+          if (!m.assocPaidYears.includes(fy)) m.assocPaidYears.push(fy);
+        }
+        if (ty === '保険料') {
+          const fy = getFiscalYear(p.date ? new Date(p.date) : new Date());
+          if (!m.insurancePaidYears.includes(fy)) m.insurancePaidYears.push(fy);
+        }
+      });
+    }
+    showToast(`✓ ${MEMBERS.length}名 読み込みました`);
   } catch(e) {
-    console.error('Data load error:', e);
+    showToast('⚠ データ読み込み失敗: ' + e.message, true);
   }
 }
 
-function buildPaySearchList() { /* 検索は入力時に動的フィルタ */ }
-function buildLookupSearchList() { /* 検索は入力時に動的フィルタ */ }
-
-function onLookupSearch(q) {
-  const results = document.getElementById('lookupSearchResults');
-  if (!results) return;
-  if (!q.trim()) { results.style.display = 'none'; return; }
-  const ql = q.toLowerCase();
-  const matched = MEMBERS.filter(m =>
-    (m.name||'').toLowerCase().includes(ql) ||
-    (m.furigana||'').toLowerCase().includes(ql) ||
-    (m.nfcId||'').toLowerCase().includes(ql)
-  );
-  if (!matched.length) { results.style.display = 'none'; return; }
-  results.innerHTML = matched.map(m => `
-    <div onclick="selectMemberForLookup('${m.id}')"
-      style="padding:10px 14px;cursor:pointer;border-bottom:1px solid var(--border);
-        display:flex;align-items:center;gap:10px;"
-      onmouseover="this.style.background='var(--surface2)'"
-      onmouseout="this.style.background=''">
-      <div style="width:32px;height:32px;border-radius:50%;background:var(--purple);
-        display:flex;align-items:center;justify-content:center;color:#fff;font-weight:700;flex-shrink:0;">
-        ${(m.name||'?')[0]}
-      </div>
-      <div>
-        <div style="font-weight:600;font-size:0.9rem;">${m.name}</div>
-        <div style="font-size:0.75rem;color:var(--text2);">${m.furigana||''} · ${m.course||'コース未設定'}</div>
-      </div>
-    </div>
-  `).join('');
-  results.style.display = 'block';
+// ── 月配列ヘルパー ──
+function getMonthsArray(p) {
+  if (!p || !p.months) return [];
+  if (Array.isArray(p.months)) return p.months.filter(Boolean);
+  return String(p.months).split(',').filter(Boolean);
 }
 
-function selectMemberForLookup(id) {
-  const results = document.getElementById('lookupSearchResults');
-  if (results) results.style.display = 'none';
-  const input = document.getElementById('lookupSearchInput');
-  const m = MEMBERS.find(x => x.id === id);
-  if (input && m) input.value = m.name;
-  lookupMember(id);  // 個人参照用の関数を呼ぶ
+// ── PAY TYPE ──
+function getPayTypeInfo(type) {
+  const isInit     = type.startsWith('init_');
+  const isSecond   = type.startsWith('init_second');
+  const isFirst    = type.startsWith('init_first');
+  const monthlyOnly = type.startsWith('月謝_');
+  let months = 3;
+  if (type.endsWith('_1')) months = 1;
+  else if (type.endsWith('_2')) months = 2;
+  else if (type.endsWith('_3')) months = 3;
+  else if (type === '月謝_4') months = 4;
+  else if (type === '月謝_5') months = 5;
+  else if (type === '月謝_6') months = 6;
+  return { isInit, isFirst, isSecond, monthlyOnly, months };
 }
-
-let selectedMemberObj = null;
-let selectedCourse = 0; // 1 or 2
-let skippedMonths = new Set(); // 休会月
-let capturedPhotos = [];
-let cameraStream = null;
 
 // ── MEMBER SELECT ──
+let selectedMemberObj = null;
+let selectedCourse    = 0;
+let skippedMonths     = new Set();
+let capturedPhotos    = [];
+let cameraStream      = null;
+
+function onPaySearch(q) {
+  const c = document.getElementById('paySearchResults');
+  if (!q.trim()) { c.classList.remove('show'); return; }
+  const ql = q.toLowerCase();
+  const r = MEMBERS.filter(m =>
+    (m.name||'').toLowerCase().includes(ql) ||
+    (m.furigana||'').toLowerCase().includes(ql)
+  );
+  if (!r.length) { c.classList.remove('show'); return; }
+  c.innerHTML = r.slice(0, 10).map(m => `
+    <div class="search-result-item" onclick="selectMember('${m.id}');document.getElementById('paySearch').value='';document.getElementById('paySearchResults').classList.remove('show');">
+      <div class="result-avatar">${(m.name||'?')[0]}</div>
+      <div>
+        <div class="result-name">${m.name}</div>
+        <div class="result-meta">${m.furigana||'—'} · ${m.courseType===1?'月1回':'月2回'}コース</div>
+      </div>
+    </div>`).join('');
+  c.classList.add('show');
+}
+
 function selectMember(id) {
   const m = MEMBERS.find(x => x.id === id);
   if (!m) return;
   selectedMemberObj = m;
   document.getElementById('selectedChip').classList.add('show');
-  document.getElementById('chipAvatar').textContent = m.name[0];
+  document.getElementById('chipAvatar').textContent = (m.name||'?')[0];
   document.getElementById('chipName').textContent = m.name;
-  const courseLabel = m.courseType === 1 ? '月1回' : '月2回';
-  const firstLabel = m.isFirstTime ? (m.courseType === 1 ? ' · 初月無料' : ' · 初月1回分') : '';
-  document.getElementById('chipSub').textContent = `${courseLabel}コース${firstLabel} · ${m.furigana}`;
+  document.getElementById('chipSub').textContent = `${m.courseType===1?'月1回':'月2回'}コース · ${m.furigana||''}`;
   document.getElementById('noMemberHint').style.display = 'none';
-
-  // Auto-select course from member profile
   selectCourse(m.courseType, true);
-
-  // Auto-set pay type based on first-time status
-  if (m.isFirstTime) {
-    document.getElementById('payType').value = 'init_first_3'; // デフォルト：初回3ヶ月
-  } else {
-    document.getElementById('payType').value = '月謝_3';
-  }
-  onPayTypeChange();
   skippedMonths.clear();
   updateMonthsPreview();
   renderAnnualBadges(m);
+  updateSummary();
 }
 
 function clearMember() {
@@ -920,20 +636,6 @@ function clearMember() {
   document.querySelectorAll('.course-pill').forEach(p => p.classList.remove('active'));
 }
 
-function onPaySearch(q) {
-  const c = document.getElementById('paySearchResults');
-  if (!q.trim()) { c.classList.remove('show'); return; }
-  const r = MEMBERS.filter(m => m.name.includes(q) || m.furigana.includes(q));
-  if (!r.length) { c.classList.remove('show'); return; }
-  c.innerHTML = r.map(m => `
-    <div class="search-result-item" onclick="selectMember('${m.id}');document.getElementById('paySearch').value='';document.getElementById('paySearchResults').classList.remove('show');">
-      <div class="result-avatar">${m.name[0]}</div>
-      <div><div class="result-name">${m.name}</div><div class="result-meta">${m.furigana} · ${m.courseType===1?'月1回':'月2回'}コース</div></div>
-    </div>`).join('');
-  c.classList.add('show');
-}
-
-// ── COURSE SELECT ──
 function selectCourse(n, silent=false) {
   selectedCourse = n;
   document.getElementById('course-1').classList.toggle('active', n === 1);
@@ -941,61 +643,28 @@ function selectCourse(n, silent=false) {
   if (!silent) { calcAndFill(); updateSummary(); }
 }
 
-// ── PAY TYPE CHANGE ──
-function getPayTypeInfo(type) {
-  // 種別から月数・初回フラグ・2回目フラグを返す
-  const isInit = type.startsWith('init_');
-  const isSecond = type.startsWith('init_second');
-  const isFirst = type.startsWith('init_first');
-  const monthlyOnly = type.startsWith('月謝_');
-  let months = 3;
-  if (type.endsWith('_1')) months = 1;
-  else if (type.endsWith('_2')) months = 2;
-  else if (type.endsWith('_3')) months = 3;
-  else if (type === '月謝_4') months = 4;
-  else if (type === '月謝_5') months = 5;
-  else if (type === '月謝_6') months = 6;
-  return { isInit, isFirst, isSecond, monthlyOnly, months };
-}
-
 function onPayTypeChange() {
   const type = document.getElementById('payType').value;
-  const info = getPayTypeInfo(type);
   const showMonthly = type !== '協会登録費' && type !== '保険料' && type !== 'その他';
   document.getElementById('monthlySection').style.display = showMonthly ? '' : 'none';
-
-  // ラベルを動的に更新
-  const lbl = document.getElementById('monthsLabel');
-  if (lbl) {
-    if (info.isSecond && info.months === 1) {
-      lbl.textContent = '初月（月2回目参加・月謝なし）';
-    } else {
-      lbl.textContent = `対象月（${info.months}ヶ月）— タップして休会月を除外`;
-    }
-  }
   calcAndFill();
   updateSummary();
 }
 
-// ── MONTH TOGGLE (休会) ──
 function toggleMonth(mo) {
-  if (skippedMonths.has(mo)) {
-    skippedMonths.delete(mo);
-  } else {
-    skippedMonths.add(mo);
-  }
+  if (skippedMonths.has(mo)) skippedMonths.delete(mo);
+  else skippedMonths.add(mo);
   document.getElementById('skippedNote').style.display = skippedMonths.size ? '' : 'none';
   calcAndFill();
   updateSummary();
 }
 
-// ── CALCULATE & AUTO-FILL ──
 function calcAndFill() {
   const type = document.getElementById('payType').value;
   const info = getPayTypeInfo(type);
   const startVal = document.getElementById('startMonth').value;
   const normalFee = COURSE_FEES[selectedCourse] || 0;
-  const firstFee = 1500; // 初月1回分は常に¥1,500
+  const firstFee  = 1500;
 
   let fiscalYear = currentFiscalYear();
   if (startVal) {
@@ -1015,42 +684,27 @@ function calcAndFill() {
   } else if (type === '保険料') {
     lines = [{ label: `スポーツ保険 ${getFiscalYearLabel(fiscalYear)}`, amt: INSURANCE_FEE, alreadyPaid: insAlreadyPaid }];
     if (!insAlreadyPaid) total = INSURANCE_FEE;
+  } else if (type === 'その他') {
+    // 金額は手動入力
   } else if (startVal && selectedCourse) {
     const [y, m] = startVal.split('-').map(Number);
 
     if (info.isSecond && info.months === 1) {
-      // 月2回目参加・初月のみ → 月謝なし、協会費+保険のみ
       lines.push({ label: '月謝 初月（月2回目参加・無料）', amt: 0, skip: true });
     } else {
-      // 月謝行を生成
       for (let i = 0; i < info.months; i++) {
         const d = new Date(y, m - 1 + i, 1);
         const key = `${d.getFullYear()}/${String(d.getMonth()+1).padStart(2,'0')}`;
         const skipped = skippedMonths.has(key);
         const dupPaid = selectedMemberObj?.paidMonths?.includes(key);
-
         let fee = normalFee;
         let label = `月謝 ${key}`;
-
-        // 初月の料金判定
-        if (i === 0) {
-          if (info.isSecond) {
-            // 月2回目参加：初月無料（でも翌月から月謝発生）
-            fee = 0;
-            label += '（月2回目参加・無料）';
-          } else if (info.isFirst) {
-            // 月1回目参加：初月は1回分¥1,500
-            fee = firstFee;
-            label += '（初月1回分）';
-          }
-        }
-
+        if (i === 0 && info.isFirst) { fee = firstFee; label += '（初月1回分）'; }
+        else if (i === 0 && info.isSecond) { fee = 0; label += '（月2回目参加・無料）'; }
         if (!skipped && !dupPaid) total += fee;
         lines.push({ label, amt: fee, skip: skipped || (i===0 && info.isSecond), dup: dupPaid });
       }
     }
-
-    // 初回セットの場合は協会費・保険を追加
     if (info.isInit) {
       lines.push({ label: `協会登録費 ${getFiscalYearLabel(fiscalYear)}`, amt: ASSOC_FEE, fixed: true, alreadyPaid: assocAlreadyPaid });
       lines.push({ label: `スポーツ保険 ${getFiscalYearLabel(fiscalYear)}`, amt: INSURANCE_FEE, fixed: true, alreadyPaid: insAlreadyPaid });
@@ -1059,7 +713,6 @@ function calcAndFill() {
     }
   }
 
-  // 内訳を描画
   const bd = document.getElementById('feeBreakdown');
   const bl = document.getElementById('breakdownLines');
   const bt = document.getElementById('breakdownTotal');
@@ -1069,22 +722,20 @@ function calcAndFill() {
       <div class="breakdown-line ${l.skip || l.alreadyPaid ? 'skip' : ''}">
         <span>${l.label}
           ${l.dup ? '<span class="bl-badge">支払済</span>' : ''}
-          ${l.skip ? '<span class="bl-badge">対象外</span>' : ''}
+          ${l.skip && !l.alreadyPaid ? '<span class="bl-badge">対象外</span>' : ''}
           ${l.alreadyPaid ? '<span class="bl-badge paid-badge">今年度済</span>' : ''}
         </span>
-        <span class="bl-amt ${l.amt===0?'skip':''}">¥${l.amt.toLocaleString()}</span>
+        <span class="bl-amt">¥${l.amt.toLocaleString()}</span>
       </div>`).join('') + '<hr class="breakdown-sep">';
     bt.innerHTML = `<span class="bt-label">合計</span><span class="bt-val">¥${total.toLocaleString()}</span>`;
   } else {
     bd.style.display = 'none';
   }
-
   if (total > 0) document.getElementById('payAmount').value = total;
   else if (lines.length) document.getElementById('payAmount').value = 0;
   return total;
 }
 
-// ── MONTHS PREVIEW ──
 function updateMonthsPreview() {
   const startVal = document.getElementById('startMonth').value;
   const type = document.getElementById('payType').value;
@@ -1092,14 +743,11 @@ function updateMonthsPreview() {
   const preview = document.getElementById('monthsPreview');
   if (!startVal) {
     preview.innerHTML = '<span style="color:var(--text3);font-size:0.78rem;">開始月を選択してください</span>';
-    calcAndFill();
-    updateSummary();
-    return;
+    calcAndFill(); updateSummary(); return;
   }
   const [y, m] = startVal.split('-').map(Number);
-  const numMonths = info.months || 3;
   const months = [];
-  for (let i = 0; i < numMonths; i++) {
+  for (let i = 0; i < (info.months || 1); i++) {
     const d = new Date(y, m - 1 + i, 1);
     months.push(`${d.getFullYear()}/${String(d.getMonth()+1).padStart(2,'0')}`);
   }
@@ -1110,11 +758,135 @@ function updateMonthsPreview() {
     let cls = 'new';
     if (isDup) cls = 'dup';
     else if (isSkipped) cls = 'skipped';
-    const tooltip = isDup ? '支払済' : isSkipped ? 'タップで復活' : 'タップで休会';
-    return `<span class="month-chip ${cls}" data-month="${mo}" onclick="toggleMonth('${mo}')" title="${tooltip}">${mo}${isDup?' ✓':isSkipped?' 休':''}  </span>`;
+    return `<span class="month-chip ${cls}" onclick="toggleMonth('${mo}')">${mo}${isDup?' ✓':isSkipped?' 休':''}</span>`;
   }).join('');
-  calcAndFill();
-  updateSummary();
+  calcAndFill(); updateSummary();
+}
+
+function updateSummary() {
+  if (!selectedMemberObj) return;
+  const type = document.getElementById('payType').value;
+  const amount = parseInt(document.getElementById('payAmount').value) || 0;
+  const method = document.getElementById('payMethod').value;
+  const startVal = document.getElementById('startMonth').value;
+  const info = getPayTypeInfo(type);
+  const hasMonthly = type !== '協会登録費' && type !== '保険料' && type !== 'その他';
+  let monthsArr = [];
+  if (startVal && hasMonthly) {
+    const [y, m] = startVal.split('-').map(Number);
+    for (let i = 0; i < (info.months || 1); i++) {
+      const d = new Date(y, m - 1 + i, 1);
+      const key = `${d.getFullYear()}/${String(d.getMonth()+1).padStart(2,'0')}`;
+      if (!skippedMonths.has(key)) monthsArr.push(key);
+    }
+  }
+  const dupMonths = monthsArr.filter(mo => selectedMemberObj.paidMonths.includes(mo));
+
+  const typeLabels = {
+    '月謝_1':'月謝1ヶ月分','月謝_2':'月謝2ヶ月分','月謝_3':'月謝3ヶ月分',
+    '月謝_4':'月謝4ヶ月分','月謝_5':'月謝5ヶ月分','月謝_6':'月謝6ヶ月分',
+    'init_first_3':'初回セット・1回目参加（3ヶ月）','init_first_2':'初回セット・1回目参加（2ヶ月）',
+    'init_first_1':'初回セット・1回目参加（1ヶ月）','init_second_3':'初回セット・2回目参加（3ヶ月）',
+    'init_second_2':'初回セット・2回目参加（2ヶ月）','init_second_1':'初回セット・2回目参加（協会費+保険のみ）',
+    '協会登録費':'協会登録費','保険料':'スポーツ保険','その他':'その他'
+  };
+
+  document.getElementById('cfMember').textContent = selectedMemberObj.name;
+  document.getElementById('cfType').textContent = typeLabels[type] || type;
+  document.getElementById('cfPeriod').textContent = monthsArr.length ? monthsArr.join(', ') : (type==='協会登録費'||type==='保険料') ? '年間' : '—';
+  document.getElementById('cfMethod').textContent = method;
+  document.getElementById('cfPhotos').textContent = capturedPhotos.length + '枚';
+  document.getElementById('cfAmount').textContent = amount ? `¥${amount.toLocaleString()}` : '¥—';
+  if (dupMonths.length) {
+    document.getElementById('dupWarningRow').style.display = 'flex';
+    document.getElementById('cfDupWarning').textContent = dupMonths.join(', ') + ' は既に支払済';
+  } else {
+    document.getElementById('dupWarningRow').style.display = 'none';
+  }
+  document.getElementById('confirmBox').classList.add('show');
+}
+
+async function submitPayment() {
+  if (!selectedMemberObj) { showToast('⚠ 会員を選択してください', true); return; }
+  const amount = parseInt(document.getElementById('payAmount').value) || 0;
+  if (!amount) { showToast('⚠ 金額を入力してください', true); return; }
+
+  const btn = document.getElementById('submitBtn');
+  btn.disabled = true; btn.textContent = '登録中...';
+
+  const type = document.getElementById('payType').value;
+  const startVal = document.getElementById('startMonth').value;
+  const info = getPayTypeInfo(type);
+  const hasMonthly = type !== '協会登録費' && type !== '保険料' && type !== 'その他';
+  const previewMonths = [];
+  if (startVal && hasMonthly) {
+    const [py, pm] = startVal.split('-').map(Number);
+    for (let i = 0; i < (info.months || 1); i++) {
+      const d = new Date(py, pm - 1 + i, 1);
+      const key = `${d.getFullYear()}/${String(d.getMonth()+1).padStart(2,'0')}`;
+      if (!skippedMonths.has(key)) previewMonths.push(key);
+    }
+  }
+
+  const now = new Date();
+  const jst = new Date(now.getTime() + 9 * 60 * 60 * 1000);
+  const payDate = jst.toISOString().slice(0, 10);
+  const m = selectedMemberObj;
+
+  const payData = {
+    action:     'payment',
+    memberId:   m.id,
+    nfcId:      m.nfcId || m.id,
+    memberName: m.name,
+    type:       type.startsWith('init_') ? '初回セット' : type,
+    months:     previewMonths.join(','),
+    amount:     amount,
+    method:     document.getElementById('payMethod').value,
+    staff:      document.getElementById('payStaff').value || '',
+    note:       document.getElementById('payNote').value || '',
+    date:       payDate,
+  };
+
+  try {
+    const params = Object.entries(payData)
+      .map(([k,v]) => `${k}=${encodeURIComponent(String(v))}`)
+      .join('&');
+    const d = await jsonpFetch(GAS_URL + '?' + params);
+    if (d.status === 'ok' || d.status === 'success') {
+      // ローカルに追加
+      PAYMENTS.push({ ...payData, id: d.id || 'P'+Date.now() });
+      // 会員のpaidMonthsも更新
+      previewMonths.forEach(mo => {
+        if (!m.paidMonths.includes(mo)) m.paidMonths.push(mo);
+      });
+      showToast(`✓ ${m.name} さんの支払いを登録しました (¥${amount.toLocaleString()})`);
+      resetPaymentForm();
+    } else {
+      showToast('⚠ 保存に失敗しました: ' + (d.message||''), true);
+      btn.disabled = false; btn.textContent = '💰 支払いを登録する';
+    }
+  } catch(e) {
+    showToast('⚠ 通信エラー: ' + e.message, true);
+    btn.disabled = false; btn.textContent = '💰 支払いを登録する';
+  }
+}
+
+function resetPaymentForm() {
+  if (cameraStream) { cameraStream.getTracks().forEach(t=>t.stop()); cameraStream=null; }
+  document.getElementById('cameraVideo').style.display = 'none';
+  document.getElementById('cameraPlaceholder').style.display = 'flex';
+  document.getElementById('shootBtn').disabled = true;
+  capturedPhotos = []; skippedMonths.clear();
+  renderPhotos(); clearMember();
+  document.getElementById('paySearch').value = '';
+  document.getElementById('payAmount').value = '';
+  document.getElementById('payNote').value = '';
+  document.getElementById('payStaff').value = '';
+  document.getElementById('monthsPreview').innerHTML = '<span style="color:var(--text3);font-size:0.78rem;">開始月を選択してください</span>';
+  document.getElementById('feeBreakdown').style.display = 'none';
+  document.getElementById('skippedNote').style.display = 'none';
+  const btn = document.getElementById('submitBtn');
+  btn.disabled = false; btn.textContent = '💰 支払いを登録する';
 }
 
 // ── CAMERA ──
@@ -1123,322 +895,165 @@ async function toggleCamera() {
   const placeholder = document.getElementById('cameraPlaceholder');
   const shootBtn = document.getElementById('shootBtn');
   if (cameraStream) {
-    cameraStream.getTracks().forEach(t => t.stop());
-    cameraStream = null;
-    video.style.display = 'none';
-    placeholder.style.display = 'flex';
-    shootBtn.disabled = true;
-    return;
+    cameraStream.getTracks().forEach(t=>t.stop()); cameraStream=null;
+    video.style.display='none'; placeholder.style.display='flex'; shootBtn.disabled=true; return;
   }
   try {
-    cameraStream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: { ideal: 'environment' }, width: { ideal: 1280 }, height: { ideal: 720 } }, audio: false });
-    video.srcObject = cameraStream;
-    video.style.display = 'block';
-    placeholder.style.display = 'none';
-    shootBtn.disabled = false;
-  } catch(e) {
-    showToast('⚠ カメラにアクセスできません', true);
-  }
+    cameraStream = await navigator.mediaDevices.getUserMedia({video:{facingMode:{ideal:'environment'}},audio:false});
+    video.srcObject=cameraStream; video.style.display='block'; placeholder.style.display='none'; shootBtn.disabled=false;
+  } catch(e) { showToast('⚠ カメラにアクセスできません', true); }
 }
 
 function capturePhoto() {
-  const video = document.getElementById('cameraVideo');
-  const canvas = document.getElementById('captureCanvas');
-  canvas.width = 640; canvas.height = 480;
-  canvas.getContext('2d').drawImage(video, 0, 0, 640, 480);
-  const dataUrl = canvas.toDataURL('image/jpeg', 0.65);
-  addPhoto(dataUrl);
+  const video=document.getElementById('cameraVideo'), canvas=document.getElementById('captureCanvas');
+  canvas.width=640; canvas.height=480;
+  canvas.getContext('2d').drawImage(video,0,0,640,480);
+  addPhoto(canvas.toDataURL('image/jpeg',0.65));
 }
 
 function onFileSelect(e) {
-  const file = e.target.files[0];
-  if (!file) return;
-  const reader = new FileReader();
-  reader.onload = ev => {
-    const img = new Image();
-    img.onload = () => {
-      const canvas = document.getElementById('captureCanvas');
-      const maxW = 800, maxH = 600;
-      let w = img.width, h = img.height;
-      if (w > maxW) { h = h * maxW / w; w = maxW; }
-      if (h > maxH) { w = w * maxH / h; h = maxH; }
-      canvas.width = w; canvas.height = h;
-      canvas.getContext('2d').drawImage(img, 0, 0, w, h);
-      addPhoto(canvas.toDataURL('image/jpeg', 0.65));
+  const file=e.target.files[0]; if(!file)return;
+  const reader=new FileReader();
+  reader.onload=ev=>{
+    const img=new Image();
+    img.onload=()=>{
+      const canvas=document.getElementById('captureCanvas');
+      const maxW=800,maxH=600; let w=img.width,h=img.height;
+      if(w>maxW){h=h*maxW/w;w=maxW;} if(h>maxH){w=w*maxH/h;h=maxH;}
+      canvas.width=w;canvas.height=h;
+      canvas.getContext('2d').drawImage(img,0,0,w,h);
+      addPhoto(canvas.toDataURL('image/jpeg',0.65));
     };
-    img.src = ev.target.result;
+    img.src=ev.target.result;
   };
-  reader.readAsDataURL(file);
-  e.target.value = '';
+  reader.readAsDataURL(file); e.target.value='';
 }
 
-function addPhoto(dataUrl) {
-  capturedPhotos.push(dataUrl);
-  renderPhotos();
-  updateSummary();
-}
-
+function addPhoto(dataUrl) { capturedPhotos.push(dataUrl); renderPhotos(); updateSummary(); }
 function renderPhotos() {
-  const strip = document.getElementById('photoStrip');
-  strip.innerHTML = capturedPhotos.map((p, i) => `
+  document.getElementById('photoStrip').innerHTML=capturedPhotos.map((p,i)=>`
     <div class="photo-thumb" onclick="openLightbox('${p}')">
       <img src="${p}" alt="photo ${i+1}">
       <button class="photo-del" onclick="event.stopPropagation();deletePhoto(${i})">✕</button>
-    </div>
-  `).join('');
+    </div>`).join('');
 }
-
-function deletePhoto(i) { capturedPhotos.splice(i, 1); renderPhotos(); updateSummary(); }
-function openLightbox(src) { document.getElementById('lightboxImg').src = src; document.getElementById('lightbox').classList.add('show'); }
-function closeLightbox() { document.getElementById('lightbox').classList.remove('show'); }
-
-// ── SUMMARY ──
-function updateSummary() {
-  if (!selectedMemberObj) return;
-  const type = document.getElementById('payType').value;
-  const amount = parseInt(document.getElementById('payAmount').value) || 0;
-  const method = document.getElementById('payMethod').value;
-
-  const startVal = document.getElementById('startMonth').value;
-  const info3 = getPayTypeInfo(type);
-  const hasMonthly3 = type !== '協会登録費' && type !== '保険料' && type !== 'その他';
-  let monthsArr = [];
-  if (startVal && hasMonthly3) {
-    const [y, m] = startVal.split('-').map(Number);
-    for (let i = 0; i < (info3.months || 3); i++) {
-      const d = new Date(y, m - 1 + i, 1);
-      const key = `${d.getFullYear()}/${String(d.getMonth()+1).padStart(2,'0')}`;
-      if (!skippedMonths.has(key)) monthsArr.push(key);
-    }
-  }
-
-  const dupMonths = monthsArr.filter(mo => selectedMemberObj.paidMonths.includes(mo));
-
-  document.getElementById('cfMember').textContent = selectedMemberObj.name;
-  // 種別表示を読みやすく
-  const typeLabels = {
-    'init_first_3': '初回セット・1回目参加（3ヶ月）',
-    'init_first_2': '初回セット・1回目参加（2ヶ月）',
-    'init_first_1': '初回セット・1回目参加（1ヶ月）',
-    'init_second_3': '初回セット・2回目参加（3ヶ月）',
-    'init_second_2': '初回セット・2回目参加（2ヶ月）',
-    'init_second_1': '初回セット・2回目参加（協会費+保険のみ）',
-    '月謝_2': '月謝2ヶ月分', '月謝_3': '月謝3ヶ月分',
-    '月謝_4': '月謝4ヶ月分', '月謝_5': '月謝5ヶ月分', '月謝_6': '月謝6ヶ月分',
-    '協会登録費': '協会登録費', '保険料': 'スポーツ保険', 'その他': 'その他'
-  };
-  document.getElementById('cfType').textContent = typeLabels[type] || type;
-  document.getElementById('cfPeriod').textContent = monthsArr.length ? monthsArr.join(', ') : (type === '協会登録費' || type === '保険料') ? '年間' : '—';
-  document.getElementById('cfMethod').textContent = method;
-  document.getElementById('cfPhotos').textContent = capturedPhotos.length + '枚';
-  document.getElementById('cfAmount').textContent = amount ? `¥${amount.toLocaleString()}` : '¥—';
-
-  if (dupMonths.length) {
-    document.getElementById('dupWarningRow').style.display = 'flex';
-    document.getElementById('cfDupWarning').textContent = dupMonths.join(', ') + ' は既に支払済';
-  } else {
-    document.getElementById('dupWarningRow').style.display = 'none';
-  }
-
-  document.getElementById('confirmBox').classList.add('show');
-  document.getElementById('noMemberHint').style.display = 'none';
-}
-
-function submitPayment() {
-  if (!selectedMemberObj) { showToast('⚠ 会員を選択してください', true); return; }
-  const amount = parseInt(document.getElementById('payAmount').value) || 0;
-  if (!amount) { showToast('⚠ 金額を入力してください', true); return; }
-
-  const type = document.getElementById('payType').value;
-  const fy = currentFiscalYear();
-
-  // 初回セット登録時：協会費・保険を自動で支払済に
-  if (type.startsWith('init_')) {
-    if (!selectedMemberObj.assocPaidYears) selectedMemberObj.assocPaidYears = [];
-    if (!selectedMemberObj.insurancePaidYears) selectedMemberObj.insurancePaidYears = [];
-    if (!selectedMemberObj.assocPaidYears.includes(fy)) selectedMemberObj.assocPaidYears.push(fy);
-    if (!selectedMemberObj.insurancePaidYears.includes(fy)) selectedMemberObj.insurancePaidYears.push(fy);
-    selectedMemberObj.isFirstTime = false;
-  }
-  // 協会登録費単体
-  if (type === '協会登録費') {
-    if (!selectedMemberObj.assocPaidYears) selectedMemberObj.assocPaidYears = [];
-    if (!selectedMemberObj.assocPaidYears.includes(fy)) selectedMemberObj.assocPaidYears.push(fy);
-  }
-  // 保険料単体
-  if (type === '保険料') {
-    if (!selectedMemberObj.insurancePaidYears) selectedMemberObj.insurancePaidYears = [];
-    if (!selectedMemberObj.insurancePaidYears.includes(fy)) selectedMemberObj.insurancePaidYears.push(fy);
-  }
-
-  // ── GASに保存 ──
-  const m = selectedMemberObj;
-  const _now = new Date();
-  const _jst = new Date(_now.getTime() + 9 * 60 * 60 * 1000);
-  const payDate = _jst.toISOString().slice(0, 10); // JST YYYY-MM-DD
-  const months = Array.from(
-    document.querySelectorAll('.month-chip.selected, .month-cell.selected')
-  ).map(el => el.dataset.month).filter(Boolean);
-
-  // 月謝のmonthsをupdateMonthsPreviewと同じロジックで計算
-  const previewMonths = [];
-  const startVal2 = document.getElementById('startMonth').value;
-  const info2 = getPayTypeInfo(type);
-  const hasMonthly2 = type !== '協会登録費' && type !== '保険料' && type !== 'その他';
-  if (startVal2 && hasMonthly2) {
-    const [py, pm] = startVal2.split('-').map(Number);
-    for (let i = 0; i < (info2.months || 3); i++) {
-      const d = new Date(py, pm - 1 + i, 1);
-      const key = `${d.getFullYear()}/${String(d.getMonth()+1).padStart(2,'0')}`;
-      if (!skippedMonths.has(key)) previewMonths.push(key);
-    }
-  }
-
-  const payData = {
-    action:      'payment',
-    memberId:    m.id,
-    nfcId:       m.nfcId || m.id,
-    memberName:  m.name,
-    type:        type.startsWith('init_') ? '初回セット' : type,
-    months:      previewMonths.length ? previewMonths : [],
-    amount:      amount,
-    method:      document.getElementById('payMethod')?.value || '現金',
-    staff:       '',
-    note:        document.getElementById('payNote')?.value || '',
-    date:        payDate,
-  };
-
-  // JSONP経由でGASに送信（POSTはCORSで失敗するためGETパラメータで送る）
-  const qstr = Object.entries(payData)
-    .map(([k,v]) => `${k}=${encodeURIComponent(Array.isArray(v)?v.join(','):String(v))}`)
-    .join('&');
-  jsonpFetch(GAS_URL + '?' + qstr)
-    .then(d => {
-      if (d.status === 'ok') {
-        showToast(`✓ ${m.name} さんの支払いを登録しました (¥${amount.toLocaleString()})`);
-        // ローカルのPAYMENTSにも追加して一覧に即反映
-        PAYMENTS.push({ ...payData, id: d.id || 'P'+Date.now() });
-        renderRecords();
-      } else {
-        showToast('⚠ 保存に失敗しました: ' + (d.message||''), true);
-      }
-    })
-    .catch(e => console.warn('Payment GAS error:', e.message));
-
-  // Stop camera
-  if (cameraStream) {
-    cameraStream.getTracks().forEach(t => t.stop());
-    cameraStream = null;
-    document.getElementById('cameraVideo').style.display = 'none';
-    document.getElementById('cameraPlaceholder').style.display = 'flex';
-    document.getElementById('shootBtn').disabled = true;
-  }
-
-  // Reset
-  capturedPhotos = [];
-  skippedMonths.clear();
-  renderPhotos();
-  clearMember();
-  document.getElementById('paySearch').value = '';
-  document.getElementById('payAmount').value = '';
-  document.getElementById('payNote').value = '';
-  document.getElementById('monthsPreview').innerHTML = '<span style="color:var(--text3);font-size:0.78rem;">開始月を選択してください</span>';
-  document.getElementById('feeBreakdown').style.display = 'none';
-  document.getElementById('skippedNote').style.display = 'none';
-  document.getElementById('annualBadges').style.display = 'none';
-}
+function deletePhoto(i){capturedPhotos.splice(i,1);renderPhotos();updateSummary();}
+function openLightbox(src){document.getElementById('lightboxImg').src=src;document.getElementById('lightbox').classList.add('show');}
+function closeLightbox(){document.getElementById('lightbox').classList.remove('show');}
 
 // ── LOOKUP ──
+function onLookupSearch(q) {
+  const results = document.getElementById('lookupSearchResults');
+  if (!q.trim()) { results.style.display='none'; return; }
+  const ql = q.toLowerCase();
+  const matched = MEMBERS.filter(m =>
+    (m.name||'').toLowerCase().includes(ql) ||
+    (m.furigana||'').toLowerCase().includes(ql)
+  );
+  if (!matched.length) { results.style.display='none'; return; }
+  results.innerHTML = matched.slice(0,10).map(m => `
+    <div onclick="selectMemberForLookup('${m.id}')"
+      style="padding:10px 14px;cursor:pointer;border-bottom:1px solid var(--border);display:flex;align-items:center;gap:10px;"
+      onmouseover="this.style.background='var(--surface2)'" onmouseout="this.style.background=''">
+      <div style="width:32px;height:32px;border-radius:50%;background:var(--purple);display:flex;align-items:center;justify-content:center;color:#fff;font-weight:700;flex-shrink:0;">${(m.name||'?')[0]}</div>
+      <div>
+        <div style="font-weight:600;font-size:0.9rem;">${m.name}</div>
+        <div style="font-size:0.75rem;color:var(--text2);">${m.furigana||''} · ${m.course||'コース未設定'}</div>
+      </div>
+    </div>`).join('');
+  results.style.display='block';
+}
+
+function selectMemberForLookup(id) {
+  document.getElementById('lookupSearchResults').style.display='none';
+  const m = MEMBERS.find(x=>x.id===id);
+  if (m) document.getElementById('lookupSearchInput').value = m.name;
+  lookupMember(id);
+}
+
 function lookupMember(id) {
-  const m = MEMBERS.find(x => x.id === id);
+  const m = MEMBERS.find(x=>x.id===id);
   if (!m) return;
   document.getElementById('memberDetail').classList.add('show');
-  document.getElementById('detailAvatar').textContent = m.name[0];
-  document.getElementById('detailFurigana').textContent = m.furigana;
-  document.getElementById('detailName').textContent = m.name;
-  document.getElementById('detailSub').textContent = (m.courseType === 1 ? '月1回' : '月2回') + 'コース · ¥' + COURSE_FEES[m.courseType].toLocaleString() + '/月';
+  document.getElementById('detailAvatar').textContent = (m.name||'?')[0];
+  document.getElementById('detailFurigana').textContent = m.furigana||'—';
+  document.getElementById('detailName').textContent = m.name||'—';
+  document.getElementById('detailSub').textContent = `${m.courseType===1?'月1回':'月2回'}コース · ¥${COURSE_FEES[m.courseType].toLocaleString()}/月`;
 
-  const monthFee = COURSE_FEES[m.courseType] || 0;
-  const total = m.paidMonths.length * monthFee;
-  document.getElementById('dStatTotal').textContent = `¥${total.toLocaleString()}`;
-  document.getElementById('dStatMonths').textContent = m.paidMonths.length + 'ヶ月';
+  const totalAmt = m.paidMonths.length * COURSE_FEES[m.courseType];
+  document.getElementById('dStatTotal').textContent = `¥${totalAmt.toLocaleString()}`;
+  document.getElementById('dStatMonths').textContent = m.paidMonths.length+'ヶ月';
   const sorted = [...m.paidMonths].sort();
   document.getElementById('dStatLast').textContent = sorted.length ? sorted[sorted.length-1] : '—';
 
-  // Annual fee status
   renderAnnualFeeStatus(m, 'annualFeeStatus');
-
-  // Payment calendar - enhanced
   renderPaymentCalendar(m);
 
-  // payment history
-  const memberPayments = PAYMENTS.filter(p => p.nfcId === id);
+  const memberPayments = PAYMENTS.filter(p =>
+    String(p.memberId)===String(m.id) ||
+    String(p.nfcId)===String(m.nfcId) ||
+    String(p.nfcId)===String(m.id)
+  );
   const tbody = document.getElementById('historyTbody');
-  tbody.innerHTML = memberPayments.length ? memberPayments.map(p => `
-    <tr>
-      <td>${p.date}</td>
-      <td>${p.type}</td>
-      <td class="h-period">${getMonthsArray(p).join(', ') || '—'}</td>
-      <td class="h-amount">¥${p.amount.toLocaleString()}</td>
-      <td>${p.method}</td>
-      <td>${p.photos.length ? `<span class="h-photo" onclick="openLightbox('${p.photos[0]==='_demo_'?generateDemoReceipt(p):p.photos[0]}')">🖼 ${p.photos.length}</span>` : '—'}</td>
-    </tr>`).join('') :
-    '<tr><td colspan="6" style="text-align:center;color:var(--text3);padding:20px;">支払い記録なし</td></tr>';
+  tbody.innerHTML = memberPayments.length
+    ? memberPayments.sort((a,b)=>(b.date||'').localeCompare(a.date||'')).map(p=>`
+        <tr>
+          <td>${(p.date||'').slice(0,10)}</td>
+          <td>${p.type||'—'}</td>
+          <td class="h-period">${getMonthsArray(p).join(', ')||'—'}</td>
+          <td class="h-amount">¥${(parseFloat(p.amount)||0).toLocaleString()}</td>
+          <td>${p.method||'—'}</td>
+        </tr>`).join('')
+    : '<tr><td colspan="5" style="text-align:center;color:var(--text3);padding:20px;">支払い記録なし</td></tr>';
 }
 
-// ── ANNUAL FEE STATUS ──
+// ── ANNUAL FEE ──
 function renderAnnualFeeStatus(m, containerId) {
   const fy = currentFiscalYear();
-  const prevFy = String(parseInt(fy) - 1);
-  const years = [prevFy, fy];
   const container = document.getElementById(containerId);
   if (!container) return;
-
-  container.innerHTML = `<div class="annual-fee-grid">` + years.flatMap(year => [
-    { label: '協会登録費', feeKey: 'assocPaidYears', year },
-    { label: 'スポーツ保険', feeKey: 'insurancePaidYears', year }
-  ]).map(({ label, feeKey, year }) => {
-    const paid = m[feeKey]?.includes(year) || false;
-    return `
-      <div class="annual-fee-card ${paid ? 'paid' : 'unpaid'}">
-        <div class="annual-fee-title">${label}</div>
-        <div class="annual-fee-year">${getFiscalYearLabel(year)}</div>
-        <div class="annual-fee-badge ${paid ? 'paid' : 'unpaid'}">${paid ? '✓ 支払済' : '✗ 未払い'}</div>
-        <button class="annual-fee-toggle ${paid ? 'mark-unpaid' : 'mark-paid'}"
-          onclick="toggleAnnualFee('${m.id}','${feeKey}','${year}','${containerId}')">
-          ${paid ? '未払いに戻す' : '支払済にする'}
-        </button>
-      </div>`;
-  }).join('') + `</div>`;
+  const items = [
+    { label:'協会登録費', feeKey:'assocPaidYears' },
+    { label:'スポーツ保険', feeKey:'insurancePaidYears' },
+  ];
+  container.innerHTML = `<div class="annual-fee-grid">` + items.map(({label,feeKey}) => {
+    const paid = m[feeKey]?.includes(fy) || false;
+    return `<div class="annual-fee-card ${paid?'paid':'unpaid'}">
+      <div class="annual-fee-title">${label}</div>
+      <div class="annual-fee-year">${getFiscalYearLabel(fy)}</div>
+      <div class="annual-fee-badge ${paid?'paid':'unpaid'}">${paid?'✓ 支払済':'✗ 未払い'}</div>
+      <button class="annual-fee-toggle ${paid?'mark-unpaid':'mark-paid'}"
+        onclick="toggleAnnualFee('${m.id}','${feeKey}','${fy}','${containerId}')">
+        ${paid?'未払いに戻す':'支払済にする'}
+      </button>
+    </div>`;
+  }).join('') + '</div>';
 }
 
 function toggleAnnualFee(memberId, feeKey, year, containerId) {
-  const m = MEMBERS.find(x => x.id === memberId);
+  const m = MEMBERS.find(x=>x.id===memberId);
   if (!m) return;
   if (!m[feeKey]) m[feeKey] = [];
   if (m[feeKey].includes(year)) {
-    m[feeKey] = m[feeKey].filter(y => y !== year);
-    showToast(`${year}年度 ${feeKey === 'assocPaidYears' ? '協会登録費' : '保険料'} を未払いに変更`);
+    m[feeKey] = m[feeKey].filter(y=>y!==year);
+    showToast(`${year}年度 ${feeKey==='assocPaidYears'?'協会登録費':'保険料'} を未払いに変更`);
   } else {
     m[feeKey].push(year);
-    showToast(`✓ ${year}年度 ${feeKey === 'assocPaidYears' ? '協会登録費' : '保険料'} を支払済に変更`);
+    showToast(`✓ ${year}年度 ${feeKey==='assocPaidYears'?'協会登録費':'保険料'} を支払済に変更`);
   }
   renderAnnualFeeStatus(m, containerId);
-  // 支払い登録画面のバッジも更新
   if (selectedMemberObj && selectedMemberObj.id === memberId) {
-    renderAnnualBadges(selectedMemberObj);
-    calcAndFill();
+    renderAnnualBadges(selectedMemberObj); calcAndFill();
   }
 }
 
 function renderAnnualBadges(m) {
   const fy = currentFiscalYear();
   const assocPaid = m.assocPaidYears?.includes(fy) || false;
-  const insPaid = m.insurancePaidYears?.includes(fy) || false;
+  const insPaid   = m.insurancePaidYears?.includes(fy) || false;
   const el = document.getElementById('annualBadges');
-  const content = document.getElementById('annualBadgeContent');
   el.style.display = '';
-  content.innerHTML = `
+  document.getElementById('annualBadgeContent').innerHTML = `
     <div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center;">
       <span style="font-size:0.72rem;color:var(--text3);">${getFiscalYearLabel(fy)}</span>
       <span style="padding:3px 10px;border-radius:12px;font-size:0.75rem;font-weight:700;
@@ -1454,237 +1069,39 @@ function renderAnnualBadges(m) {
     </div>`;
 }
 
-function generateDemoReceipt(p) {
-  const c = document.createElement('canvas');
-  c.width=320; c.height=200;
-  const ctx = c.getContext('2d');
-  ctx.fillStyle='#1a2035'; ctx.fillRect(0,0,320,200);
-  ctx.fillStyle='#ffd166'; ctx.font='bold 16px monospace'; ctx.fillText('領収書', 130, 30);
-  ctx.fillStyle='#8892b0'; ctx.font='12px monospace';
-  ctx.fillText(`会員: ${p.name}`, 20, 65);
-  ctx.fillText(`種別: ${p.type}`, 20, 90);
-  ctx.fillText(`金額: ¥${p.amount.toLocaleString()}`, 20, 115);
-  ctx.fillText(`日付: ${p.date}`, 20, 140);
-  ctx.strokeStyle='#252d45'; ctx.strokeRect(10,10,300,180);
-  return c.toDataURL('image/jpeg', 0.7);
-}
-
-// ── RECORDS ──
-function getMonthsArray(p) {
-  if (!p.months) return [];
-  if (Array.isArray(p.months)) return p.months.filter(Boolean);
-  return String(p.months).split(',').filter(Boolean);
-}
-
-function renderRecords(filter='') {
-  const q = filter.toLowerCase();
-  const filtered = PAYMENTS.filter(p => {
-    const name = (p.memberName || p.name || '').toLowerCase();
-    const type = (p.type || '').toLowerCase();
-    const months = getMonthsArray(p);
-    return !q || name.includes(q) || type.includes(q) || months.some(m=>m.includes(q));
-  });
-  const tbody = document.getElementById('recordsTbody');
-  if (!PAYMENTS.length) {
-    tbody.innerHTML = '<tr><td colspan="7" style="text-align:center;padding:20px;color:var(--text3);">支払い記録がありません</td></tr>';
-    document.getElementById('recordsCount').textContent = '0件';
-    document.getElementById('recordsTotal').textContent = '¥0';
-    return;
-  }
-  tbody.innerHTML = filtered.map(p => `
-    <tr>
-      <td>${(p.date||'').slice(0,10)}</td>
-      <td>${p.memberName||p.name||'—'}</td>
-      <td>${p.type||'—'}</td>
-      <td class="rt-period">${getMonthsArray(p).join(', ')||'—'}</td>
-      <td class="rt-amount">¥${p.amount.toLocaleString()}</td>
-      <td>${p.method}</td>
-      <td>${p.photos.length ? `<span style="cursor:pointer;" onclick="openLightbox('${p.photos[0]==='_demo_'?generateDemoReceipt(p):p.photos[0]}')">🖼 ${p.photos.length}</span>` : '—'}</td>
-    </tr>`).join('') || '<tr><td colspan="7" style="text-align:center;color:var(--text3);padding:20px;">該当なし</td></tr>';
-  const total = filtered.reduce((s,p) => s+p.amount, 0);
-  document.getElementById('recordsCount').textContent = filtered.length + '件';
-  document.getElementById('recordsTotal').textContent = `¥${total.toLocaleString()}`;
-}
-
-function filterRecords(q) { renderRecords(q); }
-
-// ── SUMMARY TAB ──
-function renderSummary() {
-  const now = new Date();
-  const thisMonth = `${now.getFullYear()}/${String(now.getMonth()+1).padStart(2,'0')}`;
-
-  const monthly = PAYMENTS.filter(p => (p.type==='月謝'||p.type?.startsWith('月謝_')) && getMonthsArray(p).includes(thisMonth)).reduce((s,p)=>s+(parseFloat(p.amount)||0),0);
-  const cumulative = PAYMENTS.filter(p=>(p.type==='月謝'||p.type?.startsWith('月謝_')||p.type==='初回セット').reduce((s,p)=>s+(parseFloat(p.amount)||0),0);
-  const allTotal = PAYMENTS.reduce((s,p)=>s+(parseFloat(p.amount)||0),0);
-  const unpaidCount = MEMBERS.filter(m => !m.paidMonths.includes(thisMonth)).length;
-
-  document.getElementById('sumMonthly').textContent = `¥${monthly.toLocaleString()}`;
-  document.getElementById('sumCumulative').textContent = `¥${cumulative.toLocaleString()}`;
-  document.getElementById('sumAll').textContent = `¥${allTotal.toLocaleString()}`;
-  document.getElementById('sumUnpaid').textContent = unpaidCount + '名';
-
-  // bar chart
-  const bars = document.getElementById('barChart');
-  const monthAmounts = [];
-  for (let i=5; i>=0; i--) {
-    const d = new Date(now.getFullYear(), now.getMonth()-i, 1);
-    const key = `${d.getFullYear()}/${String(d.getMonth()+1).padStart(2,'0')}`;
-    const amt = PAYMENTS.filter(p=>p.type==='月謝'&&getMonthsArray(p).includes(key)).reduce((s,p)=>s+(parseFloat(p.amount)||0),0);
-    monthAmounts.push({ label: (d.getMonth()+1)+'月', amt });
-  }
-  const maxAmt = Math.max(...monthAmounts.map(x=>x.amt), 1);
-  bars.innerHTML = monthAmounts.map(({label,amt}) => `
-    <div class="bar-col">
-      <div class="bar-amt">${amt?'¥'+Math.round(amt/1000)+'k':''}</div>
-      <div class="bar" style="height:${Math.max(4,amt/maxAmt*80)}px;"></div>
-      <div class="bar-lbl">${label}</div>
-    </div>`).join('');
-
-  // unpaid list
-  const unpaidMembers = MEMBERS.filter(m => !m.paidMonths.includes(thisMonth));
-  document.getElementById('unpaidList').innerHTML = unpaidMembers.map(m => `
-    <div style="background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:12px 14px;display:flex;align-items:center;gap:12px;cursor:pointer;" onclick="switchTab('lookup');lookupMember('${m.id}');">
-      <div style="width:36px;height:36px;border-radius:50%;background:var(--warn);opacity:0.7;display:flex;align-items:center;justify-content:center;font-weight:700;color:#fff;flex-shrink:0;">${m.name[0]}</div>
-      <div style="flex:1;">
-        <div style="font-weight:600;font-size:0.9rem;">${m.name}</div>
-        <div style="font-size:0.75rem;color:var(--text2);">${m.course}</div>
-      </div>
-      <div style="font-size:0.78rem;color:var(--warn);">未払い →</div>
-    </div>`).join('') || '<div style="color:var(--text3);font-size:0.85rem;padding:12px;">全員支払済です 🎉</div>';
-}
-
-// ── TABS ──
-function switchTab(name) {
-  document.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('active'));
-  document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
-  document.getElementById('tab-'+name).classList.add('active');
-  event.currentTarget.classList.add('active');
-  if (name==='records') renderRecords();
-  if (name==='summary') renderSummary();
-}
-
-// ── TOAST ──
-function showToast(msg, err=false) {
-  const t = document.getElementById('toast');
-  t.textContent = msg;
-  t.style.background = err ? 'var(--warn)' : 'var(--gold)';
-  t.style.color = err ? '#fff' : '#0a0f1e';
-  t.classList.add('show');
-  setTimeout(() => t.classList.remove('show'), 3500);
-}
-
-// ── URL PARAM ──
-function checkUrlParam() {
-  const params = new URLSearchParams(window.location.search);
-  const id = params.get('member') || params.get('id');
-  if (id) {
-    history.replaceState({}, '', window.location.pathname);
-    selectMember(id);
-  }
-}
-
-// ── INIT ──
-const now = new Date();
-document.getElementById('startMonth').value = `${now.getFullYear()}-${String(now.getMonth()+1).padStart(2,'0')}`;
-document.getElementById('monthlySection').style.display = '';
-document.getElementById('feeBreakdown').style.display = 'none';
-
-document.addEventListener('click', e => {
-  if (!e.target.closest('.member-select-bar') && !e.target.closest('.lookup-search-wrap')) {
-    document.getElementById('paySearchResults').classList.remove('show');
-    const lr = document.getElementById('lookupSearchResults');
-    if (lr) lr.style.display = 'none';
-  }
-});
-
-// GASから会員・支払いデータを読み込む
-loadAccountingData();
-
-checkUrlParam();
-
-// ── ENHANCED PAYMENT CALENDAR ──
-let calCurrentMember = null;
-
+// ── CALENDAR ──
 function renderPaymentCalendar(m) {
-  calCurrentMember = m;
   const container = document.getElementById('monthCalendar');
   const now = new Date();
   const currentKey = `${now.getFullYear()}/${String(now.getMonth()+1).padStart(2,'0')}`;
-
-  // 新年度開始: 2026年4月 を表示開始点とする
-  const FISCAL_START = '2026/04';
-  // 今年度末（来年3月）まで表示
   const fiscalEndYear = now.getMonth() >= 3 ? now.getFullYear() + 1 : now.getFullYear();
   const FISCAL_END = `${fiscalEndYear}/03`;
 
-  // 月リストを生成（2026/04 〜 来年3月）
   const months = [];
   let cur = FISCAL_START;
   while (cur <= FISCAL_END) {
     months.push(cur);
-    const [y, mo] = cur.split('/').map(Number);
-    const next = mo === 12 ? `${y+1}/01` : `${y}/${String(mo+1).padStart(2,'0')}`;
-    cur = next;
+    const [y,mo] = cur.split('/').map(Number);
+    cur = mo===12 ? `${y+1}/01` : `${y}/${String(mo+1).padStart(2,'0')}`;
   }
 
-  // 年ごとにグループ化
-  const byYear = {};
+  let html = '<div class="cal-year-block"><div class="cal-year-label">2026年度</div><div class="cal-grid" style="grid-template-columns:repeat(' + months.length + ',1fr);">';
   months.forEach(key => {
-    const yr = key.split('/')[0];
-    if (!byYear[yr]) byYear[yr] = [];
-    byYear[yr].push(key);
+    const mo = parseInt(key.split('/')[1]);
+    const isFuture  = key > currentKey;
+    const isCurrent = key === currentKey;
+    const isPaid    = (m.paidMonths||[]).includes(key);
+    let cls = 'future', mark = '·';
+    if (!isFuture) {
+      cls  = isPaid ? 'paid'   : 'unpaid';
+      mark = isPaid ? '○' : '✗';
+    }
+    if (isCurrent) cls += ' current';
+    html += `<div class="cal-cell ${cls}" title="${key}"><span class="cal-month">${mo}月</span><span class="cal-mark">${mark}</span></div>`;
   });
+  html += '</div></div>';
 
-  // 初月判定（最初の活動月）
-  const firstMonth = m.isFirstTime ? FISCAL_START : null;
-
-  let html = '';
-  Object.entries(byYear).forEach(([year, ks]) => {
-    html += `<div class="cal-year-block">
-      <div class="cal-year-label">${year}年度</div>
-      <div class="cal-grid" style="grid-template-columns:repeat(${ks.length},1fr);">`;
-
-    ks.forEach(key => {
-      const mo = parseInt(key.split('/')[1]);
-      const isFuture = key > currentKey;
-      const isCurrent = key === currentKey;
-      const isPaid   = (m.paidMonths||[]).includes(key);
-      const isNoAct  = (m.skippedMonths||[]).includes(key);
-      const isHalf   = (m.halfMonths||[]).includes(key);
-      const isFirst  = firstMonth && key === firstMonth;
-      // 四半期区切り（年度内: 6月・9月・12月・3月）
-      const isQEnd   = [6,9,12,3].includes(mo);
-
-      let cls = 'future', mark = '·', title = key;
-      if (!isFuture) {
-        if (isPaid)       { cls = 'paid';   mark = '○'; }
-        else if (isNoAct) { cls = 'no-act'; mark = '△'; title += ' 活動なし'; }
-        else if (isHalf)  { cls = 'half';   mark = '½'; title += ' 途中参加'; }
-        else if (isFirst && m.isFirstTime && (m.courseType===1||m.course&&m.course.includes('1回'))) {
-          cls = 'no-act'; mark = '無'; title += ' 初回無料';
-        }
-        else              { cls = 'unpaid'; mark = '✗'; }
-      }
-      if (isCurrent) cls += ' current';
-      if (isQEnd)    cls += ' q-end';
-
-      html += `<div class="cal-cell ${cls}" title="${title}" onclick="calCellClick('${key}')">
-        <span class="cal-month">${mo}月</span>
-        <span class="cal-mark">${mark}</span>
-      </div>`;
-    });
-    html += `</div></div>`;
-  });
-
-  // 未払い月サマリー（活動なし・初回無料・未来を除く）
-  const unpaidMonths = months.filter(key => {
-    if (key > currentKey) return false;
-    const isPaid   = (m.paidMonths||[]).includes(key);
-    const isNoAct  = (m.skippedMonths||[]).includes(key);
-    const isFirst1 = firstMonth && key === firstMonth && m.isFirstTime && (m.courseType===1||m.course&&m.course.includes('1回'));
-    return !isPaid && !isNoAct && !isFirst1;
-  });
-
+  const unpaidMonths = months.filter(key => key <= currentKey && !(m.paidMonths||[]).includes(key));
   if (unpaidMonths.length) {
     html += `<div style="background:rgba(255,107,107,0.1);border:1px solid rgba(255,107,107,0.3);border-radius:10px;padding:12px;margin-top:10px;">
       <div style="font-size:0.72rem;font-weight:700;color:var(--warn);margin-bottom:6px;">⚠ 未払い月（${unpaidMonths.length}ヶ月）</div>
@@ -1693,47 +1110,157 @@ function renderPaymentCalendar(m) {
   } else {
     html += `<div style="background:rgba(6,214,160,0.08);border:1px solid rgba(6,214,160,0.2);border-radius:10px;padding:10px;margin-top:10px;font-size:0.78rem;color:var(--teal);text-align:center;">✓ 未払い月はありません</div>`;
   }
-
   container.innerHTML = html;
 }
 
-function calCellClick(key, cls) {
-  // 将来月はクリック不可
-  if (cls.includes('future')) return;
-  // 詳細アクションは将来実装
-}
+// ── RECORDS ──
+function renderRecords(filter='') {
+  const q = filter.toLowerCase();
+  const filtered = PAYMENTS.filter(p => {
+    if (!q) return true;
+    const name = (p.memberName||'').toLowerCase();
+    const type = (p.type||'').toLowerCase();
+    const months = getMonthsArray(p).join(' ');
+    return name.includes(q) || type.includes(q) || months.includes(q);
+  }).sort((a,b) => (b.date||'').localeCompare(a.date||''));
 
-function addCalException(type) {
-  if (!calCurrentMember) { showToast('⚠ 先に会員を選択してください', true); return; }
-  const label = type === 'skip' ? '活動なし月（△）' : '途中参加月（½）';
-  const month = prompt(`${label}として登録する月を入力してください
-例: 2025/08`);
-  if (!month || !/^\d{4}\/\d{2}$/.test(month)) {
-    if (month !== null) showToast('⚠ 形式が違います（例: 2025/08）', true);
+  const tbody = document.getElementById('recordsTbody');
+  if (!PAYMENTS.length) {
+    tbody.innerHTML = '<tr><td colspan="6" style="text-align:center;padding:20px;color:var(--text3);">支払い記録がありません</td></tr>';
+    document.getElementById('recordsCount').textContent = '0件';
+    document.getElementById('recordsTotal').textContent = '¥0';
     return;
   }
-  const m = calCurrentMember;
-  if (type === 'skip') {
-    if (!m.skippedMonths) m.skippedMonths = [];
-    if (!m.skippedMonths.includes(month)) m.skippedMonths.push(month);
-  } else {
-    if (!m.halfMonths) m.halfMonths = [];
-    if (!m.halfMonths.includes(month)) m.halfMonths.push(month);
+  tbody.innerHTML = filtered.map(p => `
+    <tr>
+      <td>${(p.date||'').slice(0,10)}</td>
+      <td>${p.memberName||'—'}</td>
+      <td>${p.type||'—'}</td>
+      <td class="rt-period">${getMonthsArray(p).join(', ')||'—'}</td>
+      <td class="rt-amount">¥${(parseFloat(p.amount)||0).toLocaleString()}</td>
+      <td>${p.method||'—'}</td>
+    </tr>`).join('') || '<tr><td colspan="6" style="text-align:center;color:var(--text3);padding:20px;">該当なし</td></tr>';
+  const total = filtered.reduce((s,p) => s + (parseFloat(p.amount)||0), 0);
+  document.getElementById('recordsCount').textContent = filtered.length + '件';
+  document.getElementById('recordsTotal').textContent = `¥${total.toLocaleString()}`;
+}
+
+function filterRecords(q) { renderRecords(q); }
+
+// ── SUMMARY ──
+function renderSummary() {
+  const now = new Date();
+  const thisMonth = `${now.getFullYear()}/${String(now.getMonth()+1).padStart(2,'0')}`;
+
+  // 今月月謝
+  const monthly = PAYMENTS
+    .filter(p => getMonthsArray(p).includes(thisMonth))
+    .reduce((s,p) => s + (parseFloat(p.amount)||0), 0);
+
+  // 累計月謝（月謝・初回セット）
+  const cumulative = PAYMENTS
+    .filter(p => { const t=p.type||''; return t.startsWith('月謝') || t.includes('初回') || t.startsWith('init_'); })
+    .reduce((s,p) => s + (parseFloat(p.amount)||0), 0);
+
+  // 全種別合計
+  const allTotal = PAYMENTS.reduce((s,p) => s + (parseFloat(p.amount)||0), 0);
+
+  // 今月未払い
+  const unpaidCount = MEMBERS.filter(m => !(m.paidMonths||[]).includes(thisMonth)).length;
+
+  document.getElementById('sumMonthly').textContent    = `¥${monthly.toLocaleString()}`;
+  document.getElementById('sumCumulative').textContent = `¥${cumulative.toLocaleString()}`;
+  document.getElementById('sumAll').textContent        = `¥${allTotal.toLocaleString()}`;
+  document.getElementById('sumUnpaid').textContent     = unpaidCount + '名';
+
+  // バーチャート
+  const bars = document.getElementById('barChart');
+  const monthAmounts = [];
+  for (let i=5; i>=0; i--) {
+    const d = new Date(now.getFullYear(), now.getMonth()-i, 1);
+    const key = `${d.getFullYear()}/${String(d.getMonth()+1).padStart(2,'0')}`;
+    const amt = PAYMENTS
+      .filter(p => getMonthsArray(p).includes(key))
+      .reduce((s,p) => s+(parseFloat(p.amount)||0), 0);
+    monthAmounts.push({ label:(d.getMonth()+1)+'月', amt });
   }
-  renderPaymentCalendar(m);
-  showToast(`✓ ${month} を${label}に設定しました`);
-  // TODO: GASに保存（将来実装）
+  const maxAmt = Math.max(...monthAmounts.map(x=>x.amt), 1);
+  bars.innerHTML = monthAmounts.map(({label,amt}) => `
+    <div class="bar-col">
+      <div class="bar-amt">${amt ? '¥'+Math.round(amt/1000)+'k' : ''}</div>
+      <div class="bar" style="height:${Math.max(4,amt/maxAmt*80)}px;"></div>
+      <div class="bar-lbl">${label}</div>
+    </div>`).join('');
+
+  // 未払いリスト
+  const unpaidMembers = MEMBERS.filter(m => !(m.paidMonths||[]).includes(thisMonth));
+  document.getElementById('unpaidList').innerHTML = unpaidMembers.length
+    ? unpaidMembers.map(m => `
+        <div style="background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:12px 14px;display:flex;align-items:center;gap:12px;cursor:pointer;"
+          onclick="switchTab('lookup',null);selectMemberForLookup('${m.id}')">
+          <div style="width:36px;height:36px;border-radius:50%;background:var(--warn);opacity:0.7;display:flex;align-items:center;justify-content:center;font-weight:700;color:#fff;flex-shrink:0;">${(m.name||'?')[0]}</div>
+          <div style="flex:1;">
+            <div style="font-weight:600;font-size:0.9rem;">${m.name}</div>
+            <div style="font-size:0.75rem;color:var(--text2);">${m.course||'—'}</div>
+          </div>
+          <div style="font-size:0.78rem;color:var(--warn);">未払い →</div>
+        </div>`).join('')
+    : '<div style="color:var(--text3);font-size:0.85rem;padding:12px;">全員支払済です 🎉</div>';
 }
 
-
-function autoResizeTextarea(el) {
-  el.style.height = 'auto';
-  el.style.height = (el.scrollHeight) + 'px';
+// ── TABS ──
+function switchTab(name, btn) {
+  document.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('active'));
+  document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+  document.getElementById('tab-'+name).classList.add('active');
+  if (btn) btn.classList.add('active');
+  else {
+    // タブボタンをnameから探してアクティブに
+    document.querySelectorAll('.tab-btn').forEach(b => {
+      if (b.getAttribute('onclick') && b.getAttribute('onclick').includes("'"+name+"'")) b.classList.add('active');
+    });
+  }
+  if (name === 'records') renderRecords(document.getElementById('filterInput').value);
+  if (name === 'summary') renderSummary();
 }
 
+// ── TOAST ──
+function showToast(msg, err=false, neutral=false) {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.style.background = err ? 'var(--warn)' : neutral ? 'var(--surface2)' : 'var(--gold)';
+  t.style.color = err ? '#fff' : neutral ? 'var(--text2)' : '#0a0f1e';
+  t.classList.add('show');
+  setTimeout(() => t.classList.remove('show'), err ? 4000 : 3000);
+}
 
-// 起動時にデータ読み込み
+// ── INIT ──
+const now2 = new Date();
+document.getElementById('startMonth').value = `${now2.getFullYear()}-${String(now2.getMonth()+1).padStart(2,'0')}`;
+document.getElementById('monthlySection').style.display = '';
+document.getElementById('feeBreakdown').style.display = 'none';
+
+document.addEventListener('click', e => {
+  if (!e.target.closest('.member-select-bar') && !e.target.closest('[id="paySearchResults"]')) {
+    document.getElementById('paySearchResults').classList.remove('show');
+  }
+  if (!e.target.closest('[id="lookupSearchInput"]') && !e.target.closest('[id="lookupSearchResults"]')) {
+    const lr = document.getElementById('lookupSearchResults');
+    if (lr) lr.style.display = 'none';
+  }
+});
+
 loadAccountingData();
+
+function checkUrlParam() {
+  const params = new URLSearchParams(window.location.search);
+  const id = params.get('member') || params.get('id');
+  if (id) {
+    history.replaceState({}, '', window.location.pathname);
+    setTimeout(() => selectMember(id), 500);
+  }
+}
+checkUrlParam();
 </script>
 </body>
 </html>
