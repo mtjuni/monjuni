@@ -677,8 +677,10 @@ function selectCourse(n, silent=false) {
 
 function onPayTypeChange() {
   const type = document.getElementById('payType').value;
-  const showMonthly = type !== '協会登録費' && type !== '保険料' && type !== 'その他';
+  const showMonthly = type !== '協会登録費' && type !== '保険料' && type !== '協会登録費+保険料' && type !== 'その他';
+  const showAddOn = showMonthly && type !== 'cont_1_set' && type !== 'cont_2_set';
   document.getElementById('monthlySection').style.display = showMonthly ? '' : 'none';
+  document.getElementById('addOnSection').style.display = showAddOn ? '' : 'none';
   calcAndFill();
   updateSummary();
 }
