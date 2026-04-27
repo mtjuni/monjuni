@@ -813,6 +813,24 @@ function calcAndFill() {
   }
   if (total > 0) document.getElementById('payAmount').value = total;
   else if (lines.length) document.getElementById('payAmount').value = 0;
+
+  // 追加オプション（チェックボックス）← ここから追加
+  const addAssoc = document.getElementById('addAssoc');
+  const addIns   = document.getElementById('addIns');
+  if (addAssoc && addAssoc.checked) {
+    lines.push({ label: `＋協会登録費 ${getFiscalYearLabel(fiscalYear)}`, amt: ASSOC_FEE, alreadyPaid: assocAlreadyPaid });
+    if (!assocAlreadyPaid) total += ASSOC_FEE;
+  }
+  if (addIns && addIns.checked) {
+    lines.push({ label: `＋スポーツ保険 ${getFiscalYearLabel(fiscalYear)}`, amt: INSURANCE_FEE, alreadyPaid: insAlreadyPaid });
+    if (!insAlreadyPaid) total += INSURANCE_FEE;
+  }
+  const assocStatus = document.getElementById('addAssocStatus');
+  const insStatus   = document.getElementById('addInsStatus');
+  if (assocStatus) assocStatus.textContent = assocAlreadyPaid ? '✓ 今年度済み（追加不要）' : '未払い';
+  if (assocStatus) assocStatus.style.color = assocAlreadyPaid ? 'var(--teal)' : 'var(--warn)';
+  if (insStatus) insStatus.textContent = insAlreadyPaid ? '✓ 今年度済み（追加不要）' : '未払い';
+  if (insStatus) insStatus.style.color = insAlreadyPaid ? 'var(--teal)' : 'var(--warn)';
   return total;
 }
 
