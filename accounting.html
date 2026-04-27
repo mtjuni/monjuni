@@ -685,6 +685,13 @@ function calcAndFill() {
   } else if (type === '保険料') {
     lines = [{ label: `スポーツ保険 ${getFiscalYearLabel(fiscalYear)}`, amt: INSURANCE_FEE, alreadyPaid: insAlreadyPaid }];
     if (!insAlreadyPaid) total = INSURANCE_FEE;
+  } else if (type === '協会登録費+保険料') {
+    lines = [
+      { label: `協会登録費 ${getFiscalYearLabel(fiscalYear)}`, amt: ASSOC_FEE, alreadyPaid: assocAlreadyPaid },
+      { label: `スポーツ保険 ${getFiscalYearLabel(fiscalYear)}`, amt: INSURANCE_FEE, alreadyPaid: insAlreadyPaid },
+    ];
+    if (!assocAlreadyPaid) total += ASSOC_FEE;
+    if (!insAlreadyPaid)   total += INSURANCE_FEE;
   } else if (type === 'その他') {
     // 金額は手動入力
   } else if (startVal && selectedCourse) {
