@@ -983,6 +983,11 @@ function resetPaymentForm() {
   document.getElementById('monthsPreview').innerHTML = '<span style="color:var(--text3);font-size:0.78rem;">開始月を選択してください</span>';
   document.getElementById('feeBreakdown').style.display = 'none';
   document.getElementById('skippedNote').style.display = 'none';
+  const addAssoc = document.getElementById('addAssoc');
+  const addIns   = document.getElementById('addIns');
+  if (addAssoc) addAssoc.checked = false;
+  if (addIns)   addIns.checked   = false;
+  document.getElementById('addOnSection').style.display = 'none';
   const btn = document.getElementById('submitBtn');
   btn.disabled = false; btn.textContent = '💰 支払いを登録する';
 }
