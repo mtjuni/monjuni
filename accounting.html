@@ -532,7 +532,7 @@ async function loadAccountingData() {
             ? p.months
             : String(p.months).split(',').filter(Boolean);
           months.forEach(mo => {
-            const clean = mo.trim();
+            const clean = String(mo).trim().replace(/'/g,'');
             if (clean && !m.paidMonths.includes(clean)) m.paidMonths.push(clean);
           });
         }
