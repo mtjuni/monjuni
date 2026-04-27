@@ -811,10 +811,7 @@ function calcAndFill() {
   } else {
     bd.style.display = 'none';
   }
-  if (total > 0) document.getElementById('payAmount').value = total;
-  else if (lines.length) document.getElementById('payAmount').value = 0;
-
-  // 追加オプション（チェックボックス）← ここから追加
+  // 追加オプション（チェックボックス）← payAmount設定の前に移動
   const addAssoc = document.getElementById('addAssoc');
   const addIns   = document.getElementById('addIns');
   if (addAssoc && addAssoc.checked) {
@@ -831,6 +828,29 @@ function calcAndFill() {
   if (assocStatus) assocStatus.style.color = assocAlreadyPaid ? 'var(--teal)' : 'var(--warn)';
   if (insStatus) insStatus.textContent = insAlreadyPaid ? '✓ 今年度済み（追加不要）' : '未払い';
   if (insStatus) insStatus.style.color = insAlreadyPaid ? 'var(--teal)' : 'var(--warn)';
+
+  // 内訳描画
+  const bd = document.getElementById('feeBreakdown');
+  const bl = document.getElementById('breakdownLines');
+  const bt = document.getElementById('breakdownTotal');
+  if (lines.length) {
+    bd.style.display = '';
+    bl.innerHTML = lines.map(l => `
+      <div class="breakdown-line ${l.skip || l.alreadyPaid ? 'skip' : ''}">
+        <span>${l.label}
+          ${l.dup ? '<span class="bl-badge">支払済</span>' : ''}
+          ${l.skip && !l.alreadyPaid ? '<span class="bl-badge">対象外</span>' : ''}
+          ${l.alreadyPaid ? '<span class="bl-badge paid-badge">今年度済</span>' : ''}
+        </span>
+        <span class="bl-amt">¥${l.amt.toLocaleString()}</span>
+      </div>`).join('') + '<hr class="breakdown-sep">';
+    bt.innerHTML = `<span class="bt-label">合計</span><span class="bt-val">¥${total.toLocaleString()}</span>`;
+  } else {
+    bd.style.display = 'none';
+  }
+  if (total > 0) document.getElementById('payAmount').value = total;
+  else if (lines.length) document.getElementById('payAmount').value = 0;
+
   return total;
 }
 
