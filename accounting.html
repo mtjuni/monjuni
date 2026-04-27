@@ -549,9 +549,14 @@ async function loadAccountingData() {
           if (!m.assocPaidYears.includes(fy)) m.assocPaidYears.push(fy);
         }
         if (ty === '保険料') {
-          const fy = getFiscalYear(p.date ? new Date(p.date) : new Date());
-          if (!m.insurancePaidYears.includes(fy)) m.insurancePaidYears.push(fy);
-        }
+      const fy = getFiscalYear(p.date ? new Date(p.date) : new Date());
+      if (!m.insurancePaidYears.includes(fy)) m.insurancePaidYears.push(fy);
+    }
+    if (ty === '協会登録費+保険料') {
+      const fy = getFiscalYear(p.date ? new Date(p.date) : new Date());
+      if (!m.assocPaidYears.includes(fy)) m.assocPaidYears.push(fy);
+      if (!m.insurancePaidYears.includes(fy)) m.insurancePaidYears.push(fy);
+    }
       });
     }
     showToast(`✓ ${MEMBERS.length}名 読み込みました`);
