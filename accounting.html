@@ -1092,9 +1092,12 @@ function renderPaymentCalendar(m) {
     const isCurrent = key === currentKey;
     const isPaid    = (m.paidMonths||[]).includes(key);
     let cls = 'future', mark = '·';
-    if (!isFuture) {
-      cls  = isPaid ? 'paid'   : 'unpaid';
-      mark = isPaid ? '○' : '✗';
+   if (isPaid) {
+      cls = 'paid'; mark = '○';
+    } else if (isFuture) {
+      cls = 'future'; mark = '·';
+    } else {
+      cls = 'unpaid'; mark = '✗';
     }
     if (isCurrent) cls += ' current';
     html += `<div class="cal-cell ${cls}" title="${key}"><span class="cal-month">${mo}月</span><span class="cal-mark">${mark}</span></div>`;
