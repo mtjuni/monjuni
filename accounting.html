@@ -304,6 +304,28 @@
               <div id="skippedNote" style="font-size:0.72rem;color:var(--warn);margin-top:6px;display:none;">⚠ 休会月は金額から除外されます</div>
             </div>
           </div>
+          <!-- 追加オプション -->
+          <div class="form-section" id="addOnSection" style="display:none;">
+            <label class="form-label">追加オプション</label>
+            <div style="display:flex;flex-direction:column;gap:8px;">
+              <label style="display:flex;align-items:center;gap:10px;padding:10px 12px;background:var(--surface2);border:1px solid var(--border);border-radius:var(--radius-sm);cursor:pointer;">
+                <input type="checkbox" id="addAssoc" onchange="calcAndFill();updateSummary();"
+                  style="width:18px;height:18px;accent-color:var(--teal);cursor:pointer;">
+                <div>
+                  <div style="font-size:0.88rem;font-weight:600;">協会登録費 ¥600</div>
+                  <div id="addAssocStatus" style="font-size:0.72rem;color:var(--text3);"></div>
+                </div>
+              </label>
+              <label style="display:flex;align-items:center;gap:10px;padding:10px 12px;background:var(--surface2);border:1px solid var(--border);border-radius:var(--radius-sm);cursor:pointer;">
+                <input type="checkbox" id="addIns" onchange="calcAndFill();updateSummary();"
+                  style="width:18px;height:18px;accent-color:var(--teal);cursor:pointer;">
+                <div>
+                  <div style="font-size:0.88rem;font-weight:600;">スポーツ保険 ¥800</div>
+                  <div id="addInsStatus" style="font-size:0.72rem;color:var(--text3);"></div>
+                </div>
+              </label>
+            </div>
+          </div>
 
           <div class="fee-breakdown" id="feeBreakdown" style="display:none;">
             <div class="breakdown-title">料金内訳</div>
