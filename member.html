@@ -404,11 +404,11 @@ async function init() {
     }
 
     ATTENDANCE = (aData.attendance || []).filter(a =>
-      a.memberId === id || a.nfcId === id
-    );
-    PAYMENTS = (pData.payments || []).filter(p =>
-      p.memberId === id || p.nfcId === id
-    );
+  String(a.memberId) === id || String(a.nfcId) === id
+);
+PAYMENTS = (pData.payments || []).filter(p =>
+  String(p.memberId) === id || String(p.nfcId) === id
+);
     SESSIONS = (sData.sessions || []);
 
     renderAll();
