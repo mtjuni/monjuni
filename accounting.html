@@ -567,8 +567,22 @@ async function loadAccountingData() {
             ? p.months
             : String(p.months).split(',').filter(Boolean);
           months.forEach(mo => {
-            const clean = mo.trim();
-            if (clean && !m.paidMonths.includes(clean)) m.paidMonths.push(clean);
+            // Date型・文字列どちらも正規化してYYYY/MM形式に
+            let clean = String(mo).trim().replace(/'/g,'');
+            // Date型が文字列化された場合（例: "2026-04-01T..."）
+            if (clean.includes('T') || clean.includes('-')) {
+              const d = new Date(clean);
+              if (!isNaN(d)) {
+                clean = `${d.getFullYear()}/${String(d.getMonth()+1).padStart(2,'0')}`;
+              }
+            }
+            // YYYY/MM/DD形式の場合は先頭7文字だけ使う
+            if (clean.length > 7 && clean.includes('/')) {
+              clean = clean.slice(0, 7);
+            }
+            if (clean && clean.match(/^\d{4}\/\d{2}$/) && !m.paidMonths.includes(clean)) {
+              m.paidMonths.push(clean);
+            }
           });
         }
         // 初回セットで協会費・保険を支払済に
@@ -925,14 +939,15 @@ async function submitPayment() {
       method:document.getElementById('payMethod').value,
       staff:document.getElementById('payStaff').value||'',
       note:`${fy}年度`, date:payDate };
-    const params = Object.entries(p).map(([k,v])=>`${k}=${encodeURIComponent(String(v))}`).join('&');
-    jsonpFetch(GAS_URL+'?'+params).then(d=>{
+    try {
+      const params = Object.entries(p).map(([k,v])=>`${k}=${encodeURIComponent(String(v))}`).join('&');
+      const d = await jsonpFetch(GAS_URL+'?'+params);
       if(d.status==='ok'||d.status==='success'){
         PAYMENTS.push({...p,id:d.id||'P'+Date.now()});
         if(!m.assocPaidYears)m.assocPaidYears=[];
         if(!m.assocPaidYears.includes(fy))m.assocPaidYears.push(fy);
       }
-    }).catch(()=>{});
+    } catch(e) { console.warn('assoc save error:', e); }
   }
   if (addInsChecked) {
     const p = { action:'payment', memberId:m.id, nfcId:m.nfcId||m.id, memberName:m.name,
@@ -940,14 +955,15 @@ async function submitPayment() {
       method:document.getElementById('payMethod').value,
       staff:document.getElementById('payStaff').value||'',
       note:`${fy}年度`, date:payDate };
-    const params = Object.entries(p).map(([k,v])=>`${k}=${encodeURIComponent(String(v))}`).join('&');
-    jsonpFetch(GAS_URL+'?'+params).then(d=>{
+    try {
+      const params = Object.entries(p).map(([k,v])=>`${k}=${encodeURIComponent(String(v))}`).join('&');
+      const d = await jsonpFetch(GAS_URL+'?'+params);
       if(d.status==='ok'||d.status==='success'){
         PAYMENTS.push({...p,id:d.id||'P'+Date.now()});
         if(!m.insurancePaidYears)m.insurancePaidYears=[];
         if(!m.insurancePaidYears.includes(fy))m.insurancePaidYears.push(fy);
       }
-    }).catch(()=>{});
+    } catch(e) { console.warn('ins save error:', e); }
   }
 
   try {
@@ -1199,7 +1215,10 @@ function renderPaymentCalendar(m) {
     const mo = parseInt(key.split('/')[1]);
     const isFuture  = key > currentKey;
     const isCurrent = key === currentKey;
-    const isPaid    = (m.paidMonths||[]).includes(key);
+    const isPaid = (m.paidMonths||[]).some(pm => {
+      const clean = String(pm).trim().slice(0,7);
+      return clean === key;
+    });
     let cls = 'future', mark = '·';
     if (!isFuture) {
       cls  = isPaid ? 'paid'   : 'unpaid';
@@ -1210,7 +1229,10 @@ function renderPaymentCalendar(m) {
   });
   html += '</div></div>';
 
-  const unpaidMonths = months.filter(key => key <= currentKey && !(m.paidMonths||[]).includes(key));
+  const unpaidMonths = months.filter(key => {
+    if (key > currentKey) return false;
+    return !(m.paidMonths||[]).some(pm => String(pm).trim().slice(0,7) === key);
+  });
   if (unpaidMonths.length) {
     html += `<div style="background:rgba(255,107,107,0.1);border:1px solid rgba(255,107,107,0.3);border-radius:10px;padding:12px;margin-top:10px;">
       <div style="font-size:0.72rem;font-weight:700;color:var(--warn);margin-bottom:6px;">⚠ 未払い月（${unpaidMonths.length}ヶ月）</div>
