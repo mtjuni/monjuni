@@ -563,12 +563,18 @@ function renderPayments() {
     const isFuture = key > nowKey;
     const isNow    = key === nowKey;
     const isPaid   = paidMonths.has(key);
-    let cls = 'future', mk = '·';
-    if (!isFuture) {
-      cls = isPaid ? 'paid' : 'unpaid';
-      mk  = isPaid ? '○' : '✗';
-      if (!isPaid) unpaid.push(key);
-    }
+    let cls, mk;
+if (isPaid) {
+  cls = 'paid';
+  mk  = '○';
+} else if (isFuture) {
+  cls = 'future';
+  mk  = '·';
+} else {
+  cls = 'unpaid';
+  mk  = '✗';
+  unpaid.push(key);
+}
     if (isNow) cls += ' now';
     return `<div class="pay-cell ${cls}">
       <span class="pay-mo">${mo}月</span>
