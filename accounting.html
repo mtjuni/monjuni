@@ -911,8 +911,12 @@ function updateSummary() {
 
 async function submitPayment() {
   if (!selectedMemberObj) { showToast('⚠ 会員を選択してください', true); return; }
-  const amount = parseInt(document.getElementById('payAmount').value) || 0;
-  if (!amount) { showToast('⚠ 金額を入力してください', true); return; }
+  const totalAmount = parseInt(document.getElementById('payAmount').value) || 0;
+  if (!totalAmount) { showToast('⚠ 金額を入力してください', true); return; }
+  const addAssocCheckedPre = document.getElementById('addAssoc')?.checked || false;
+  const addInsCheckedPre   = document.getElementById('addIns')?.checked   || false;
+  const addonAmt = (addAssocCheckedPre ? ASSOC_FEE : 0) + (addInsCheckedPre ? INSURANCE_FEE : 0);
+  const amount = totalAmount - addonAmt;
 
   const btn = document.getElementById('submitBtn');
   btn.disabled = true; btn.textContent = '登録中...';
