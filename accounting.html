@@ -646,7 +646,7 @@ function selectMember(id) {
   document.getElementById('noMemberHint').style.display = 'none';
   selectCourse(m.courseType, true);
   skippedMonths.clear();
-  onPayTypeChange();
+  updateMonthsPreview();
   renderAnnualBadges(m);
   updateSummary();
 }
@@ -1120,51 +1120,16 @@ function renderAnnualFeeStatus(m, containerId) {
   }).join('') + '</div>';
 }
 
-async function toggleAnnualFee(memberId, feeKey, year, containerId) {
+function toggleAnnualFee(memberId, feeKey, year, containerId) {
   const m = MEMBERS.find(x=>x.id===memberId);
   if (!m) return;
   if (!m[feeKey]) m[feeKey] = [];
-  const label = feeKey==='assocPaidYears' ? '協会登録費' : 'スポーツ保険';
-  const amt   = feeKey==='assocPaidYears' ? ASSOC_FEE : INSURANCE_FEE;
-  const type  = feeKey==='assocPaidYears' ? '協会登録費' : '保険料';
-
   if (m[feeKey].includes(year)) {
-    // 未払いに戻す（ローカルのみ・スプレッドシートの行は削除しない）
     m[feeKey] = m[feeKey].filter(y=>y!==year);
-    showToast(`${year}年度 ${label} を未払いに変更（履歴はシートに残ります）`);
+    showToast(`${year}年度 ${feeKey==='assocPaidYears'?'協会登録費':'保険料'} を未払いに変更`);
   } else {
-    // 支払済にする → GASのPaymentsシートに記録
     m[feeKey].push(year);
-    const now = new Date();
-    const jst = new Date(now.getTime() + 9 * 60 * 60 * 1000);
-    const payDate = jst.toISOString().slice(0, 10);
-    const payData = {
-      action:     'payment',
-      memberId:   m.id,
-      nfcId:      m.nfcId || m.id,
-      memberName: m.name,
-      type:       type,
-      months:     '',
-      amount:     amt,
-      method:     '現金',
-      staff:      '',
-      note:       `${year}年度 手動登録`,
-      date:       payDate,
-    };
-    try {
-      const params = Object.entries(payData)
-        .map(([k,v]) => `${k}=${encodeURIComponent(String(v))}`)
-        .join('&');
-      const d = await jsonpFetch(GAS_URL + '?' + params);
-      if (d.status === 'ok' || d.status === 'success') {
-        PAYMENTS.push({ ...payData, id: d.id || 'P'+Date.now() });
-        showToast(`✓ ${year}年度 ${label} を支払済に登録しました`);
-      } else {
-        showToast('⚠ 保存失敗: ' + (d.message||''), true);
-      }
-    } catch(e) {
-      showToast('⚠ 通信エラー: ' + e.message, true);
-    }
+    showToast(`✓ ${year}年度 ${feeKey==='assocPaidYears'?'協会登録費':'保険料'} を支払済に変更`);
   }
   renderAnnualFeeStatus(m, containerId);
   if (selectedMemberObj && selectedMemberObj.id === memberId) {
