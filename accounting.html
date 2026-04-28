@@ -1241,10 +1241,13 @@ function renderPaymentCalendar(m) {
       const clean = String(pm).trim().slice(0,7);
       return clean === key;
     });
-    let cls = 'future', mark = '·';
-    if (!isFuture) {
-      cls  = isPaid ? 'paid'   : 'unpaid';
-      mark = isPaid ? '○' : '✗';
+   let cls, mark;
+    if (isPaid) {
+      cls = 'paid'; mark = '○';
+    } else if (isFuture) {
+      cls = 'future'; mark = '·';
+    } else {
+      cls = 'unpaid'; mark = '✗';
     }
     if (isCurrent) cls += ' current';
     html += `<div class="cal-cell ${cls}" title="${key}"><span class="cal-month">${mo}月</span><span class="cal-mark">${mark}</span></div>`;
