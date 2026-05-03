@@ -495,6 +495,8 @@ let members = [];
 let nfcReader = null;
 let isWebNfc = 'NDEFReader' in window;
 let pendingNfcId = null; // メンバー読み込み前に届いたNFC ID
+let lastPollTs = 0;       // 最後に処理したタイムスタンプ
+const LOCAL_PORT = 9876;
 
 // ─────────────────────────────────────────
 // 初期化
@@ -556,9 +558,29 @@ async function loadMembers() {
       pendingNfcId = null;
       processNfcId(id);
     }
+    // ローカルサーバーのポーリング開始
+    startPolling();
   } catch(e) {
     document.getElementById('nfc-state-label').textContent = '⚠ メンバー読み込み失敗';
   }
+}
+
+// ─────────────────────────────────────────
+// ローカルサーバーポーリング（Mac用）
+// ─────────────────────────────────────────
+function startPolling() {
+  setInterval(async () => {
+    try {
+      const res = await fetch('http://localhost:' + LOCAL_PORT + '/?t=' + Date.now());
+      const data = await res.json();
+      if (data.id && data.ts && data.ts > lastPollTs) {
+        lastPollTs = data.ts;
+        processNfcId(data.id);
+      }
+    } catch(e) {
+      // ローカルサーバー未起動の場合は無視
+    }
+  }, 500);
 }
 
 // ─────────────────────────────────────────
