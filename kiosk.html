@@ -494,6 +494,7 @@ let returnTimer = null;
 let members = [];
 let nfcReader = null;
 let isWebNfc = 'NDEFReader' in window;
+let pendingNfcId = null; // メンバー読み込み前に届いたNFC ID
 
 // ─────────────────────────────────────────
 // 初期化
@@ -512,11 +513,11 @@ if (isWebNfc) {
   document.getElementById('nfc-mode-label').textContent = 'URLパラメータ (Mac)';
 }
 
-// メンバー読み込み
-loadMembers();
-
-// URLパラメータ（Mac + Pythonスクリプトからの呼び出し）
+// URLパラメータを先にチェック（pendingNfcIdにセット）
 checkUrlParam();
+
+// メンバー読み込み（完了後にpendingNfcIdがあれば処理）
+loadMembers();
 
 // ─────────────────────────────────────────
 // JSONP
@@ -549,6 +550,12 @@ async function loadMembers() {
     const data = await jsonpFetch(GAS_URL + '?action=getMembers');
     if (data && data.members) members = data.members;
     document.getElementById('nfc-state-label').textContent = `準備完了 (${members.length}名登録)`;
+    // 読み込み前に届いていたNFC IDがあれば処理する
+    if (pendingNfcId) {
+      const id = pendingNfcId;
+      pendingNfcId = null;
+      processNfcId(id);
+    }
   } catch(e) {
     document.getElementById('nfc-state-label').textContent = '⚠ メンバー読み込み失敗';
   }
@@ -563,7 +570,13 @@ function checkUrlParam() {
   const nfcId = params.get('nfcId') || params.get('uid') || params.get('id');
   if (nfcId) {
     history.replaceState({}, '', window.location.pathname);
-    setTimeout(() => processNfcId(nfcId), 300);
+    if (members.length === 0) {
+      // まだメンバー未読み込み → 保留してloadMembers完了後に処理
+      pendingNfcId = nfcId;
+      document.getElementById('nfc-state-label').textContent = 'メンバー読み込み中...';
+    } else {
+      processNfcId(nfcId);
+    }
   }
 }
 
