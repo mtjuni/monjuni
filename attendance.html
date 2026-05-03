@@ -79,6 +79,13 @@
   .month-cell.unpaid { background: var(--surface2); color: var(--text3); }
   .month-cell.current { outline: 2px solid var(--accent); outline-offset: 1px; }
   .month-num { font-size: 0.75rem; font-weight: 700; font-family: 'DM Mono', monospace; }
+  .date-select-wrap { margin-bottom: 14px; }
+  .date-select-label { font-size: 0.78rem; color: var(--text2); margin-bottom: 8px; font-weight: 500; }
+  .date-pills { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 6px; }
+  .date-pill { padding: 7px 14px; background: var(--surface2); border: 1px solid var(--border); border-radius: 20px; color: var(--text2); font-family: inherit; font-size: 0.82rem; font-weight: 500; cursor: pointer; transition: all 0.15s; }
+  .date-pill.active { background: rgba(79,255,176,0.15); border-color: var(--accent); color: var(--accent); }
+  .date-custom-input { width: 100%; padding: 9px 12px; background: var(--surface2); border: 1px solid var(--border); border-radius: var(--radius-sm); color: var(--text); font-family: inherit; font-size: 0.9rem; outline: none; display: none; margin-top: 6px; transition: border-color 0.2s; color-scheme: dark; }
+  .date-custom-input:focus { border-color: var(--accent); }
   .class-select-label { font-size: 0.78rem; color: var(--text2); margin-bottom: 8px; font-weight: 500; }
   .class-pills { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 16px; }
   .class-pill { padding: 8px 16px; background: var(--surface2); border: 1px solid var(--border); border-radius: 20px; color: var(--text2); font-family: inherit; font-size: 0.85rem; font-weight: 500; cursor: pointer; transition: all 0.15s; }
@@ -297,6 +304,14 @@
           </div>
           <div class="section-title" style="font-size:0.65rem;">直近6ヶ月の支払い状況</div>
           <div class="payment-strip" id="paymentStrip"></div>
+          <div class="date-select-wrap">
+            <div class="date-select-label">日付を選択</div>
+            <div class="date-pills">
+              <button class="date-pill active" id="datePillToday" onclick="selectDate(this,'today')">📅 本日</button>
+              <button class="date-pill" id="datePillCustom" onclick="selectDate(this,'custom')">🗓 別の日付</button>
+            </div>
+            <input class="date-custom-input" type="date" id="dateCustomInput" onchange="onCustomDateChange(this.value)">
+          </div>
           <div class="class-select-label">クラスを選択</div>
           <div class="class-pills">
             <button class="class-pill active" onclick="selectClass(this,'通常')">通常</button>
@@ -522,6 +537,28 @@ let MEMBERS = [];
 let todayAttendance = [];
 let selectedMember = null;
 let selectedClass = '通常';
+let selectedDate = null; // null = 本日
+
+function selectDate(btn, type) {
+  document.querySelectorAll('.date-pill').forEach(p => p.classList.remove('active'));
+  btn.classList.add('active');
+  const input = document.getElementById('dateCustomInput');
+  if (type === 'today') {
+    input.style.display = 'none';
+    selectedDate = null;
+  } else {
+    input.style.display = '';
+    if (!input.value) {
+      input.value = new Date().toISOString().slice(0, 10);
+      selectedDate = input.value;
+    }
+    input.focus();
+  }
+}
+
+function onCustomDateChange(val) {
+  selectedDate = val || null;
+}
 let _mlCurrentList = [];
 let _mlCurrentIndex = -1;
 let mlSortKey = 'furigana';
@@ -603,14 +640,16 @@ function confirmAttendance() {
   const time = `${String(now.getHours()).padStart(2,'0')}:${String(now.getMinutes()).padStart(2,'0')}`;
   const member = selectedMember;
   const cls = selectedClass;
+  const dateParam = selectedDate || new Date().toISOString().slice(0, 10);
   jsonpFetch(GAS_URL + '?action=recordAttendance'
     + '&memberId=' + encodeURIComponent(member.id)
     + '&nfcId=' + encodeURIComponent(member.nfcId || '')
     + '&memberName=' + encodeURIComponent(member.name)
     + '&class=' + encodeURIComponent(cls)
+    + '&date=' + encodeURIComponent(dateParam)
   ).then(res => {
-    if (res.status === 'duplicate') { showToast('⚠ ' + member.name + ' さんは本日すでに登録済みです', true); }
-    else { todayAttendance.unshift({ member, class: cls, time }); renderTodayList(); showToast('✓ ' + member.name + ' さんの出席を登録しました'); }
+    if (res.status === 'duplicate') { showToast('⚠ ' + member.name + ' さんは' + dateParam + 'すでに登録済みです', true); }
+    else { todayAttendance.unshift({ member, class: cls, time }); renderTodayList(); showToast('✓ ' + member.name + ' さんの出席を登録しました（' + dateParam + '）'); }
   }).catch(() => {
     todayAttendance.unshift({ member, class: cls, time }); renderTodayList(); showToast('✓ ' + member.name + ' さんの出席を登録しました（オフライン）');
   }).finally(() => { btn.disabled = false; btn.textContent = '✓ 出席を登録する'; });
@@ -619,6 +658,11 @@ function confirmAttendance() {
   document.getElementById('searchInput').value = '';
   document.getElementById('searchResults').classList.remove('show');
   selectedMember = null;
+  // 日付選択をリセット（本日に戻す）
+  selectedDate = null;
+  document.getElementById('datePillToday').click();
+  document.getElementById('dateCustomInput').style.display = 'none';
+  document.getElementById('dateCustomInput').value = '';
 }
 
 function onSearch(q) {
