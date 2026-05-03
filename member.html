@@ -828,7 +828,7 @@ function selectAttDate(btn, type) {
     selectedAttDate = null;
     regBtn.innerHTML = '<span>✓</span> 本日の出席をつける';
   } else {
-    input.style.display = '';
+    input.style.display = 'block';
     if (!input.value) {
       input.value = new Date().toISOString().slice(0, 10);
       selectedAttDate = input.value;
