@@ -1,0 +1,762 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="mobile-web-app-capable" content="yes">
+<title>出席キオスク — Athletic Club</title>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@300;400;700;900&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #0d0f1a;
+    --surface: #161929;
+    --surface2: #1e2235;
+    --border: #2a2f45;
+    --accent: #4fffb0;
+    --accent2: #7b6fff;
+    --warn: #ff6b6b;
+    --text: #e8eaf6;
+    --text2: #8892b0;
+    --text3: #4a5380;
+    --safe-top: env(safe-area-inset-top, 0px);
+    --safe-bottom: env(safe-area-inset-bottom, 0px);
+    --return-sec: 5; /* 自動待機画面復帰秒数 */
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+
+  body {
+    font-family: 'Noto Sans JP', sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    height: 100dvh;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+  }
+
+  /* ── 画面共通 ── */
+  .screen {
+    position: absolute;
+    inset: 0;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 24px;
+    transition: opacity 0.4s ease, transform 0.4s ease;
+  }
+  .screen.hidden {
+    opacity: 0;
+    pointer-events: none;
+    transform: scale(0.97);
+  }
+
+  /* ── 待機画面 ── */
+  #screen-wait {
+    background: var(--bg);
+    gap: 32px;
+  }
+
+  .wait-logo {
+    font-size: 4rem;
+    animation: float 3s ease-in-out infinite;
+  }
+  @keyframes float {
+    0%, 100% { transform: translateY(0); }
+    50% { transform: translateY(-10px); }
+  }
+
+  .wait-title {
+    font-size: clamp(1.4rem, 5vw, 2.2rem);
+    font-weight: 900;
+    letter-spacing: 0.08em;
+    color: var(--text);
+    text-align: center;
+  }
+
+  .wait-sub {
+    font-size: clamp(0.9rem, 3vw, 1.1rem);
+    color: var(--text2);
+    text-align: center;
+    line-height: 1.7;
+  }
+
+  /* NFC リング */
+  .nfc-ring-wrap {
+    position: relative;
+    width: 180px;
+    height: 180px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+  .ring {
+    position: absolute;
+    border-radius: 50%;
+    border: 2px solid rgba(79,255,176,0.2);
+    animation: pulse-out 2.4s ease-in-out infinite;
+  }
+  .ring:nth-child(1) { width: 180px; height: 180px; animation-delay: 0s; }
+  .ring:nth-child(2) { width: 140px; height: 140px; animation-delay: 0.4s; }
+  .ring:nth-child(3) { width: 100px; height: 100px; animation-delay: 0.8s; border-color: rgba(79,255,176,0.35); }
+  @keyframes pulse-out {
+    0%, 100% { transform: scale(1); opacity: 0.5; }
+    50% { transform: scale(1.06); opacity: 1; }
+  }
+  .nfc-center {
+    width: 70px; height: 70px;
+    background: var(--surface2);
+    border-radius: 50%;
+    border: 2px solid rgba(79,255,176,0.4);
+    display: flex; align-items: center; justify-content: center;
+    font-size: 2rem;
+    z-index: 1;
+  }
+
+  .nfc-state-label {
+    font-size: 0.85rem;
+    color: var(--text3);
+    font-family: 'DM Mono', monospace;
+    letter-spacing: 0.06em;
+  }
+
+  /* Android NFC ボタン */
+  .nfc-start-btn {
+    padding: 14px 36px;
+    background: rgba(79,255,176,0.12);
+    border: 1px solid rgba(79,255,176,0.35);
+    border-radius: 40px;
+    color: var(--accent);
+    font-family: inherit;
+    font-size: 1rem;
+    font-weight: 700;
+    cursor: pointer;
+    letter-spacing: 0.04em;
+    transition: all 0.2s;
+    display: none; /* Android のみ表示 */
+  }
+  .nfc-start-btn:hover { background: rgba(79,255,176,0.2); }
+  .nfc-start-btn.active { background: rgba(79,255,176,0.25); border-color: var(--accent); }
+
+  /* ── 成功画面 ── */
+  #screen-success {
+    background: var(--bg);
+    gap: 28px;
+  }
+
+  .success-burst {
+    position: absolute;
+    inset: 0;
+    background: radial-gradient(ellipse at 50% 40%, rgba(79,255,176,0.13) 0%, transparent 65%);
+    pointer-events: none;
+    opacity: 0;
+    transition: opacity 0.5s;
+  }
+  #screen-success:not(.hidden) .success-burst { opacity: 1; }
+
+  .success-avatar {
+    width: 120px; height: 120px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, var(--accent2), var(--accent));
+    display: flex; align-items: center; justify-content: center;
+    font-size: 3.5rem;
+    font-weight: 900;
+    color: #0d0f1a;
+    box-shadow: 0 0 60px rgba(79,255,176,0.4);
+    animation: pop-in 0.5s cubic-bezier(0.34,1.56,0.64,1);
+  }
+  @keyframes pop-in {
+    from { transform: scale(0.4); opacity: 0; }
+    to { transform: scale(1); opacity: 1; }
+  }
+
+  .success-check {
+    font-size: 3rem;
+    animation: pop-in 0.4s 0.15s cubic-bezier(0.34,1.56,0.64,1) both;
+  }
+
+  .success-name {
+    font-size: clamp(2rem, 8vw, 4rem);
+    font-weight: 900;
+    color: var(--accent);
+    letter-spacing: 0.04em;
+    text-align: center;
+    line-height: 1.2;
+    animation: slide-up 0.4s 0.2s ease both;
+  }
+  @keyframes slide-up {
+    from { opacity: 0; transform: translateY(20px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+
+  .success-furigana {
+    font-size: clamp(1rem, 3.5vw, 1.4rem);
+    color: var(--text2);
+    letter-spacing: 0.1em;
+    animation: slide-up 0.4s 0.3s ease both;
+  }
+
+  .success-msg {
+    font-size: clamp(1rem, 3vw, 1.3rem);
+    color: var(--text2);
+    font-weight: 300;
+    animation: slide-up 0.4s 0.35s ease both;
+  }
+
+  /* タイマーバー */
+  .timer-bar-wrap {
+    width: 100%;
+    max-width: 320px;
+    height: 4px;
+    background: var(--surface2);
+    border-radius: 2px;
+    overflow: hidden;
+    animation: slide-up 0.4s 0.4s ease both;
+  }
+  .timer-bar {
+    height: 100%;
+    background: var(--accent);
+    border-radius: 2px;
+    width: 100%;
+    transition: none;
+  }
+  .timer-bar.running {
+    transition: width linear;
+  }
+
+  .timer-label {
+    font-size: 0.75rem;
+    color: var(--text3);
+    font-family: 'DM Mono', monospace;
+    animation: slide-up 0.4s 0.4s ease both;
+  }
+
+  .back-btn {
+    padding: 12px 32px;
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: 30px;
+    color: var(--text2);
+    font-family: inherit;
+    font-size: 0.95rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s;
+    animation: slide-up 0.4s 0.45s ease both;
+    letter-spacing: 0.04em;
+  }
+  .back-btn:hover { border-color: var(--accent); color: var(--accent); }
+
+  /* ── エラー画面 ── */
+  #screen-error {
+    background: var(--bg);
+    gap: 24px;
+  }
+  .error-icon { font-size: 4rem; }
+  .error-title {
+    font-size: clamp(1.3rem, 5vw, 2rem);
+    font-weight: 900;
+    color: var(--warn);
+    text-align: center;
+  }
+  .error-msg {
+    font-size: 1rem;
+    color: var(--text2);
+    text-align: center;
+    line-height: 1.7;
+  }
+
+  /* ── 重複画面 ── */
+  #screen-duplicate {
+    background: var(--bg);
+    gap: 24px;
+  }
+  .dup-icon { font-size: 4rem; }
+  .dup-name {
+    font-size: clamp(1.8rem, 6vw, 3rem);
+    font-weight: 900;
+    color: #ffb800;
+    text-align: center;
+  }
+  .dup-msg {
+    font-size: 1rem;
+    color: var(--text2);
+    text-align: center;
+    line-height: 1.7;
+  }
+
+  /* ── 設定パネル ── */
+  #settings-panel {
+    position: fixed;
+    bottom: 0; left: 0; right: 0;
+    background: var(--surface);
+    border-top: 1px solid var(--border);
+    border-radius: 20px 20px 0 0;
+    padding: 20px 24px calc(var(--safe-bottom) + 20px);
+    transform: translateY(100%);
+    transition: transform 0.35s cubic-bezier(0.4,0,0.2,1);
+    z-index: 200;
+  }
+  #settings-panel.open { transform: translateY(0); }
+
+  .settings-handle {
+    width: 40px; height: 4px;
+    background: var(--border);
+    border-radius: 2px;
+    margin: 0 auto 16px;
+  }
+
+  .settings-title {
+    font-size: 0.8rem;
+    font-weight: 700;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--text3);
+    margin-bottom: 16px;
+  }
+
+  .setting-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 14px;
+  }
+  .setting-label { font-size: 0.9rem; color: var(--text2); }
+  .setting-control { display: flex; align-items: center; gap: 10px; }
+  .sec-btn {
+    width: 32px; height: 32px;
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    color: var(--text);
+    font-size: 1.1rem;
+    cursor: pointer;
+    display: flex; align-items: center; justify-content: center;
+    transition: all 0.15s;
+  }
+  .sec-btn:hover { border-color: var(--accent); color: var(--accent); }
+  .sec-val {
+    font-family: 'DM Mono', monospace;
+    font-size: 1rem;
+    font-weight: 700;
+    color: var(--accent);
+    min-width: 40px;
+    text-align: center;
+  }
+
+  /* ── 右上メニューボタン ── */
+  #menu-btn {
+    position: fixed;
+    top: calc(var(--safe-top) + 12px);
+    right: 16px;
+    width: 36px; height: 36px;
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    cursor: pointer;
+    z-index: 100;
+    color: var(--text3);
+    font-size: 1rem;
+    transition: all 0.2s;
+  }
+  #menu-btn:hover { border-color: var(--accent); color: var(--accent); }
+
+  /* ── HOME リンク ── */
+  #home-link {
+    position: fixed;
+    top: calc(var(--safe-top) + 12px);
+    left: 16px;
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    color: var(--text2);
+    padding: 6px 14px;
+    border-radius: 20px;
+    font-size: 0.78rem;
+    font-weight: 500;
+    text-decoration: none;
+    z-index: 100;
+    transition: all 0.2s;
+  }
+  #home-link:hover { color: var(--accent); border-color: var(--accent); }
+
+  /* オーバーレイ */
+  #overlay {
+    position: fixed; inset: 0;
+    background: rgba(0,0,0,0.5);
+    z-index: 150;
+    display: none;
+  }
+  #overlay.show { display: block; }
+</style>
+</head>
+<body>
+
+<a href="attendance.html" id="home-link">← 管理画面</a>
+<div id="menu-btn" onclick="toggleSettings()">⚙</div>
+
+<!-- 待機画面 -->
+<div class="screen" id="screen-wait">
+  <div class="wait-logo">⚡</div>
+  <div class="wait-title">出席登録</div>
+  <div class="nfc-ring-wrap">
+    <div class="ring"></div>
+    <div class="ring"></div>
+    <div class="ring"></div>
+    <div class="nfc-center">📶</div>
+  </div>
+  <div class="wait-sub" id="wait-sub-text">NFCカードをかざしてください</div>
+  <div class="nfc-state-label" id="nfc-state-label">待機中...</div>
+  <!-- Android Chrome 用：タップで NFC スキャン開始 -->
+  <button class="nfc-start-btn" id="nfc-start-btn" onclick="startWebNfc()">
+    📡 カードをスキャン
+  </button>
+</div>
+
+<!-- 成功画面 -->
+<div class="screen hidden" id="screen-success">
+  <div class="success-burst"></div>
+  <div class="success-avatar" id="success-avatar">?</div>
+  <div class="success-check">✅</div>
+  <div class="success-furigana" id="success-furigana">—</div>
+  <div class="success-name" id="success-name">—</div>
+  <div class="success-msg">出席を登録しました！</div>
+  <div class="timer-bar-wrap">
+    <div class="timer-bar" id="timer-bar"></div>
+  </div>
+  <div class="timer-label" id="timer-label">5秒後に自動で戻ります</div>
+  <button class="back-btn" onclick="goWait()">← 戻る</button>
+</div>
+
+<!-- 重複画面 -->
+<div class="screen hidden" id="screen-duplicate">
+  <div class="dup-icon">⚠️</div>
+  <div class="dup-name" id="dup-name">—</div>
+  <div class="dup-msg">今日はすでに出席登録済みです。</div>
+  <div class="timer-bar-wrap">
+    <div class="timer-bar" id="dup-timer-bar"></div>
+  </div>
+  <div class="timer-label" id="dup-timer-label">5秒後に自動で戻ります</div>
+  <button class="back-btn" onclick="goWait()">← 戻る</button>
+</div>
+
+<!-- エラー画面 -->
+<div class="screen hidden" id="screen-error">
+  <div class="error-icon">❓</div>
+  <div class="error-title">未登録のカードです</div>
+  <div class="error-msg" id="error-msg">このカードはシステムに登録されていません。<br>先生に声をかけてください。</div>
+  <div class="timer-bar-wrap">
+    <div class="timer-bar" id="err-timer-bar"></div>
+  </div>
+  <div class="timer-label" id="err-timer-label">5秒後に自動で戻ります</div>
+  <button class="back-btn" onclick="goWait()">← 戻る</button>
+</div>
+
+<!-- 設定パネル -->
+<div id="overlay" onclick="closeSettings()"></div>
+<div id="settings-panel">
+  <div class="settings-handle"></div>
+  <div class="settings-title">⚙ キオスク設定</div>
+
+  <div class="setting-row">
+    <span class="setting-label">自動復帰までの秒数</span>
+    <div class="setting-control">
+      <button class="sec-btn" onclick="changeReturnSec(-1)">−</button>
+      <span class="sec-val" id="sec-display">5</span>
+      <button class="sec-btn" onclick="changeReturnSec(1)">＋</button>
+    </div>
+  </div>
+
+  <div class="setting-row" id="nfc-mode-row" style="display:none;">
+    <span class="setting-label">NFC スキャンモード</span>
+    <div class="setting-control">
+      <span id="nfc-mode-label" style="font-size:0.85rem;color:var(--accent);font-family:'DM Mono',monospace;">—</span>
+    </div>
+  </div>
+
+  <div style="margin-top:8px;">
+    <button onclick="closeSettings()" style="width:100%;padding:12px;background:var(--surface2);border:1px solid var(--border);border-radius:10px;color:var(--text2);font-family:inherit;font-size:0.9rem;font-weight:700;cursor:pointer;">閉じる</button>
+  </div>
+</div>
+
+<script>
+// ─────────────────────────────────────────
+// 設定
+// ─────────────────────────────────────────
+const GAS_URL = 'https://script.google.com/macros/s/AKfycbyVH4yXtC0PsG4gwbWITAnsMFUdwvMSij2hNsZ9z4bfRTRS0RxHzqvZZeaN3AVIEOte/exec';
+const DEFAULT_CLASS = '通常';
+
+let returnSec = parseInt(localStorage.getItem('kiosk_return_sec') || '5');
+let returnTimer = null;
+let members = [];
+let nfcReader = null;
+let isWebNfc = 'NDEFReader' in window;
+
+// ─────────────────────────────────────────
+// 初期化
+// ─────────────────────────────────────────
+document.getElementById('sec-display').textContent = returnSec;
+updateTimerLabels();
+
+// Android Web NFC ボタン表示制御
+if (isWebNfc) {
+  document.getElementById('nfc-start-btn').style.display = '';
+  document.getElementById('nfc-mode-row').style.display = '';
+  document.getElementById('nfc-mode-label').textContent = 'Web NFC (Android)';
+  document.getElementById('wait-sub-text').textContent = 'スキャンボタンを押してカードをかざしてください';
+} else {
+  document.getElementById('nfc-mode-row').style.display = '';
+  document.getElementById('nfc-mode-label').textContent = 'URLパラメータ (Mac)';
+}
+
+// メンバー読み込み
+loadMembers();
+
+// URLパラメータ（Mac + Pythonスクリプトからの呼び出し）
+checkUrlParam();
+
+// ─────────────────────────────────────────
+// JSONP
+// ─────────────────────────────────────────
+function jsonpFetch(url) {
+  return new Promise((resolve, reject) => {
+    const cbName = '_cb_' + Date.now() + '_' + Math.random().toString(36).slice(2,7);
+    const script = document.createElement('script');
+    const timer = setTimeout(() => {
+      delete window[cbName]; script.remove();
+      reject(new Error('JSONP timeout'));
+    }, 12000);
+    window[cbName] = (data) => {
+      clearTimeout(timer); delete window[cbName]; script.remove(); resolve(data);
+    };
+    script.src = url + (url.includes('?') ? '&' : '?') + 'callback=' + cbName;
+    script.onerror = () => {
+      clearTimeout(timer); delete window[cbName]; script.remove();
+      reject(new Error('Script load error'));
+    };
+    document.head.appendChild(script);
+  });
+}
+
+// ─────────────────────────────────────────
+// メンバー読み込み
+// ─────────────────────────────────────────
+async function loadMembers() {
+  try {
+    const data = await jsonpFetch(GAS_URL + '?action=getMembers');
+    if (data && data.members) members = data.members;
+    document.getElementById('nfc-state-label').textContent = `準備完了 (${members.length}名登録)`;
+  } catch(e) {
+    document.getElementById('nfc-state-label').textContent = '⚠ メンバー読み込み失敗';
+  }
+}
+
+// ─────────────────────────────────────────
+// URLパラメータ処理（Mac用）
+// Pythonスクリプトから kiosk.html?nfcId=NFC007 で呼び出す
+// ─────────────────────────────────────────
+function checkUrlParam() {
+  const params = new URLSearchParams(window.location.search);
+  const nfcId = params.get('nfcId') || params.get('uid') || params.get('id');
+  if (nfcId) {
+    history.replaceState({}, '', window.location.pathname);
+    setTimeout(() => processNfcId(nfcId), 300);
+  }
+}
+
+// ─────────────────────────────────────────
+// Web NFC (Android Chrome)
+// ─────────────────────────────────────────
+async function startWebNfc() {
+  if (!isWebNfc) return;
+  const btn = document.getElementById('nfc-start-btn');
+  try {
+    if (nfcReader) {
+      nfcReader.onreading = null;
+      nfcReader = null;
+      btn.textContent = '📡 カードをスキャン';
+      btn.classList.remove('active');
+      document.getElementById('nfc-state-label').textContent = '停止中';
+      return;
+    }
+    nfcReader = new NDEFReader();
+    await nfcReader.scan();
+    btn.textContent = '⏹ スキャン停止';
+    btn.classList.add('active');
+    document.getElementById('nfc-state-label').textContent = 'スキャン中... カードをかざして';
+    document.getElementById('wait-sub-text').textContent = 'カードをタブレットの背面にかざしてください';
+
+    nfcReader.onreading = ({ serialNumber, message }) => {
+      let nfcId = serialNumber.replace(/:/g, "").toUpperCase();
+      for (const record of (message?.records || [])) {
+        if (record.recordType === "url") {
+          const url = new TextDecoder().decode(record.data);
+          const m = url.match(/[?&](?:member|id|nfcId)=([^&]+)/);
+          if (m) { nfcId = decodeURIComponent(m[1]); break; }
+        }
+      }
+      processNfcId(nfcId);
+    };
+    nfcReader.onreadingerror = () => {
+      document.getElementById('nfc-state-label').textContent = '⚠ 読み取りエラー';
+    };
+  } catch(e) {
+    document.getElementById('nfc-state-label').textContent = '⚠ NFCエラー: ' + e.message;
+    btn.textContent = '📡 カードをスキャン';
+    btn.classList.remove('active');
+    nfcReader = null;
+  }
+}
+
+// ─────────────────────────────────────────
+// NFC ID処理メイン（Mac: nfcId、Android: serialNumber両対応）
+// ─────────────────────────────────────────
+async function processNfcId(nfcId) {
+  if (navigator.vibrate) navigator.vibrate([40, 20, 40]);
+
+  // nfcId（NFC007等）またはUID（535C78D1等）どちらでも照合
+  const member = members.find(m =>
+    (m.nfcId && m.nfcId.toUpperCase() === nfcId.toUpperCase())
+  );
+
+  if (!member) {
+    showError(nfcId);
+    return;
+  }
+
+  // GASに出席登録
+  try {
+    const res = await jsonpFetch(GAS_URL
+      + '?action=recordAttendance'
+      + '&memberId=' + encodeURIComponent(member.id)
+      + '&nfcId=' + encodeURIComponent(member.nfcId)
+      + '&memberName=' + encodeURIComponent(member.name)
+      + '&class=' + encodeURIComponent(DEFAULT_CLASS)
+    );
+    if (res.status === 'duplicate') {
+      showDuplicate(member);
+    } else {
+      showSuccess(member);
+    }
+  } catch(e) {
+    // 通信失敗でも表示だけする（オフライン許容）
+    showSuccess(member, true);
+  }
+}
+
+// ─────────────────────────────────────────
+// 画面切り替え
+// ─────────────────────────────────────────
+function showScreen(id) {
+  clearReturnTimer();
+  ['screen-wait','screen-success','screen-duplicate','screen-error'].forEach(s => {
+    const el = document.getElementById(s);
+    if (el.id === id) el.classList.remove('hidden');
+    else el.classList.add('hidden');
+  });
+}
+
+function showSuccess(member, offline = false) {
+  document.getElementById('success-avatar').textContent = member.name[0];
+  document.getElementById('success-furigana').textContent = member.furigana || '';
+  document.getElementById('success-name').textContent = member.name;
+  showScreen('screen-success');
+  startReturnTimer('timer-bar', 'timer-label');
+}
+
+function showDuplicate(member) {
+  document.getElementById('dup-name').textContent = member.name;
+  showScreen('screen-duplicate');
+  startReturnTimer('dup-timer-bar', 'dup-timer-label');
+}
+
+function showError(uid) {
+  document.getElementById('error-msg').textContent =
+    `このカードはシステムに登録されていません。\n先生に声をかけてください。\n(UID: ${uid})`;
+  showScreen('screen-error');
+  startReturnTimer('err-timer-bar', 'err-timer-label');
+}
+
+function goWait() {
+  clearReturnTimer();
+  showScreen('screen-wait');
+  // タイマーバーをリセット
+  ['timer-bar','dup-timer-bar','err-timer-bar'].forEach(id => {
+    const el = document.getElementById(id);
+    el.classList.remove('running');
+    el.style.width = '100%';
+  });
+}
+
+// ─────────────────────────────────────────
+// 自動復帰タイマー
+// ─────────────────────────────────────────
+function startReturnTimer(barId, labelId) {
+  clearReturnTimer();
+  const bar = document.getElementById(barId);
+  const label = document.getElementById(labelId);
+  bar.style.transition = 'none';
+  bar.style.width = '100%';
+  const sec = returnSec;
+  label.textContent = `${sec}秒後に自動で戻ります`;
+
+  // アニメーション開始
+  requestAnimationFrame(() => {
+    requestAnimationFrame(() => {
+      bar.classList.add('running');
+      bar.style.transition = `width ${sec}s linear`;
+      bar.style.width = '0%';
+    });
+  });
+
+  let remaining = sec;
+  returnTimer = setInterval(() => {
+    remaining--;
+    label.textContent = `${remaining}秒後に自動で戻ります`;
+    if (remaining <= 0) {
+      goWait();
+    }
+  }, 1000);
+}
+
+function clearReturnTimer() {
+  if (returnTimer) { clearInterval(returnTimer); returnTimer = null; }
+}
+
+// ─────────────────────────────────────────
+// 設定
+// ─────────────────────────────────────────
+function toggleSettings() {
+  document.getElementById('settings-panel').classList.toggle('open');
+  document.getElementById('overlay').classList.toggle('show');
+}
+function closeSettings() {
+  document.getElementById('settings-panel').classList.remove('open');
+  document.getElementById('overlay').classList.remove('show');
+}
+
+function changeReturnSec(delta) {
+  returnSec = Math.min(30, Math.max(2, returnSec + delta));
+  document.getElementById('sec-display').textContent = returnSec;
+  localStorage.setItem('kiosk_return_sec', returnSec);
+  updateTimerLabels();
+}
+
+function updateTimerLabels() {
+  ['timer-label','dup-timer-label','err-timer-label'].forEach(id => {
+    const el = document.getElementById(id);
+    if (el) el.textContent = `${returnSec}秒後に自動で戻ります`;
+  });
+}
+
+// ─────────────────────────────────────────
+// Mac用：ページフォーカス時にURLパラメータ再チェック
+// Pythonスクリプトが kiosk.html?uid=XXXXXX を開く想定
+// ─────────────────────────────────────────
+window.addEventListener('focus', checkUrlParam);
+</script>
+</body>
+</html>
