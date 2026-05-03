@@ -137,6 +137,11 @@ body{font-family:'Noto Sans JP',sans-serif;background:var(--bg);color:var(--tx);
 .unpaid-months{font-family:'DM Mono',monospace;font-size:.72rem;color:var(--tx2);line-height:1.8;}
 
 .att-today-bar{padding:0 20px 16px;}
+.att-date-row{display:flex;gap:8px;margin-bottom:8px;}
+.att-date-pill{flex:1;padding:8px 10px;background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.1);border-radius:20px;color:var(--tx2);font-family:inherit;font-size:0.8rem;font-weight:600;cursor:pointer;transition:all .15s;text-align:center;}
+.att-date-pill.active{background:rgba(29,209,161,0.15);border-color:var(--tl);color:var(--tl);}
+.att-date-input{width:100%;padding:9px 12px;background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.1);border-radius:var(--rs);color:var(--tx);font-family:inherit;font-size:0.88rem;outline:none;display:none;margin-bottom:8px;transition:border-color .2s;color-scheme:dark;}
+.att-date-input:focus{border-color:var(--tl);}
 .att-today-btn{
   width:100%;padding:13px;border:none;border-radius:var(--rs);
   background:var(--tl);color:var(--bg);
@@ -230,6 +235,11 @@ body{font-family:'Noto Sans JP',sans-serif;background:var(--bg);color:var(--tx);
 </div>
 
 <div class="att-today-bar">
+  <div class="att-date-row">
+    <button class="att-date-pill active" id="datePillToday" onclick="selectAttDate(this,'today')">📅 本日</button>
+    <button class="att-date-pill" id="datePillCustom" onclick="selectAttDate(this,'custom')">🗓 別の日付</button>
+  </div>
+  <input class="att-date-input" type="date" id="attDateInput" onchange="onAttDateChange(this.value)">
   <button class="att-today-btn" id="attTodayBtn" onclick="registerToday()">
     <span>✓</span> 本日の出席をつける
   </button>
@@ -806,6 +816,35 @@ function checkTodayAttendance() {
   }
 }
 
+let selectedAttDate = null; // null = 本日
+
+function selectAttDate(btn, type) {
+  document.querySelectorAll('.att-date-pill').forEach(p => p.classList.remove('active'));
+  btn.classList.add('active');
+  const input = document.getElementById('attDateInput');
+  const regBtn = document.getElementById('attTodayBtn');
+  if (type === 'today') {
+    input.style.display = 'none';
+    selectedAttDate = null;
+    regBtn.innerHTML = '<span>✓</span> 本日の出席をつける';
+  } else {
+    input.style.display = '';
+    if (!input.value) {
+      input.value = new Date().toISOString().slice(0, 10);
+      selectedAttDate = input.value;
+    }
+    input.focus();
+    const d = selectedAttDate || input.value;
+    regBtn.innerHTML = '<span>✓</span> ' + d + ' の出席をつける';
+  }
+}
+
+function onAttDateChange(val) {
+  selectedAttDate = val || null;
+  const regBtn = document.getElementById('attTodayBtn');
+  if (val) regBtn.innerHTML = '<span>✓</span> ' + val + ' の出席をつける';
+}
+
 async function registerToday() {
   const btn = document.getElementById('attTodayBtn');
   btn.disabled = true;
@@ -813,6 +852,7 @@ async function registerToday() {
   const now = new Date();
   const jst = new Date(now.getTime() + 9 * 60 * 60 * 1000);
   const todayISO = jst.toISOString().slice(0,10);
+  const dateToUse = selectedAttDate || todayISO;
   const time = `${String(now.getHours()).padStart(2,'0')}:${String(now.getMinutes()).padStart(2,'0')}`;
   try {
     const url = GAS
@@ -821,20 +861,20 @@ async function registerToday() {
       + '&memberName=' + encodeURIComponent(MEMBER.name)
       + '&nfcId='      + encodeURIComponent(MEMBER.nfcId || MEMBER.id)
       + '&class='      + encodeURIComponent('通常')
-      + '&date='       + todayISO
+      + '&date='       + dateToUse
       + '&time='       + encodeURIComponent(time);
     const d = await jsonpFetch(url);
     if (d.status === 'ok' || d.status === 'success') {
       ATTENDANCE.push({ memberId: MEMBER.id, date: todayISO, time });
-      btn.textContent = '✓ 本日の出席登録済み';
+      btn.textContent = '✓ ' + dateToUse + ' の出席登録済み';
       btn.className = 'att-today-btn done';
       btn.disabled = true;
-      showToast('本日の出席を登録しました ✓');
+      showToast(dateToUse + ' の出席を登録しました ✓');
     } else if (d.status === 'duplicate') {
-      btn.textContent = '✓ 本日の出席登録済み';
+      btn.textContent = '✓ ' + dateToUse + ' すでに登録済み';
       btn.className = 'att-today-btn done';
       btn.disabled = true;
-      showToast('本日はすでに登録済みです');
+      showToast(dateToUse + ' はすでに登録済みです');
     } else {
       btn.disabled = false;
       btn.textContent = '✓ 本日の出席をつける';
