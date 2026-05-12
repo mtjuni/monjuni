@@ -1,0 +1,430 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>NFCカード登録 — モンジュニ</title>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@300;400;700;900&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #0d0f1a; --surface: #161929; --surface2: #1e2235; --border: #2a2f45;
+    --accent: #4fffb0; --accent2: #7b6fff; --warn: #ff6b6b; --gold: #ffd166;
+    --text: #e8eaf6; --text2: #8892b0; --text3: #4a5380;
+    --radius: 16px; --radius-sm: 10px;
+  }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body { font-family: 'Noto Sans JP', sans-serif; background: var(--bg); color: var(--text); min-height: 100vh; }
+
+  .header {
+    background: rgba(13,15,26,0.92); backdrop-filter: blur(20px);
+    border-bottom: 1px solid var(--border);
+    padding: 14px 24px;
+    display: flex; align-items: center; justify-content: space-between;
+    position: sticky; top: 0; z-index: 100;
+  }
+  .header-title { font-size: 1rem; font-weight: 700; color: var(--accent); letter-spacing: 0.05em; }
+  .header-link { background: var(--surface2); border: 1px solid var(--border); color: var(--text2); padding: 6px 14px; border-radius: 20px; font-size: 0.78rem; text-decoration: none; transition: all 0.2s; }
+  .header-link:hover { color: var(--accent); border-color: var(--accent); }
+
+  .main { max-width: 900px; margin: 0 auto; padding: 24px; display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
+  @media (max-width: 700px) { .main { grid-template-columns: 1fr; } }
+
+  /* 左パネル：メンバー選択 */
+  .panel { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); overflow: hidden; }
+  .panel-header { padding: 14px 16px; border-bottom: 1px solid var(--border); display: flex; align-items: center; justify-content: space-between; }
+  .panel-title { font-size: 0.78rem; font-weight: 700; letter-spacing: 0.1em; text-transform: uppercase; color: var(--text3); }
+  .panel-count { font-family: 'DM Mono', monospace; font-size: 0.75rem; color: var(--accent); }
+
+  .search-wrap { padding: 10px 12px; border-bottom: 1px solid var(--border); }
+  .search-input { width: 100%; padding: 8px 12px; background: var(--surface2); border: 1px solid var(--border); border-radius: 8px; color: var(--text); font-family: inherit; font-size: 0.88rem; outline: none; transition: border-color 0.2s; }
+  .search-input:focus { border-color: var(--accent2); }
+  .search-input::placeholder { color: var(--text3); }
+
+  .filter-wrap { padding: 8px 12px; border-bottom: 1px solid var(--border); display: flex; gap: 6px; flex-wrap: wrap; }
+  .filter-btn { padding: 4px 10px; background: var(--surface2); border: 1px solid var(--border); border-radius: 12px; color: var(--text3); font-family: inherit; font-size: 0.72rem; font-weight: 600; cursor: pointer; transition: all 0.15s; }
+  .filter-btn.active { background: rgba(79,255,176,0.12); border-color: var(--accent); color: var(--accent); }
+
+  .member-list { max-height: 500px; overflow-y: auto; }
+  .member-row { padding: 10px 14px; display: flex; align-items: center; gap: 10px; cursor: pointer; border-bottom: 1px solid var(--border); transition: background 0.15s; }
+  .member-row:last-child { border-bottom: none; }
+  .member-row:hover { background: var(--surface2); }
+  .member-row.selected { background: rgba(79,255,176,0.08); border-left: 3px solid var(--accent); }
+  .member-row.has-nfc { opacity: 0.6; }
+  .member-avatar { width: 34px; height: 34px; border-radius: 50%; background: linear-gradient(135deg, var(--accent2), var(--accent)); display: flex; align-items: center; justify-content: center; font-weight: 700; color: #0d0f1a; font-size: 0.88rem; flex-shrink: 0; }
+  .member-info { flex: 1; min-width: 0; }
+  .member-name { font-size: 0.88rem; font-weight: 600; }
+  .member-sub { font-size: 0.7rem; color: var(--text2); margin-top: 1px; }
+  .nfc-badge { font-family: 'DM Mono', monospace; font-size: 0.65rem; padding: 2px 6px; border-radius: 6px; white-space: nowrap; }
+  .nfc-badge.registered { background: rgba(79,255,176,0.12); color: var(--accent); border: 1px solid rgba(79,255,176,0.25); }
+  .nfc-badge.empty { background: rgba(255,107,107,0.12); color: var(--warn); border: 1px solid rgba(255,107,107,0.25); }
+
+  /* 右パネル：登録操作 */
+  .right-panel { display: flex; flex-direction: column; gap: 16px; }
+
+  /* 選択中メンバー */
+  .selected-card { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); padding: 20px; }
+  .selected-card.active { border-color: var(--accent2); }
+  .selected-label { font-size: 0.72rem; font-weight: 700; letter-spacing: 0.1em; text-transform: uppercase; color: var(--text3); margin-bottom: 12px; }
+  .selected-member { display: flex; align-items: center; gap: 12px; }
+  .selected-avatar { width: 52px; height: 52px; border-radius: 50%; background: linear-gradient(135deg, var(--accent2), var(--accent)); display: flex; align-items: center; justify-content: center; font-size: 1.4rem; font-weight: 900; color: #0d0f1a; }
+  .selected-name { font-size: 1.2rem; font-weight: 700; }
+  .selected-meta { font-size: 0.78rem; color: var(--text2); margin-top: 3px; }
+  .selected-nfc { font-family: 'DM Mono', monospace; font-size: 0.75rem; color: var(--text3); margin-top: 4px; }
+  .selected-nfc.has { color: var(--accent); }
+  .empty-select { text-align: center; padding: 24px; color: var(--text3); font-size: 0.85rem; }
+
+  /* NFCスキャンゾーン */
+  .scan-card { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); padding: 24px; text-align: center; }
+  .scan-ring-wrap { width: 100px; height: 100px; margin: 0 auto 14px; position: relative; display: flex; align-items: center; justify-content: center; }
+  .scan-ring { position: absolute; border-radius: 50%; border: 2px solid rgba(79,255,176,0.2); animation: pulse 2s ease-in-out infinite; }
+  .scan-ring:nth-child(1) { width: 100px; height: 100px; }
+  .scan-ring:nth-child(2) { width: 72px; height: 72px; animation-delay: 0.3s; }
+  .scan-center { width: 50px; height: 50px; background: var(--surface2); border-radius: 50%; border: 2px solid rgba(79,255,176,0.4); display: flex; align-items: center; justify-content: center; font-size: 1.4rem; z-index: 1; }
+  @keyframes pulse { 0%,100%{transform:scale(1);opacity:0.5;} 50%{transform:scale(1.08);opacity:1;} }
+
+  .scan-uid { font-family: 'DM Mono', monospace; font-size: 1rem; font-weight: 700; color: var(--accent); margin: 10px 0 4px; min-height: 24px; }
+  .scan-status { font-size: 0.82rem; color: var(--text2); }
+
+  /* 登録ボタン */
+  .reg-btn { width: 100%; padding: 14px; background: var(--accent); color: #0d0f1a; border: none; border-radius: var(--radius-sm); font-family: inherit; font-size: 1rem; font-weight: 800; cursor: pointer; transition: all 0.2s; letter-spacing: 0.04em; }
+  .reg-btn:hover:not(:disabled) { background: #6affd0; transform: scale(1.01); }
+  .reg-btn:disabled { background: var(--text3); color: var(--surface); cursor: not-allowed; }
+  .reg-btn.overwrite { background: var(--gold); color: #1a1a00; }
+  .reg-btn.overwrite:hover:not(:disabled) { background: #ffe066; }
+
+  /* ログ */
+  .log-card { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); overflow: hidden; }
+  .log-list { max-height: 200px; overflow-y: auto; }
+  .log-item { padding: 8px 14px; border-bottom: 1px solid var(--border); display: flex; align-items: center; gap: 10px; font-size: 0.8rem; }
+  .log-item:last-child { border-bottom: none; }
+  .log-time { font-family: 'DM Mono', monospace; font-size: 0.7rem; color: var(--text3); min-width: 42px; }
+  .log-icon { font-size: 0.9rem; }
+  .log-msg { flex: 1; }
+  .log-msg.ok { color: var(--accent); }
+  .log-msg.err { color: var(--warn); }
+  .log-msg.warn { color: var(--gold); }
+
+  .toast { position: fixed; bottom: 24px; left: 50%; transform: translateX(-50%) translateY(80px); background: var(--accent); color: #0d0f1a; padding: 10px 24px; border-radius: 30px; font-weight: 700; font-size: 0.88rem; z-index: 999; transition: transform 0.3s cubic-bezier(0.34,1.56,0.64,1); white-space: nowrap; }
+  .toast.show { transform: translateX(-50%) translateY(0); }
+  .toast.err { background: var(--warn); color: #fff; }
+</style>
+</head>
+<body>
+
+<div class="header">
+  <div class="header-title">📡 NFCカード登録ツール</div>
+  <a href="attendance.html" class="header-link">← 管理画面</a>
+</div>
+
+<div class="main">
+
+  <!-- 左：メンバー一覧 -->
+  <div class="panel">
+    <div class="panel-header">
+      <span class="panel-title">メンバー一覧</span>
+      <span class="panel-count" id="memberCount">読み込み中...</span>
+    </div>
+    <div class="search-wrap">
+      <input class="search-input" id="searchInput" type="text" placeholder="名前・よみがなで検索..." oninput="renderList()">
+    </div>
+    <div class="filter-wrap">
+      <button class="filter-btn active" id="filter-all" onclick="setFilter('all')">全員</button>
+      <button class="filter-btn" id="filter-empty" onclick="setFilter('empty')">未登録のみ</button>
+      <button class="filter-btn" id="filter-done" onclick="setFilter('done')">登録済みのみ</button>
+    </div>
+    <div class="member-list" id="memberList">
+      <div style="text-align:center;padding:32px;color:var(--text3);">読み込み中...</div>
+    </div>
+  </div>
+
+  <!-- 右：登録操作 -->
+  <div class="right-panel">
+
+    <!-- 選択中メンバー -->
+    <div class="selected-card" id="selectedCard">
+      <div class="selected-label">登録対象メンバー</div>
+      <div class="empty-select" id="emptySelect">← 左のリストからメンバーを選択してください</div>
+      <div class="selected-member" id="selectedMemberInfo" style="display:none;">
+        <div class="selected-avatar" id="selAvatar">?</div>
+        <div>
+          <div class="selected-name" id="selName">—</div>
+          <div class="selected-meta" id="selMeta">—</div>
+          <div class="selected-nfc" id="selNfc">—</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- NFCスキャン -->
+    <div class="scan-card">
+      <div class="selected-label" style="text-align:center;">カードをかざしてください</div>
+      <div class="scan-ring-wrap">
+        <div class="scan-ring"></div>
+        <div class="scan-ring"></div>
+        <div class="scan-center">📶</div>
+      </div>
+      <div class="scan-uid" id="scanUid">—</div>
+      <div class="scan-status" id="scanStatus">待機中... カードをリーダーにかざしてください</div>
+    </div>
+
+    <!-- 登録ボタン -->
+    <button class="reg-btn" id="regBtn" onclick="registerNfc(false)" disabled>
+      メンバーとカードを選択してください
+    </button>
+
+    <!-- ログ -->
+    <div class="log-card">
+      <div class="panel-header">
+        <span class="panel-title">登録ログ</span>
+        <button onclick="clearLog()" style="background:none;border:none;color:var(--text3);font-size:0.75rem;cursor:pointer;">クリア</button>
+      </div>
+      <div class="log-list" id="logList">
+        <div style="text-align:center;padding:16px;color:var(--text3);font-size:0.82rem;">まだ登録がありません</div>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+const GAS_URL = 'https://script.google.com/macros/s/AKfycbyVH4yXtC0PsG4gwbWITAnsMFUdwvMSij2hNsZ9z4bfRTRS0RxHzqvZZeaN3AVIEOte/exec';
+const LOCAL_PORT = 9877;
+const KIOSK_BASE = 'https://mtjuni.github.io/monjuni/attendance.html';
+
+let members = [];
+let selectedMember = null;
+let currentUid = '';
+let lastPollTs = 0;
+let filterMode = 'all';
+let logs = [];
+
+function jsonpFetch(url) {
+  return new Promise((resolve, reject) => {
+    const cb = '_cb_' + Date.now() + '_' + Math.random().toString(36).slice(2,6);
+    const script = document.createElement('script');
+    const timer = setTimeout(() => { delete window[cb]; script.remove(); reject(new Error('timeout')); }, 12000);
+    window[cb] = (data) => { clearTimeout(timer); delete window[cb]; script.remove(); resolve(data); };
+    script.src = url + (url.includes('?') ? '&' : '?') + 'callback=' + cb;
+    script.onerror = () => { clearTimeout(timer); delete window[cb]; script.remove(); reject(new Error('error')); };
+    document.head.appendChild(script);
+  });
+}
+
+async function loadMembers() {
+  try {
+    const data = await jsonpFetch(GAS_URL + '?action=getMembers');
+    members = data.members || [];
+    document.getElementById('memberCount').textContent = members.length + '名';
+    renderList();
+  } catch(e) {
+    document.getElementById('memberCount').textContent = '読み込み失敗';
+  }
+}
+
+function setFilter(mode) {
+  filterMode = mode;
+  document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+  document.getElementById('filter-' + mode).classList.add('active');
+  renderList();
+}
+
+function renderList() {
+  const q = document.getElementById('searchInput').value.trim();
+  let list = [...members];
+  if (q) list = list.filter(m => (m.name||'').includes(q) || (m.furigana||'').includes(q));
+
+  // フィルター：W列のUID（16進数形式）が登録済みかどうかで判定
+  if (filterMode === 'empty') list = list.filter(m => !isPhysicalUid(m.nfcId));
+  if (filterMode === 'done')  list = list.filter(m => isPhysicalUid(m.nfcId));
+
+  list.sort((a,b) => (a.furigana||'').localeCompare(b.furigana||'', 'ja'));
+
+  const container = document.getElementById('memberList');
+  if (!list.length) { container.innerHTML = '<div style="text-align:center;padding:24px;color:var(--text3);">該当なし</div>'; return; }
+
+  container.innerHTML = list.map(m => {
+    const hasUid = isPhysicalUid(m.nfcId);
+    const isSelected = selectedMember && selectedMember.rowIndex === m.rowIndex;
+    return `<div class="member-row ${hasUid ? 'has-nfc' : ''} ${isSelected ? 'selected' : ''}" onclick="selectMember(${m.rowIndex})">
+      <div class="member-avatar">${(m.name||'?')[0]}</div>
+      <div class="member-info">
+        <div class="member-name">${m.name||'—'}</div>
+        <div class="member-sub">${m.furigana||'—'} · ${m.grade||'—'}</div>
+      </div>
+      <div class="nfc-badge ${hasUid ? 'registered' : 'empty'}">${hasUid ? '登録済' : '未登録'}</div>
+    </div>`;
+  }).join('');
+}
+
+function isPhysicalUid(nfcId) {
+  // 物理UIDは16進数文字列（例:535C78D1520001）、タイムスタンプは数字のみ14桁
+  if (!nfcId) return false;
+  const s = String(nfcId).trim();
+  if (!s) return false;
+  // 14桁の数字のみ → タイムスタンプ（未登録扱い）
+  if (/^\d{14}$/.test(s)) return false;
+  // それ以外（16進数など）→ 物理UID登録済み
+  return true;
+}
+
+function selectMember(rowIndex) {
+  selectedMember = members.find(m => m.rowIndex === rowIndex) || null;
+  updateSelectedCard();
+  updateRegBtn();
+  renderList();
+}
+
+function updateSelectedCard() {
+  const info = document.getElementById('selectedMemberInfo');
+  const empty = document.getElementById('emptySelect');
+  const card = document.getElementById('selectedCard');
+  if (!selectedMember) {
+    info.style.display = 'none';
+    empty.style.display = '';
+    card.classList.remove('active');
+    return;
+  }
+  card.classList.add('active');
+  empty.style.display = 'none';
+  info.style.display = 'flex';
+  document.getElementById('selAvatar').textContent = (selectedMember.name||'?')[0];
+  document.getElementById('selName').textContent = selectedMember.name || '—';
+  document.getElementById('selMeta').textContent = `${selectedMember.furigana||'—'} · ${selectedMember.grade||'—'} · ${selectedMember.course||'未設定'}`;
+  const hasUid = isPhysicalUid(selectedMember.nfcId);
+  const nfcEl = document.getElementById('selNfc');
+  nfcEl.textContent = hasUid ? `現在のUID: ${selectedMember.nfcId}` : '📡 NFC未登録';
+  nfcEl.className = 'selected-nfc ' + (hasUid ? 'has' : '');
+}
+
+function updateRegBtn() {
+  const btn = document.getElementById('regBtn');
+  if (!selectedMember) {
+    btn.disabled = true;
+    btn.textContent = 'メンバーとカードを選択してください';
+    btn.className = 'reg-btn';
+    return;
+  }
+  if (!currentUid) {
+    btn.disabled = true;
+    btn.textContent = 'カードをかざしてください';
+    btn.className = 'reg-btn';
+    return;
+  }
+  const hasUid = isPhysicalUid(selectedMember.nfcId);
+  if (hasUid && selectedMember.nfcId !== currentUid) {
+    btn.disabled = false;
+    btn.textContent = `⚠ 上書き登録: ${selectedMember.name}`;
+    btn.className = 'reg-btn overwrite';
+    btn.onclick = () => registerNfc(true);
+    return;
+  }
+  btn.disabled = false;
+  btn.textContent = `✓ ${selectedMember.name} にこのカードを登録`;
+  btn.className = 'reg-btn';
+  btn.onclick = () => registerNfc(false);
+}
+
+async function registerNfc(force) {
+  if (!selectedMember || !currentUid) return;
+  const btn = document.getElementById('regBtn');
+  btn.disabled = true;
+  btn.textContent = '登録中...';
+
+  try {
+    const res = await jsonpFetch(GAS_URL
+      + '?action=updateNfcUid'
+      + '&rowIndex=' + selectedMember.rowIndex
+      + '&uid=' + encodeURIComponent(currentUid)
+      + '&force=' + (force ? 'true' : 'false')
+    );
+
+    if (res.status === 'ok') {
+      addLog('ok', `✓ ${selectedMember.name} → ${currentUid}`);
+      showToast(`✓ ${selectedMember.name} のカードを登録しました`);
+      // メンバーのnfcIdを更新
+      selectedMember.nfcId = currentUid;
+      const m = members.find(x => x.rowIndex === selectedMember.rowIndex);
+      if (m) m.nfcId = currentUid;
+      updateSelectedCard();
+      renderList();
+      // 次のメンバーに自動移動
+      autoNextMember();
+    } else if (res.status === 'exists') {
+      addLog('warn', `⚠ ${selectedMember.name} は登録済み（上書きしますか？）`);
+      btn.disabled = false;
+      btn.textContent = `⚠ 上書き登録: ${selectedMember.name}`;
+      btn.className = 'reg-btn overwrite';
+      btn.onclick = () => registerNfc(true);
+      return;
+    } else {
+      addLog('err', `✗ エラー: ${res.message || '不明'}`);
+      showToast('登録失敗: ' + (res.message || '不明'), true);
+    }
+  } catch(e) {
+    addLog('err', '✗ 通信エラー');
+    showToast('通信エラー', true);
+  }
+  updateRegBtn();
+}
+
+function autoNextMember() {
+  // 未登録の次のメンバーに自動で移動
+  const unregistered = members.filter(m => !isPhysicalUid(m.nfcId));
+  if (unregistered.length > 0) {
+    // 少し間を置いてから次のメンバーを選択
+    setTimeout(() => {
+      selectMember(unregistered[0].rowIndex);
+    }, 1500);
+  }
+}
+
+function addLog(type, msg) {
+  const now = new Date();
+  const time = `${String(now.getHours()).padStart(2,'0')}:${String(now.getMinutes()).padStart(2,'0')}`;
+  logs.unshift({ type, msg, time });
+  if (logs.length > 50) logs.pop();
+  renderLog();
+}
+
+function renderLog() {
+  const container = document.getElementById('logList');
+  if (!logs.length) { container.innerHTML = '<div style="text-align:center;padding:16px;color:var(--text3);font-size:0.82rem;">まだ登録がありません</div>'; return; }
+  container.innerHTML = logs.map(l => `
+    <div class="log-item">
+      <span class="log-time">${l.time}</span>
+      <span class="log-msg ${l.type}">${l.msg}</span>
+    </div>`).join('');
+}
+
+function clearLog() { logs = []; renderLog(); }
+
+function showToast(msg, err=false) {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.className = 'toast' + (err ? ' err' : '') + ' show';
+  setTimeout(() => t.classList.remove('show'), 3000);
+}
+
+// ローカルサーバーポーリング
+function startPolling() {
+  setInterval(async () => {
+    try {
+      const res = await fetch('http://localhost:' + LOCAL_PORT + '/?t=' + Date.now());
+      const data = await res.json();
+      if (data.uid && data.ts && data.ts > lastPollTs) {
+        lastPollTs = data.ts;
+        currentUid = data.uid;
+        document.getElementById('scanUid').textContent = data.uid;
+        document.getElementById('scanStatus').textContent = 'カード検出！登録ボタンを押してください';
+        updateRegBtn();
+      }
+    } catch(e) {}
+  }, 500);
+}
+
+loadMembers();
+startPolling();
+</script>
+</body>
+</html>
