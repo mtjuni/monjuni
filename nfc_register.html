@@ -246,13 +246,16 @@ function renderList() {
   container.innerHTML = list.map(m => {
     const hasUid = isPhysicalUid(m.nfcId);
     const isSelected = selectedMember && selectedMember.rowIndex === m.rowIndex;
+    // 同じUIDを持つ他のメンバーを探す
+    const sameUidMember = hasUid ? members.find(x => x.rowIndex !== m.rowIndex && isPhysicalUid(x.nfcId) && x.nfcId === m.nfcId) : null;
+    const nfcLabel = hasUid ? `登録済 ${m.nfcId.slice(-6)}` : '未登録';
     return `<div class="member-row ${hasUid ? 'has-nfc' : ''} ${isSelected ? 'selected' : ''}" onclick="selectMember(${m.rowIndex})">
       <div class="member-avatar">${(m.name||'?')[0]}</div>
       <div class="member-info">
         <div class="member-name">${m.name||'—'}</div>
         <div class="member-sub">${m.furigana||'—'} · ${m.grade||'—'}</div>
       </div>
-      <div class="nfc-badge ${hasUid ? 'registered' : 'empty'}">${hasUid ? '登録済' : '未登録'}</div>
+      <div class="nfc-badge ${hasUid ? 'registered' : 'empty'}">${nfcLabel}</div>
     </div>`;
   }).join('');
 }
@@ -412,6 +415,9 @@ function showToast(msg, err=false) {
 }
 
 // ローカルサーバーポーリング
+let lastSeenTs = 0;
+let uidResetTimer = null;
+
 function startPolling() {
   setInterval(async () => {
     try {
@@ -419,10 +425,29 @@ function startPolling() {
       const data = await res.json();
       if (data.uid && data.ts && data.ts > lastPollTs) {
         lastPollTs = data.ts;
-        currentUid = data.uid;
-        document.getElementById('scanUid').textContent = data.uid;
-        document.getElementById('scanStatus').textContent = 'カード検出！登録ボタンを押してください';
-        updateRegBtn();
+        lastSeenTs = Date.now();
+        // UIDが変わったら表示更新
+        if (currentUid !== data.uid) {
+          currentUid = data.uid;
+          document.getElementById('scanUid').textContent = data.uid;
+          document.getElementById('scanStatus').textContent = 'カード検出！登録ボタンを押してください';
+          updateRegBtn();
+        }
+        // リセットタイマーをクリア
+        if (uidResetTimer) { clearTimeout(uidResetTimer); uidResetTimer = null; }
+      } else {
+        // 1.5秒以上新しいUIDが来なければリセット
+        if (currentUid && Date.now() - lastSeenTs > 1500) {
+          if (!uidResetTimer) {
+            uidResetTimer = setTimeout(() => {
+              currentUid = '';
+              document.getElementById('scanUid').textContent = '—';
+              document.getElementById('scanStatus').textContent = '待機中... カードをリーダーにかざしてください';
+              updateRegBtn();
+              uidResetTimer = null;
+            }, 500);
+          }
+        }
       }
     } catch(e) {}
   }, 500);
