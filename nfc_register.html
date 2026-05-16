@@ -246,14 +246,12 @@ function renderList() {
   container.innerHTML = list.map(m => {
     const hasUid = isPhysicalUid(m.nfcId);
     const isSelected = selectedMember && selectedMember.rowIndex === m.rowIndex;
-    // 同じUIDを持つ他のメンバーを探す
-    const sameUidMember = hasUid ? members.find(x => x.rowIndex !== m.rowIndex && isPhysicalUid(x.nfcId) && x.nfcId === m.nfcId) : null;
-    const nfcLabel = hasUid ? `登録済 ${m.nfcId.slice(-6)}` : '未登録';
+    const nfcLabel = hasUid ? `📡 ${m.nfcId.slice(-8)}` : '未登録';
     return `<div class="member-row ${hasUid ? 'has-nfc' : ''} ${isSelected ? 'selected' : ''}" onclick="selectMember(${m.rowIndex})">
       <div class="member-avatar">${(m.name||'?')[0]}</div>
       <div class="member-info">
         <div class="member-name">${m.name||'—'}</div>
-        <div class="member-sub">${m.furigana||'—'} · ${m.grade||'—'}</div>
+        <div class="member-sub">${m.furigana||'—'} · ${m.grade||'—'}${hasUid ? ' · <span style="color:var(--accent);font-size:0.68rem;">NFC登録済</span>' : ''}</div>
       </div>
       <div class="nfc-badge ${hasUid ? 'registered' : 'empty'}">${nfcLabel}</div>
     </div>`;
@@ -430,7 +428,13 @@ function startPolling() {
         if (currentUid !== data.uid) {
           currentUid = data.uid;
           document.getElementById('scanUid').textContent = data.uid;
-          document.getElementById('scanStatus').textContent = 'カード検出！登録ボタンを押してください';
+          // このUIDが誰に登録されているか探す
+          const owner = members.find(m => isPhysicalUid(m.nfcId) && m.nfcId.toUpperCase() === data.uid.toUpperCase());
+          if (owner) {
+            document.getElementById('scanStatus').textContent = `⚠ このカードは「${owner.name}」に登録済みです`;
+          } else {
+            document.getElementById('scanStatus').textContent = 'カード検出！登録ボタンを押してください';
+          }
           updateRegBtn();
         }
         // リセットタイマーをクリア
