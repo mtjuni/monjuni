@@ -327,6 +327,11 @@ function updateRegBtn() {
 
 async function registerNfc(force) {
   if (!selectedMember || !currentUid) return;
+  // タイムスタンプ形式（14桁数字）は自動的に上書き
+  const currentNfc = String(selectedMember.nfcId || '').trim();
+  if (currentNfc && /^\d{14}$/.test(currentNfc)) {
+    force = true;
+  }
   const btn = document.getElementById('regBtn');
   btn.disabled = true;
   btn.textContent = '登録中...';
