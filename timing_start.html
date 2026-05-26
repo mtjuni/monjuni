@@ -675,7 +675,7 @@ function showManualInput() {
 
 function loadAthleteList() {
   const script = document.createElement('script');
-  script.src = `${GAS_URL}?action=getMembers&callback=onMembersLoaded`;
+  script.src = `https://script.google.com/macros/s/AKfycbyVH4yXtC0PsG4gwbWITAnsMFUdwvMSij2hNsZ9z4bfRTRS0RxHzqvZZeaN3AVIEOte/exec?action=getMembers&callback=onMembersLoaded`;
   document.head.appendChild(script);
 }
 
