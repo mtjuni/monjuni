@@ -466,8 +466,12 @@
       <button class="event-btn selected" data-event="50m走">50m走</button>
       <button class="event-btn" data-event="100m走">100m走</button>
       <button class="event-btn" data-event="立ち幅跳び">立ち幅跳び</button>
-      <button class="event-btn" data-event="その他">その他</button>
+      <button class="event-btn" data-event="__other__">その他</button>
     </div>
+    <input type="text" id="other-event-input" placeholder="種目名を入力（例：障害物走）"
+      style="display:none; width:100%; margin-top:8px; padding:10px 12px;
+      background:var(--surface); color:var(--text); border:1px solid var(--accent);
+      border-radius:8px; font-family:var(--body-font); font-size:0.95rem; outline:none;">
   </div>
 
   <!-- NFC待機エリア -->
@@ -584,12 +588,25 @@ let detectInterval = null;
 let prevPixels     = null;
 
 // ========== 種目選択 ==========
+const otherInput = document.getElementById('other-event-input');
+
 document.querySelectorAll('.event-btn').forEach(btn => {
   btn.addEventListener('click', () => {
     document.querySelectorAll('.event-btn').forEach(b => b.classList.remove('selected'));
     btn.classList.add('selected');
-    selectedEvent = btn.dataset.event;
+    if (btn.dataset.event === '__other__') {
+      otherInput.style.display = 'block';
+      otherInput.focus();
+      selectedEvent = otherInput.value.trim() || 'その他';
+    } else {
+      otherInput.style.display = 'none';
+      selectedEvent = btn.dataset.event;
+    }
   });
+});
+
+otherInput.addEventListener('input', () => {
+  selectedEvent = otherInput.value.trim() || 'その他';
 });
 
 // ========== Firebase監視（ゴール完了通知） ==========
