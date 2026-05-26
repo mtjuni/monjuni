@@ -6,443 +6,79 @@
 <title>START – モンジュニ計測</title>
 <style>
   @import url('https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Noto+Sans+JP:wght@400;700&display=swap');
-
   :root {
-    --bg: #0a0f0a;
-    --surface: #111811;
-    --border: #1a2a1a;
-    --accent: #00ff88;
-    --accent2: #ff3366;
-    --warn: #ffaa00;
-    --text: #e8f0e8;
-    --text-dim: #5a705a;
-    --timer-font: 'Bebas Neue', sans-serif;
-    --body-font: 'Noto Sans JP', sans-serif;
+    --bg: #0a0f0a; --surface: #111811; --border: #1a2a1a;
+    --accent: #00ff88; --accent2: #ff3366; --warn: #ffaa00;
+    --text: #e8f0e8; --text-dim: #5a705a;
+    --timer-font: 'Bebas Neue', sans-serif; --body-font: 'Noto Sans JP', sans-serif;
   }
-
   * { box-sizing: border-box; margin: 0; padding: 0; }
-
-  body {
-    background: var(--bg);
-    color: var(--text);
-    font-family: var(--body-font);
-    min-height: 100vh;
-  }
-
+  body { background: var(--bg); color: var(--text); font-family: var(--body-font); min-height: 100vh; }
   body::before {
-    content: '';
-    position: fixed;
-    inset: 0;
-    background-image:
-      linear-gradient(rgba(0,255,136,0.03) 1px, transparent 1px),
-      linear-gradient(90deg, rgba(0,255,136,0.03) 1px, transparent 1px);
+    content: ''; position: fixed; inset: 0; pointer-events: none;
+    background-image: linear-gradient(rgba(0,255,136,0.03) 1px, transparent 1px), linear-gradient(90deg, rgba(0,255,136,0.03) 1px, transparent 1px);
     background-size: 40px 40px;
-    pointer-events: none;
   }
-
-  /* ヘッダー */
-  .header {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    padding: 12px 20px;
-    border-bottom: 1px solid var(--border);
-    background: var(--surface);
-    z-index: 10;
-  }
-
-  .header-title {
-    font-family: var(--timer-font);
-    font-size: 1.4rem;
-    letter-spacing: 4px;
-    color: var(--accent);
-  }
-
-  .status-badge {
-    padding: 4px 12px;
-    border-radius: 20px;
-    font-size: 0.7rem;
-    font-weight: 700;
-    letter-spacing: 2px;
-    text-transform: uppercase;
-    border: 1px solid currentColor;
-  }
+  .header { display: flex; align-items: center; justify-content: space-between; padding: 12px 20px; border-bottom: 1px solid var(--border); background: var(--surface); position: sticky; top: 0; z-index: 10; }
+  .header-title { font-family: var(--timer-font); font-size: 1.4rem; letter-spacing: 4px; color: var(--accent); }
+  .status-badge { padding: 4px 12px; border-radius: 20px; font-size: 0.7rem; font-weight: 700; letter-spacing: 2px; text-transform: uppercase; border: 1px solid currentColor; }
   .status-badge.waiting  { color: var(--text-dim); border-color: var(--border); }
   .status-badge.confirm  { color: var(--warn); animation: pulse 1s ease-in-out infinite; }
   .status-badge.ready    { color: var(--accent); animation: pulse 0.8s ease-in-out infinite; }
   .status-badge.running  { color: var(--accent); animation: pulse 0.4s ease-in-out infinite; }
-  .status-badge.finished { color: var(--accent); }
   .status-badge.error    { color: var(--accent2); }
-
-  @keyframes pulse {
-    0%, 100% { opacity: 1; }
-    50% { opacity: 0.3; }
-  }
-
-  .main {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: flex-start;
-    padding: 16px;
-    gap: 14px;
-  }
-
-  /* NFC待機エリア */
-  .nfc-area {
-    width: 100%;
-    max-width: 420px;
-    background: var(--surface);
-    border: 2px solid var(--border);
-    border-radius: 16px;
-    padding: 24px;
-    text-align: center;
-    transition: all 0.4s ease;
-    position: relative;
-    overflow-y: auto;
-  }
-
-  .nfc-area.active {
-    border-color: var(--accent);
-    box-shadow: 0 0 30px rgba(0,255,136,0.15);
-  }
-
-  .nfc-area.confirmed {
-    border-color: var(--warn);
-    box-shadow: 0 0 30px rgba(255,170,0,0.15);
-  }
-
-  .nfc-icon {
-    font-size: 3rem;
-    margin-bottom: 12px;
-    display: block;
-    animation: float 3s ease-in-out infinite;
-  }
-
-  @keyframes float {
-    0%, 100% { transform: translateY(0); }
-    50% { transform: translateY(-8px); }
-  }
-
-  .nfc-label {
-    font-size: 0.85rem;
-    color: var(--text-dim);
-    letter-spacing: 2px;
-    text-transform: uppercase;
-    margin-bottom: 8px;
-  }
-
-  .nfc-instruction {
-    font-size: 1rem;
-    color: var(--text);
-    font-weight: 700;
-  }
-
-  /* 選手確認カード */
-  .athlete-card {
-    width: 100%;
-    max-width: 420px;
-    background: var(--surface);
-    border: 2px solid var(--warn);
-    border-radius: 12px;
-    padding: 16px 20px;
-    display: none;
-    animation: slide-down 0.4s ease;
-  }
-
+  @keyframes pulse { 0%,100%{opacity:1;} 50%{opacity:0.3;} }
+  .main { display: flex; flex-direction: column; align-items: center; padding: 16px; gap: 14px; }
+  .event-select-wrap { width: 100%; max-width: 420px; }
+  .event-select-label { font-size: 0.65rem; letter-spacing: 3px; color: var(--text-dim); text-transform: uppercase; margin-bottom: 8px; }
+  .event-btns { display: flex; gap: 8px; flex-wrap: wrap; }
+  .event-btn { padding: 8px 16px; border-radius: 20px; border: 1px solid var(--border); background: var(--surface); color: var(--text-dim); font-size: 0.85rem; cursor: pointer; transition: all 0.2s; font-family: var(--body-font); }
+  .event-btn.selected { border-color: var(--accent); color: var(--accent); background: rgba(0,255,136,0.08); }
+  .other-input { width: 100%; margin-top: 8px; padding: 10px 12px; background: var(--surface); color: var(--text); border: 1px solid var(--accent); border-radius: 8px; font-family: var(--body-font); font-size: 0.95rem; outline: none; display: none; }
+  .nfc-area { width: 100%; max-width: 420px; background: var(--surface); border: 2px solid var(--border); border-radius: 16px; padding: 24px; text-align: center; transition: all 0.4s ease; }
+  .nfc-area.active { border-color: var(--accent); box-shadow: 0 0 30px rgba(0,255,136,0.15); }
+  .nfc-area.confirmed { border-color: var(--warn); box-shadow: 0 0 30px rgba(255,170,0,0.15); }
+  .nfc-icon { font-size: 3rem; margin-bottom: 12px; display: block; animation: float 3s ease-in-out infinite; }
+  @keyframes float { 0%,100%{transform:translateY(0);} 50%{transform:translateY(-8px);} }
+  .nfc-label { font-size: 0.85rem; color: var(--text-dim); letter-spacing: 2px; text-transform: uppercase; margin-bottom: 8px; }
+  .nfc-instruction { font-size: 1rem; color: var(--text); font-weight: 700; }
+  .athlete-card { width: 100%; max-width: 420px; background: var(--surface); border: 2px solid var(--warn); border-radius: 12px; padding: 16px 20px; display: none; }
   .athlete-card.visible { display: block; }
-
-  @keyframes slide-down {
-    from { opacity: 0; transform: translateY(-10px); }
-    to   { opacity: 1; transform: translateY(0); }
-  }
-
-  .athlete-card-header {
-    font-size: 0.65rem;
-    letter-spacing: 3px;
-    color: var(--warn);
-    text-transform: uppercase;
-    margin-bottom: 8px;
-  }
-
-  .athlete-card-name {
-    font-size: 1.8rem;
-    font-weight: 700;
-    color: var(--text);
-    margin-bottom: 4px;
-  }
-
-  .athlete-card-meta {
-    font-size: 0.8rem;
-    color: var(--text-dim);
-    margin-bottom: 14px;
-  }
-
-  .confirm-btns {
-    display: flex;
-    gap: 10px;
-  }
-
-  .btn {
-    flex: 1;
-    padding: 12px;
-    border-radius: 8px;
-    border: none;
-    font-family: var(--body-font);
-    font-size: 0.9rem;
-    font-weight: 700;
-    cursor: pointer;
-    letter-spacing: 1px;
-    transition: all 0.2s;
-  }
-
-  .btn-ok {
-    background: var(--accent);
-    color: #000;
-  }
-  .btn-ok:hover { filter: brightness(1.1); }
-  .btn-ok:active { transform: scale(0.97); }
-
-  .btn-ng {
-    background: transparent;
-    color: var(--accent2);
-    border: 1px solid var(--accent2);
-  }
-  .btn-ng:hover { background: rgba(255,51,102,0.1); }
-
-  .btn-cancel {
-    background: transparent;
-    color: var(--text-dim);
-    border: 1px solid var(--border);
-    flex: none;
-    padding: 10px 20px;
-  }
-
-  /* 種目選択 */
-  .event-select-wrap {
-    width: 100%;
-    max-width: 420px;
-  }
-
-  .event-select-label {
-    font-size: 0.65rem;
-    letter-spacing: 3px;
-    color: var(--text-dim);
-    text-transform: uppercase;
-    margin-bottom: 8px;
-  }
-
-  .event-btns {
-    display: flex;
-    gap: 8px;
-    flex-wrap: wrap;
-  }
-
-  .event-btn {
-    padding: 8px 16px;
-    border-radius: 20px;
-    border: 1px solid var(--border);
-    background: var(--surface);
-    color: var(--text-dim);
-    font-size: 0.85rem;
-    cursor: pointer;
-    transition: all 0.2s;
-    font-family: var(--body-font);
-  }
-
-  .event-btn.selected {
-    border-color: var(--accent);
-    color: var(--accent);
-    background: rgba(0,255,136,0.08);
-  }
-
-  /* スタンバイ表示 */
-  .standby-wrap {
-    width: 100%;
-    max-width: 420px;
-    text-align: center;
-    display: none;
-  }
-
+  .athlete-card-header { font-size: 0.65rem; letter-spacing: 3px; color: var(--warn); text-transform: uppercase; margin-bottom: 8px; }
+  .athlete-card-name { font-size: 1.8rem; font-weight: 700; color: var(--text); margin-bottom: 4px; }
+  .athlete-card-meta { font-size: 0.8rem; color: var(--text-dim); margin-bottom: 14px; }
+  .confirm-btns { display: flex; gap: 10px; }
+  .btn { flex: 1; padding: 12px; border-radius: 8px; border: none; font-family: var(--body-font); font-size: 0.9rem; font-weight: 700; cursor: pointer; transition: all 0.2s; }
+  .btn-ok { background: var(--accent); color: #000; }
+  .btn-ng { background: transparent; color: var(--accent2); border: 1px solid var(--accent2); }
+  .standby-wrap { width: 100%; max-width: 420px; text-align: center; display: none; }
   .standby-wrap.visible { display: block; }
-
-  .standby-name {
-    font-family: var(--timer-font);
-    font-size: 2.5rem;
-    letter-spacing: 4px;
-    color: var(--text);
-    margin-bottom: 4px;
-  }
-
-  .standby-msg {
-    font-size: 0.85rem;
-    color: var(--text-dim);
-    letter-spacing: 1px;
-    margin-bottom: 16px;
-  }
-
-  /* カメラ */
-  .camera-section {
-    width: 100%;
-    max-width: 420px;
-  }
-
-  .camera-container {
-    width: 100%;
-    aspect-ratio: 16/9;
-    background: #000;
-    border-radius: 8px;
-    overflow-y: auto;
-    position: relative;
-    border: 1px solid var(--border);
-  }
-
-  #camera-feed {
-    width: 100%;
-    height: 100%;
-    object-fit: cover;
-  }
-
-  .detect-line {
-    position: absolute;
-    top: 0;
-    bottom: 0;
-    left: 50%;
-    width: 2px;
-    background: rgba(255,170,0,0.8);
-    transform: translateX(-50%);
-    pointer-events: none;
-    display: none;
-  }
-
-  .detect-line::before, .detect-line::after {
-    content: '';
-    position: absolute;
-    left: 50%;
-    transform: translateX(-50%);
-    width: 10px;
-    height: 10px;
-    background: var(--warn);
-    border-radius: 50%;
-  }
-  .detect-line::before { top: 0; }
-  .detect-line::after  { bottom: 0; }
-
-  .camera-overlay {
-    position: absolute;
-    inset: 0;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    background: rgba(10,15,10,0.85);
-    border-radius: 8px;
-    font-size: 0.9rem;
-    color: var(--text-dim);
-    text-align: center;
-    flex-direction: column;
-    gap: 8px;
-  }
-
+  .standby-name { font-family: var(--timer-font); font-size: 2.5rem; letter-spacing: 4px; color: var(--text); margin-bottom: 4px; }
+  .standby-msg { font-size: 0.85rem; color: var(--text-dim); margin-bottom: 16px; }
+  .btn-cancel-s { background: transparent; color: var(--text-dim); border: 1px solid var(--border); padding: 10px 20px; border-radius: 8px; font-family: var(--body-font); cursor: pointer; }
+  .camera-section { width: 100%; max-width: 420px; }
+  .camera-container { width: 100%; aspect-ratio: 16/9; background: #000; border-radius: 8px; overflow: hidden; position: relative; border: 1px solid var(--border); }
+  #camera-feed { width: 100%; height: 100%; object-fit: cover; }
+  .detect-line { position: absolute; top: 0; bottom: 0; left: 50%; width: 2px; background: rgba(255,170,0,0.8); transform: translateX(-50%); pointer-events: none; display: none; }
+  .camera-overlay { position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; background: rgba(10,15,10,0.85); border-radius: 8px; font-size: 0.9rem; color: var(--text-dim); text-align: center; flex-direction: column; gap: 8px; }
   .camera-overlay.hidden { display: none; }
-
-  /* 感度 */
-  .sensitivity-wrap {
-    display: flex;
-    align-items: center;
-    gap: 10px;
-    font-size: 0.75rem;
-    color: var(--text-dim);
-    width: 100%;
-    max-width: 420px;
-  }
-  .sensitivity-wrap input[type=range] {
-    flex: 1;
-    accent-color: var(--warn);
-  }
-
-  /* ボタン行 */
-  .btn-row {
-    display: flex;
-    gap: 10px;
-    flex-wrap: wrap;
-    justify-content: center;
-    width: 100%;
-    max-width: 420px;
-  }
-
-  .btn-sm {
-    padding: 10px 20px;
-    border-radius: 6px;
-    border: none;
-    font-family: var(--body-font);
-    font-size: 0.85rem;
-    font-weight: 700;
-    cursor: pointer;
-    transition: all 0.2s;
-  }
-
+  .sensitivity-wrap { display: flex; align-items: center; gap: 10px; font-size: 0.75rem; color: var(--text-dim); width: 100%; max-width: 420px; }
+  .sensitivity-wrap input[type=range] { flex: 1; accent-color: var(--warn); }
+  .btn-row { display: flex; gap: 10px; flex-wrap: wrap; justify-content: center; width: 100%; max-width: 420px; }
+  .btn-sm { padding: 10px 20px; border-radius: 6px; border: none; font-family: var(--body-font); font-size: 0.85rem; font-weight: 700; cursor: pointer; }
   .btn-primary { background: var(--accent); color: #000; }
-  .btn-danger  { background: transparent; color: var(--accent2); border: 1px solid var(--accent2); }
-  .btn-ghost   { background: transparent; color: var(--text-dim); border: 1px solid var(--border); }
-
-  /* エラー */
-  .error-msg {
-    background: rgba(255,51,102,0.1);
-    border: 1px solid var(--accent2);
-    border-radius: 8px;
-    padding: 10px 16px;
-    font-size: 0.85rem;
-    color: var(--accent2);
-    text-align: center;
-    width: 100%;
-    max-width: 420px;
-    display: none;
-  }
+  .btn-danger { background: transparent; color: var(--accent2); border: 1px solid var(--accent2); }
+  .error-msg { background: rgba(255,51,102,0.1); border: 1px solid var(--accent2); border-radius: 8px; padding: 10px 16px; font-size: 0.85rem; color: var(--accent2); text-align: center; width: 100%; max-width: 420px; display: none; }
   .error-msg.visible { display: block; }
-
-  /* 接続状態 */
-  .connection-dot {
-    width: 8px;
-    height: 8px;
-    border-radius: 50%;
-    background: var(--text-dim);
-    display: inline-block;
-    margin-right: 6px;
-  }
+  .connection-dot { width: 8px; height: 8px; border-radius: 50%; background: var(--text-dim); display: inline-block; margin-right: 6px; }
   .connection-dot.connected { background: var(--accent); box-shadow: 0 0 6px var(--accent); }
-  .connection-dot.error     { background: var(--accent2); }
-
-  /* ゴール完了通知 */
-  .finish-toast {
-    position: fixed;
-    top: 70px;
-    left: 50%;
-    transform: translateX(-50%) translateY(-20px);
-    background: var(--accent);
-    color: #000;
-    font-family: var(--timer-font);
-    font-size: 1.2rem;
-    letter-spacing: 3px;
-    padding: 12px 28px;
-    border-radius: 30px;
-    opacity: 0;
-    transition: all 0.4s ease;
-    pointer-events: none;
-    z-index: 100;
-    white-space: nowrap;
-  }
-
-  .finish-toast.show {
-    opacity: 1;
-    transform: translateX(-50%) translateY(0);
-  }
-
+  .finish-toast { position: fixed; top: 70px; left: 50%; transform: translateX(-50%) translateY(-20px); background: var(--accent); color: #000; font-family: var(--timer-font); font-size: 1.2rem; letter-spacing: 3px; padding: 12px 28px; border-radius: 30px; opacity: 0; transition: all 0.4s ease; pointer-events: none; z-index: 100; }
+  .finish-toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
   canvas { display: none; }
 </style>
 </head>
 <body>
 
-<!-- ヘッダー -->
 <div class="header">
   <div class="header-title">🚀 START</div>
   <div style="display:flex;align-items:center;gap:12px;">
@@ -454,7 +90,6 @@
   </div>
 </div>
 
-<!-- ゴール完了トースト -->
 <div class="finish-toast" id="finish-toast"></div>
 
 <div class="main">
@@ -468,10 +103,7 @@
       <button class="event-btn" data-event="立ち幅跳び">立ち幅跳び</button>
       <button class="event-btn" data-event="__other__">その他</button>
     </div>
-    <input type="text" id="other-event-input" placeholder="種目名を入力（例：障害物走）"
-      style="display:none; width:100%; margin-top:8px; padding:10px 12px;
-      background:var(--surface); color:var(--text); border:1px solid var(--accent);
-      border-radius:8px; font-family:var(--body-font); font-size:0.95rem; outline:none;">
+    <input type="text" id="other-event-input" class="other-input" placeholder="種目名を入力（例：障害物走）">
   </div>
 
   <!-- NFC待機エリア -->
@@ -492,11 +124,11 @@
     </div>
   </div>
 
-  <!-- スタンバイ表示 -->
+  <!-- スタンバイ -->
   <div class="standby-wrap" id="standby-wrap">
     <div class="standby-name" id="standby-name">—</div>
     <div class="standby-msg" id="standby-msg">ゴール側が準備中...</div>
-    <button class="btn btn-cancel" id="btn-cancel-standby">キャンセル</button>
+    <button class="btn-cancel-s" id="btn-cancel-standby">キャンセル</button>
   </div>
 
   <!-- エラー -->
@@ -534,7 +166,6 @@
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
 import { getDatabase, ref, onValue, set } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-database.js";
 
-// ========== Firebase設定 ==========
 const firebaseConfig = {
   apiKey: "AIzaSyD8o8tRvsuqxr012DyR10j_DOY0dQ0uL7w",
   authDomain: "monjuni-timing.firebaseapp.com",
@@ -545,41 +176,42 @@ const firebaseConfig = {
   appId: "1:705263409750:web:cc8e7ee0700887680cb9f7"
 };
 
-// ========== GAS設定 ==========
-const GAS_URL = "https://script.google.com/macros/s/AKfycbyAYCCjc_uun-LUW58wEInEXVOS4RvVKRDflVMHYbd4kb1GhP3hXfjC472OOsRHkBep/exec";
+const MONJUNI_GAS = "https://script.google.com/macros/s/AKfycbyVH4yXtC0PsG4gwbWITAnsMFUdwvMSij2hNsZ9z4bfRTRS0RxHzqvZZeaN3AVIEOte/exec";
+const TIMING_GAS  = "https://script.google.com/macros/s/AKfycbyAYCCjc_uun-LUW58wEInEXVOS4RvVKRDflVMHYbd4kb1GhP3hXfjC472OOsRHkBep/exec";
 
 const app = initializeApp(firebaseConfig);
 const db  = getDatabase(app);
 const timingRef = ref(db, 'timing/current');
 
-// ========== DOM ==========
-const statusBadge     = document.getElementById('status-badge');
-const nfcArea         = document.getElementById('nfc-area');
-const nfcInstruction  = document.getElementById('nfc-instruction');
-const athleteCard     = document.getElementById('athlete-card');
-const athleteName     = document.getElementById('athlete-name');
-const athleteMeta     = document.getElementById('athlete-meta');
-const standbyWrap     = document.getElementById('standby-wrap');
-const standbyName     = document.getElementById('standby-name');
-const standbyMsg      = document.getElementById('standby-msg');
-const errorMsg        = document.getElementById('error-msg');
-const connDot         = document.getElementById('conn-dot');
-const connLabel       = document.getElementById('conn-label');
-const finishToast     = document.getElementById('finish-toast');
-const cameraOverlay   = document.getElementById('camera-overlay');
-const detectLine      = document.getElementById('detect-line');
-const sensitivity     = document.getElementById('sensitivity');
-const sensVal         = document.getElementById('sens-val');
-const btnOk           = document.getElementById('btn-ok');
-const btnNg           = document.getElementById('btn-ng');
-const btnCancel       = document.getElementById('btn-cancel');
+// DOM
+const statusBadge      = document.getElementById('status-badge');
+const nfcArea          = document.getElementById('nfc-area');
+const nfcInstruction   = document.getElementById('nfc-instruction');
+const athleteCard      = document.getElementById('athlete-card');
+const athleteNameEl    = document.getElementById('athlete-name');
+const athleteMetaEl    = document.getElementById('athlete-meta');
+const standbyWrap      = document.getElementById('standby-wrap');
+const standbyName      = document.getElementById('standby-name');
+const standbyMsg       = document.getElementById('standby-msg');
+const errorMsg         = document.getElementById('error-msg');
+const connDot          = document.getElementById('conn-dot');
+const connLabel        = document.getElementById('conn-label');
+const finishToast      = document.getElementById('finish-toast');
+const cameraOverlay    = document.getElementById('camera-overlay');
+const detectLine       = document.getElementById('detect-line');
+const sensitivity      = document.getElementById('sensitivity');
+const sensVal          = document.getElementById('sens-val');
+const btnOk            = document.getElementById('btn-ok');
+const btnNg            = document.getElementById('btn-ng');
+const btnCancel        = document.getElementById('btn-cancel');
 const btnCancelStandby = document.getElementById('btn-cancel-standby');
-const btnCamera       = document.getElementById('btn-camera');
-const video           = document.getElementById('camera-feed');
-const canvas          = document.getElementById('detect-canvas');
-const ctx             = canvas.getContext('2d');
+const btnCamera        = document.getElementById('btn-camera');
+const video            = document.getElementById('camera-feed');
+const canvas           = document.getElementById('detect-canvas');
+const ctx              = canvas.getContext('2d');
+const otherInput       = document.getElementById('other-event-input');
 
-// ========== 状態 ==========
+// 状態
 let state = 'waiting';
 let currentAthlete = null;
 let selectedEvent  = '50m走';
@@ -587,9 +219,7 @@ let cameraReady    = false;
 let detectInterval = null;
 let prevPixels     = null;
 
-// ========== 種目選択 ==========
-const otherInput = document.getElementById('other-event-input');
-
+// 種目選択
 document.querySelectorAll('.event-btn').forEach(btn => {
   btn.addEventListener('click', () => {
     document.querySelectorAll('.event-btn').forEach(b => b.classList.remove('selected'));
@@ -609,155 +239,129 @@ otherInput.addEventListener('input', () => {
   selectedEvent = otherInput.value.trim() || 'その他';
 });
 
-// ========== Firebase監視（ゴール完了通知） ==========
+// Firebase監視
 onValue(timingRef, (snapshot) => {
   connDot.classList.add('connected');
   connDot.classList.remove('error');
   connLabel.textContent = 'Firebase接続済';
-
   const data = snapshot.val();
   if (!data) return;
-
   if (data.status === 'finished' && state === 'running') {
-    // ゴール完了通知
-    const elapsed = data.elapsedSec;
-    showFinishToast(`${data.athleteName}  ${formatTime(elapsed)}`);
+    showFinishToast(`${data.athleteName}  ${formatTime(data.elapsedSec)}`);
     stopDetection();
     resetToWaiting();
   }
-}, (error) => {
+}, () => {
   connDot.classList.remove('connected');
   connDot.classList.add('error');
   connLabel.textContent = '接続エラー';
 });
 
-// ========== NFC読み取り ==========
+// NFC読み取り
 async function startNFCScan() {
   if (!('NDEFReader' in window)) {
-    // iOSはWeb NFC非対応のためGASから検索する方式にフォールバック
     showManualInput();
     return;
   }
-
   try {
     const ndef = new NDEFReader();
     await ndef.scan();
     nfcArea.classList.add('active');
     nfcInstruction.textContent = 'スキャン中...';
-
     ndef.addEventListener('reading', ({ serialNumber }) => {
-      // NFCカードのシリアル番号でGASから選手情報を取得
       lookupAthleteByNFC(serialNumber.toUpperCase().replace(/:/g, ''));
     });
   } catch(e) {
-    showError('NFC読み取りエラー: ' + e.message);
+    showManualInput();
   }
 }
 
-// ========== GASから選手情報取得 ==========
+// NFCでメンバー検索
 function lookupAthleteByNFC(nfcUID) {
   nfcInstruction.textContent = '選手情報取得中...';
-
+  window._pendingNfcUID = nfcUID;
   const script = document.createElement('script');
-  script.src = `${GAS_URL}?action=getMemberByNFC&nfcUID=${nfcUID}&callback=onAthleteFound`;
+  script.src = `${MONJUNI_GAS}?action=getMembers&callback=onMembersForNFC`;
   document.head.appendChild(script);
-
-  // タイムアウト
   setTimeout(() => {
     if (state === 'waiting') {
-      showError('選手情報の取得に失敗しました。もう一度かざしてください。');
+      showError('タイムアウト。もう一度かざしてください。');
       resetNFCArea();
     }
   }, 8000);
 }
 
-// ========== GASコールバック ==========
-window.onAthleteFound = function(data) {
-  if (!data || !data.success) {
-    showError('登録されていないカードです。');
+window.onMembersForNFC = function(data) {
+  const members = data.members || [];
+  const uid = (window._pendingNfcUID || '').toUpperCase();
+  const found = members.find(m => m.nfcId && m.nfcId.toUpperCase() === uid);
+  if (!found) {
+    showError('登録されていないカードです（UID: ' + uid + '）');
     resetNFCArea();
     return;
   }
-
-  currentAthlete = data.member;
+  currentAthlete = { id: found.nfcId, name: found.name, grade: found.grade, nfcId: found.nfcId };
   showAthleteConfirm(currentAthlete);
 };
 
-// ========== iOSフォールバック：手動入力 ==========
+// iOSフォールバック：手動選択
 function showManualInput() {
-  nfcInstruction.textContent = 'Web NFCはiOSで非対応です。手動で選手を選択してください。';
-  // GASから全選手リストを取得してドロップダウン表示
-  loadAthleteList();
-}
-
-function loadAthleteList() {
+  nfcInstruction.textContent = '選手を選択してください';
   const script = document.createElement('script');
-  script.src = `https://script.google.com/macros/s/AKfycbyVH4yXtC0PsG4gwbWITAnsMFUdwvMSij2hNsZ9z4bfRTRS0RxHzqvZZeaN3AVIEOte/exec?action=getMembers&callback=onMembersLoaded`;
+  script.src = `${MONJUNI_GAS}?action=getMembers&callback=onMembersLoaded`;
   document.head.appendChild(script);
 }
 
 window.onMembersLoaded = function(data) {
-  if (!data || !data.members) return;
-
+  const members = data.members || [];
+  if (!members.length) return;
   const select = document.createElement('select');
-  select.style.cssText = `
-    width:100%; padding:10px; margin-top:10px;
-    background:var(--surface); color:var(--text);
-    border:1px solid var(--border); border-radius:8px;
-    font-family:var(--body-font); font-size:1rem;
-  `;
+  select.style.cssText = 'width:100%;padding:10px;margin-top:10px;background:var(--surface);color:var(--text);border:1px solid var(--border);border-radius:8px;font-family:var(--body-font);font-size:1rem;';
   select.innerHTML = '<option value="">-- 選手を選択 --</option>' +
-    data.members.map(m =>
-      `<option value="${m.id}">${m.name}</option>`
-    ).join('');
-
+    members.map(m => `<option value="${m.nfcId || m.id}">${m.name}（${m.grade || ''}）</option>`).join('');
   select.addEventListener('change', () => {
-    const member = data.members.find(m => m.id === select.value);
-    if (member) {
-      currentAthlete = member;
-      showAthleteConfirm(member);
+    const found = members.find(m => (m.nfcId || m.id) === select.value);
+    if (found) {
+      currentAthlete = { id: found.nfcId || found.id, name: found.name, grade: found.grade, nfcId: found.nfcId };
+      showAthleteConfirm(currentAthlete);
     }
   });
-
   nfcArea.appendChild(select);
 };
 
-// ========== 選手確認表示 ==========
+// 選手確認表示
 function showAthleteConfirm(athlete) {
-  athleteName.textContent = athlete.name || '—';
-  athleteMeta.textContent = `${athlete.grade || ''}  ${selectedEvent}`;
+  athleteNameEl.textContent = athlete.name || '—';
+  athleteMetaEl.textContent = `${athlete.grade || ''}　${selectedEvent}`;
   athleteCard.classList.add('visible');
   nfcArea.classList.add('confirmed');
   setStatus('confirm');
   showError(false);
 }
 
-// ========== OK：スタート準備 ==========
+// OKボタン
 btnOk.addEventListener('click', () => {
   if (!currentAthlete) return;
-
   athleteCard.classList.remove('visible');
   standbyName.textContent = currentAthlete.name;
-  standbyMsg.textContent  = 'ゴール側に信号送信中...';
+  standbyMsg.textContent  = 'ゴール側に送信中...';
   standbyWrap.classList.add('visible');
   nfcArea.style.display = 'none';
   btnCancel.style.display = 'inline-block';
   setStatus('ready');
-
-  // Firebaseにready状態を送信
   set(timingRef, {
-    status:      'ready',
-    athleteId:   currentAthlete.id || currentAthlete.memberId || '',
+    status: 'ready',
+    athleteId:   currentAthlete.id || '',
     athleteName: currentAthlete.name,
     event:       selectedEvent,
     readyTime:   Date.now()
   }).then(() => {
-    standbyMsg.textContent = 'ゴール側が準備完了したらスタートを合図してください';
+    standbyMsg.textContent = 'ゴール側が準備完了したらスタートしてください';
     startCameraMonitoring();
   });
 });
 
-// ========== NG：やり直し ==========
+// NGボタン
 btnNg.addEventListener('click', () => {
   athleteCard.classList.remove('visible');
   nfcArea.classList.remove('confirmed', 'active');
@@ -767,27 +371,24 @@ btnNg.addEventListener('click', () => {
   showError(false);
 });
 
-// ========== キャンセル ==========
+// キャンセル
 btnCancel.addEventListener('click', cancelRun);
 btnCancelStandby.addEventListener('click', cancelRun);
-
 function cancelRun() {
   set(timingRef, { status: 'cancel' });
   stopDetection();
   resetToWaiting();
 }
 
-// ========== カメラ起動 ==========
+// カメラ
 btnCamera.addEventListener('click', async () => {
   try {
-    const stream = await navigator.mediaDevices.getUserMedia({
-      video: { facingMode: 'environment', width: { ideal: 1280 }, height: { ideal: 720 } }
-    });
+    const stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: 'environment', width: { ideal: 1280 }, height: { ideal: 720 } } });
     video.srcObject = stream;
     video.onloadedmetadata = () => {
-      canvas.width  = video.videoWidth;
+      canvas.width = video.videoWidth;
       canvas.height = video.videoHeight;
-      cameraReady   = true;
+      cameraReady = true;
       cameraOverlay.classList.add('hidden');
       detectLine.style.display = 'block';
     };
@@ -797,63 +398,45 @@ btnCamera.addEventListener('click', async () => {
   }
 });
 
-// ========== スタートライン検知 ==========
+// スタートライン検知
 function startCameraMonitoring() {
   if (!cameraReady) return;
   prevPixels = null;
-
   detectInterval = setInterval(() => {
     ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
-    const cx     = Math.floor(canvas.width / 2);
+    const cx = Math.floor(canvas.width / 2);
     const pixels = ctx.getImageData(cx, 0, 1, canvas.height).data;
-
     if (prevPixels && state === 'ready') {
       let diff = 0;
-      for (let i = 0; i < pixels.length; i += 4) {
-        diff += Math.abs(pixels[i] - prevPixels[i]);
-      }
+      for (let i = 0; i < pixels.length; i += 4) diff += Math.abs(pixels[i] - prevPixels[i]);
       const avgDiff = diff / (canvas.height * 255);
-      const thresh  = parseInt(sensitivity.value) / 1000;
-
-      if (avgDiff > thresh) {
-        startDetected();
-      }
+      if (avgDiff > parseInt(sensitivity.value) / 1000) startDetected();
     }
-
     prevPixels = new Uint8ClampedArray(pixels);
   }, 33);
 }
 
-// ========== スタート検知 ==========
 function startDetected() {
   if (state !== 'ready') return;
-  const startTime = Date.now();
   setStatus('running');
   standbyMsg.textContent = '計測中...';
-
-  // Firebaseにstartedを送信
   set(timingRef, {
-    status:      'started',
+    status: 'started',
     athleteId:   currentAthlete?.id || '',
     athleteName: currentAthlete?.name || '',
     event:       selectedEvent,
-    startTime:   startTime
+    startTime:   Date.now()
   });
 }
 
-function stopDetection() {
-  clearInterval(detectInterval);
-  prevPixels = null;
-}
+function stopDetection() { clearInterval(detectInterval); prevPixels = null; }
 
-// ========== ゴール完了トースト ==========
 function showFinishToast(msg) {
   finishToast.textContent = `🏁 ${msg}`;
   finishToast.classList.add('show');
   setTimeout(() => finishToast.classList.remove('show'), 4000);
 }
 
-// ========== リセット ==========
 function resetToWaiting() {
   setStatus('waiting');
   athleteCard.classList.remove('visible');
@@ -872,19 +455,11 @@ function resetNFCArea() {
   setStatus('waiting');
 }
 
-// ========== UI補助 ==========
 function setStatus(s) {
   state = s;
-  const labels = {
-    waiting:  'WAITING',
-    confirm:  'CONFIRM?',
-    ready:    'READY',
-    running:  'RUNNING',
-    finished: 'FINISH!',
-    error:    'ERROR'
-  };
+  const labels = { waiting:'WAITING', confirm:'CONFIRM?', ready:'READY', running:'RUNNING', error:'ERROR' };
   statusBadge.textContent = labels[s] || s.toUpperCase();
-  statusBadge.className   = `status-badge ${s}`;
+  statusBadge.className = `status-badge ${s}`;
 }
 
 function showError(show, msg = '') {
@@ -893,17 +468,13 @@ function showError(show, msg = '') {
 }
 
 function formatTime(sec) {
-  const s  = Math.floor(sec);
+  const s = Math.floor(sec);
   const ms = Math.floor((sec - s) * 100);
   return `${String(s).padStart(2,'0')}.${String(ms).padStart(2,'0')}`;
 }
 
-// ========== 感度スライダー ==========
-sensitivity.addEventListener('input', () => {
-  sensVal.textContent = sensitivity.value;
-});
+sensitivity.addEventListener('input', () => { sensVal.textContent = sensitivity.value; });
 
-// ========== 初期化：NFCスキャン開始 ==========
 startNFCScan();
 setStatus('waiting');
 </script>
