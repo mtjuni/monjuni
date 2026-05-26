@@ -1,0 +1,898 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+<title>GOAL – モンジュニ計測</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Noto+Sans+JP:wght@400;700&display=swap');
+
+  :root {
+    --bg: #0a0a0f;
+    --surface: #13131a;
+    --border: #1e1e2e;
+    --accent: #00ff88;
+    --accent2: #ff3366;
+    --warn: #ffaa00;
+    --text: #e8e8f0;
+    --text-dim: #666680;
+    --timer-font: 'Bebas Neue', sans-serif;
+    --body-font: 'Noto Sans JP', sans-serif;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: var(--body-font);
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+    position: relative;
+  }
+
+  /* 背景グリッド */
+  body::before {
+    content: '';
+    position: fixed;
+    inset: 0;
+    background-image:
+      linear-gradient(rgba(0,255,136,0.03) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(0,255,136,0.03) 1px, transparent 1px);
+    background-size: 40px 40px;
+    pointer-events: none;
+  }
+
+  /* ヘッダー */
+  .header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 12px 20px;
+    border-bottom: 1px solid var(--border);
+    background: var(--surface);
+    z-index: 10;
+  }
+
+  .header-title {
+    font-family: var(--timer-font);
+    font-size: 1.4rem;
+    letter-spacing: 4px;
+    color: var(--accent);
+  }
+
+  .status-badge {
+    padding: 4px 12px;
+    border-radius: 20px;
+    font-size: 0.7rem;
+    font-weight: 700;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    border: 1px solid currentColor;
+  }
+
+  .status-badge.waiting  { color: var(--text-dim); border-color: var(--border); }
+  .status-badge.ready    { color: var(--warn); animation: pulse 1s ease-in-out infinite; }
+  .status-badge.running  { color: var(--accent); animation: pulse 0.5s ease-in-out infinite; }
+  .status-badge.finished { color: var(--accent); }
+  .status-badge.error    { color: var(--accent2); }
+
+  @keyframes pulse {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.4; }
+  }
+
+  /* メインエリア */
+  .main {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 20px;
+    gap: 16px;
+  }
+
+  /* 選手情報 */
+  .athlete-info {
+    text-align: center;
+    opacity: 0;
+    transform: translateY(-10px);
+    transition: all 0.4s ease;
+  }
+  .athlete-info.visible {
+    opacity: 1;
+    transform: translateY(0);
+  }
+  .athlete-name {
+    font-size: 1.6rem;
+    font-weight: 700;
+    color: var(--text);
+    margin-bottom: 4px;
+  }
+  .event-name {
+    font-size: 0.85rem;
+    color: var(--text-dim);
+    letter-spacing: 2px;
+    text-transform: uppercase;
+  }
+
+  /* タイマー表示 */
+  .timer-wrap {
+    position: relative;
+    text-align: center;
+  }
+
+  .timer-label {
+    font-size: 0.7rem;
+    letter-spacing: 4px;
+    color: var(--text-dim);
+    text-transform: uppercase;
+    margin-bottom: 4px;
+  }
+
+  .timer-display {
+    font-family: var(--timer-font);
+    font-size: clamp(5rem, 22vw, 9rem);
+    letter-spacing: 4px;
+    line-height: 1;
+    color: var(--text);
+    transition: color 0.3s;
+    text-shadow: 0 0 40px rgba(0,255,136,0.1);
+  }
+
+  .timer-display.running {
+    color: var(--accent);
+    text-shadow: 0 0 60px rgba(0,255,136,0.3);
+  }
+
+  .timer-display.finished {
+    color: var(--accent);
+    animation: flash-finish 0.6s ease-out;
+  }
+
+  .timer-display.error {
+    color: var(--accent2);
+  }
+
+  @keyframes flash-finish {
+    0% { transform: scale(1.15); text-shadow: 0 0 80px rgba(0,255,136,0.8); }
+    100% { transform: scale(1); }
+  }
+
+  /* ベストタイム比較 */
+  .compare-wrap {
+    display: flex;
+    gap: 20px;
+    justify-content: center;
+    opacity: 0;
+    transition: opacity 0.5s ease 0.3s;
+  }
+  .compare-wrap.visible { opacity: 1; }
+
+  .compare-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 10px 18px;
+    text-align: center;
+    min-width: 110px;
+  }
+
+  .compare-card-label {
+    font-size: 0.65rem;
+    color: var(--text-dim);
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    margin-bottom: 4px;
+  }
+
+  .compare-card-value {
+    font-family: var(--timer-font);
+    font-size: 1.8rem;
+    letter-spacing: 2px;
+    color: var(--text);
+  }
+
+  .compare-card.best .compare-card-value { color: var(--warn); }
+
+  .diff-badge {
+    display: inline-block;
+    padding: 6px 16px;
+    border-radius: 20px;
+    font-family: var(--timer-font);
+    font-size: 1.4rem;
+    letter-spacing: 2px;
+  }
+  .diff-badge.improved { background: rgba(0,255,136,0.15); color: var(--accent); border: 1px solid var(--accent); }
+  .diff-badge.slower   { background: rgba(255,51,102,0.15); color: var(--accent2); border: 1px solid var(--accent2); }
+  .diff-badge.first    { background: rgba(255,170,0,0.15); color: var(--warn); border: 1px solid var(--warn); }
+
+  /* カメラビュー */
+  .camera-section {
+    width: 100%;
+    max-width: 480px;
+    position: relative;
+  }
+
+  .camera-container {
+    width: 100%;
+    aspect-ratio: 16/9;
+    background: #000;
+    border-radius: 8px;
+    overflow: hidden;
+    position: relative;
+    border: 1px solid var(--border);
+  }
+
+  #camera-feed {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+  }
+
+  /* 検知ライン */
+  .detect-line {
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    left: 50%;
+    width: 2px;
+    background: rgba(0,255,136,0.6);
+    transform: translateX(-50%);
+    pointer-events: none;
+  }
+
+  .detect-line::before, .detect-line::after {
+    content: '';
+    position: absolute;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 10px;
+    height: 10px;
+    background: var(--accent);
+    border-radius: 50%;
+  }
+  .detect-line::before { top: 0; }
+  .detect-line::after  { bottom: 0; }
+
+  /* カメラオーバーレイ */
+  .camera-overlay {
+    position: absolute;
+    inset: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: rgba(10,10,15,0.85);
+    border-radius: 8px;
+    font-size: 0.9rem;
+    color: var(--text-dim);
+    text-align: center;
+    gap: 8px;
+    flex-direction: column;
+  }
+
+  .camera-overlay.hidden { display: none; }
+
+  /* 感度スライダー */
+  .sensitivity-wrap {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    font-size: 0.75rem;
+    color: var(--text-dim);
+    width: 100%;
+    max-width: 480px;
+  }
+
+  .sensitivity-wrap input[type=range] {
+    flex: 1;
+    accent-color: var(--accent);
+  }
+
+  /* ボタン群 */
+  .btn-row {
+    display: flex;
+    gap: 10px;
+    flex-wrap: wrap;
+    justify-content: center;
+  }
+
+  .btn {
+    padding: 10px 24px;
+    border-radius: 6px;
+    border: none;
+    font-family: var(--body-font);
+    font-size: 0.85rem;
+    font-weight: 700;
+    cursor: pointer;
+    letter-spacing: 1px;
+    transition: all 0.2s;
+  }
+
+  .btn-primary {
+    background: var(--accent);
+    color: #000;
+  }
+  .btn-primary:hover { filter: brightness(1.1); }
+
+  .btn-danger {
+    background: transparent;
+    color: var(--accent2);
+    border: 1px solid var(--accent2);
+  }
+  .btn-danger:hover { background: rgba(255,51,102,0.1); }
+
+  .btn-ghost {
+    background: transparent;
+    color: var(--text-dim);
+    border: 1px solid var(--border);
+  }
+  .btn-ghost:hover { border-color: var(--text-dim); color: var(--text); }
+
+  /* 記録リスト */
+  .records-section {
+    width: 100%;
+    max-width: 480px;
+  }
+
+  .records-title {
+    font-size: 0.7rem;
+    letter-spacing: 3px;
+    color: var(--text-dim);
+    text-transform: uppercase;
+    margin-bottom: 8px;
+  }
+
+  .records-list {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    max-height: 150px;
+    overflow-y: auto;
+  }
+
+  .record-item {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    padding: 8px 12px;
+    font-size: 0.85rem;
+    animation: slide-in 0.3s ease;
+  }
+
+  @keyframes slide-in {
+    from { opacity: 0; transform: translateX(-10px); }
+    to   { opacity: 1; transform: translateX(0); }
+  }
+
+  .record-item .r-name { color: var(--text); font-weight: 700; }
+  .record-item .r-time { font-family: var(--timer-font); font-size: 1.2rem; color: var(--accent); }
+  .record-item .r-date { font-size: 0.7rem; color: var(--text-dim); }
+  .record-item.pending { border-color: var(--warn); opacity: 0.8; }
+  .record-item.pending .r-time { color: var(--warn); }
+
+  /* 接続状態 */
+  .connection-dot {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background: var(--text-dim);
+    display: inline-block;
+    margin-right: 6px;
+  }
+  .connection-dot.connected { background: var(--accent); box-shadow: 0 0 6px var(--accent); }
+  .connection-dot.error     { background: var(--accent2); }
+
+  /* 待機メッセージ */
+  .waiting-msg {
+    font-size: 0.9rem;
+    color: var(--text-dim);
+    text-align: center;
+    letter-spacing: 1px;
+  }
+
+  /* エラーメッセージ */
+  .error-msg {
+    background: rgba(255,51,102,0.1);
+    border: 1px solid var(--accent2);
+    border-radius: 8px;
+    padding: 10px 16px;
+    font-size: 0.85rem;
+    color: var(--accent2);
+    text-align: center;
+    display: none;
+  }
+  .error-msg.visible { display: block; }
+
+  /* タイムアウトバー */
+  .timeout-bar-wrap {
+    width: 100%;
+    max-width: 480px;
+    height: 3px;
+    background: var(--border);
+    border-radius: 2px;
+    overflow: hidden;
+    display: none;
+  }
+  .timeout-bar-wrap.visible { display: block; }
+  .timeout-bar {
+    height: 100%;
+    width: 100%;
+    background: var(--warn);
+    transform-origin: left;
+    transition: transform linear;
+  }
+
+  canvas { display: none; }
+</style>
+</head>
+<body>
+
+<!-- ヘッダー -->
+<div class="header">
+  <div class="header-title">⚡ GOAL</div>
+  <div style="display:flex;align-items:center;gap:12px;">
+    <span style="font-size:0.75rem;color:var(--text-dim);">
+      <span class="connection-dot" id="conn-dot"></span>
+      <span id="conn-label">接続中...</span>
+    </span>
+    <span class="status-badge waiting" id="status-badge">WAITING</span>
+  </div>
+</div>
+
+<!-- メイン -->
+<div class="main">
+
+  <!-- 選手情報 -->
+  <div class="athlete-info" id="athlete-info">
+    <div class="athlete-name" id="athlete-name">—</div>
+    <div class="event-name" id="event-name">50m走</div>
+  </div>
+
+  <!-- タイマー -->
+  <div class="timer-wrap">
+    <div class="timer-label">TIME</div>
+    <div class="timer-display" id="timer-display">00.00</div>
+  </div>
+
+  <!-- ベスト比較 -->
+  <div class="compare-wrap" id="compare-wrap">
+    <div class="compare-card best">
+      <div class="compare-card-label">ベスト</div>
+      <div class="compare-card-value" id="best-time">—</div>
+    </div>
+    <div class="compare-card">
+      <div class="compare-card-label">差</div>
+      <div class="compare-card-value" id="diff-display">—</div>
+    </div>
+  </div>
+
+  <!-- エラーメッセージ -->
+  <div class="error-msg" id="error-msg"></div>
+
+  <!-- タイムアウトバー -->
+  <div class="timeout-bar-wrap" id="timeout-bar-wrap">
+    <div class="timeout-bar" id="timeout-bar"></div>
+  </div>
+
+  <!-- カメラ -->
+  <div class="camera-section">
+    <div class="camera-container">
+      <video id="camera-feed" autoplay playsinline muted></video>
+      <canvas id="detect-canvas"></canvas>
+      <div class="detect-line" id="detect-line" style="display:none;"></div>
+      <div class="camera-overlay" id="camera-overlay">
+        <span style="font-size:1.5rem;">📷</span>
+        カメラを起動してください
+      </div>
+    </div>
+  </div>
+
+  <!-- 感度 -->
+  <div class="sensitivity-wrap">
+    <span>感度</span>
+    <input type="range" id="sensitivity" min="10" max="80" value="30">
+    <span id="sens-val">30</span>
+  </div>
+
+  <!-- ボタン -->
+  <div class="btn-row">
+    <button class="btn btn-primary" id="btn-camera">📷 カメラ起動</button>
+    <button class="btn btn-danger" id="btn-cancel" style="display:none;">❌ キャンセル</button>
+    <button class="btn btn-ghost" id="btn-retry" style="display:none;">🔄 やり直し</button>
+  </div>
+
+  <!-- 今日の記録 -->
+  <div class="records-section">
+    <div class="records-title">本日の記録</div>
+    <div class="records-list" id="records-list">
+      <div style="color:var(--text-dim);font-size:0.8rem;padding:8px;">まだ記録がありません</div>
+    </div>
+  </div>
+
+</div>
+
+<script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
+import { getDatabase, ref, onValue, set, get } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-database.js";
+
+// ========== Firebase設定 ==========
+const firebaseConfig = {
+  apiKey: "AIzaSyD8o8tRvsuqxr012DyR10j_DOY0dQ0uL7w",
+  authDomain: "monjuni-timing.firebaseapp.com",
+  databaseURL: "https://monjuni-timing-default-rtdb.asia-southeast1.firebasedatabase.app",
+  projectId: "monjuni-timing",
+  storageBucket: "monjuni-timing.firebasestorage.app",
+  messagingSenderId: "705263409750",
+  appId: "1:705263409750:web:cc8e7ee0700887680cb9f7"
+};
+
+// ========== GAS設定 ==========
+const GAS_URL = "https://script.google.com/macros/s/AKfycbyVH4yXtC0PsG4gwbWITAnsMFUdwvMSij2hNsZ9z4bfRTRS0RxHzqvZZeaN3AVIEOte/exec";
+
+const app = initializeApp(firebaseConfig);
+const db  = getDatabase(app);
+
+// ========== DOM ==========
+const timerDisplay   = document.getElementById('timer-display');
+const statusBadge    = document.getElementById('status-badge');
+const athleteInfo    = document.getElementById('athlete-info');
+const athleteName    = document.getElementById('athlete-name');
+const eventName      = document.getElementById('event-name');
+const compareWrap    = document.getElementById('compare-wrap');
+const bestTimeEl     = document.getElementById('best-time');
+const diffDisplay    = document.getElementById('diff-display');
+const errorMsg       = document.getElementById('error-msg');
+const recordsList    = document.getElementById('records-list');
+const connDot        = document.getElementById('conn-dot');
+const connLabel      = document.getElementById('conn-label');
+const cameraOverlay  = document.getElementById('camera-overlay');
+const detectLine     = document.getElementById('detect-line');
+const sensitivity    = document.getElementById('sensitivity');
+const sensVal        = document.getElementById('sens-val');
+const timeoutBarWrap = document.getElementById('timeout-bar-wrap');
+const timeoutBar     = document.getElementById('timeout-bar');
+const btnCamera      = document.getElementById('btn-camera');
+const btnCancel      = document.getElementById('btn-cancel');
+const btnRetry       = document.getElementById('btn-retry');
+const video          = document.getElementById('camera-feed');
+const canvas         = document.getElementById('detect-canvas');
+const ctx            = canvas.getContext('2d');
+
+// ========== 状態 ==========
+let state = 'waiting'; // waiting / ready / running / finished / error
+let startTime = null;
+let timerInterval = null;
+let detectInterval = null;
+let timeoutTimer = null;
+let currentAthlete = null;
+let cameraReady = false;
+let prevPixels = null;
+let todayRecords = [];
+const TIMEOUT_SEC = 60; // 60秒でタイムアウト
+
+// ========== 接続監視 ==========
+const timingRef = ref(db, 'timing/current');
+
+onValue(timingRef, (snapshot) => {
+  connDot.classList.add('connected');
+  connDot.classList.remove('error');
+  connLabel.textContent = 'Firebase接続済';
+
+  const data = snapshot.val();
+  if (!data) return;
+
+  handleFirebaseUpdate(data);
+}, (error) => {
+  connDot.classList.remove('connected');
+  connDot.classList.add('error');
+  connLabel.textContent = '接続エラー';
+});
+
+// ========== Firebase更新処理 ==========
+function handleFirebaseUpdate(data) {
+  if (data.status === 'ready' && state === 'waiting') {
+    // スタート準備完了
+    currentAthlete = data;
+    setStatus('ready');
+    athleteName.textContent = data.athleteName || '—';
+    eventName.textContent   = data.event || '50m走';
+    athleteInfo.classList.add('visible');
+    compareWrap.classList.remove('visible');
+    resetTimer();
+    showError(false);
+    startTimeoutCountdown();
+
+  } else if (data.status === 'started' && (state === 'ready' || state === 'waiting')) {
+    // スタート！
+    startTime = data.startTime;
+    setStatus('running');
+    clearTimeout(timeoutTimer);
+    hideTimeoutBar();
+    startTimerDisplay();
+    startDetection();
+
+  } else if (data.status === 'waiting' && state !== 'waiting') {
+    // リセット
+    resetAll();
+
+  } else if (data.status === 'cancel') {
+    // キャンセル
+    showError(true, 'スタート側からキャンセルされました');
+    resetAll();
+  }
+}
+
+// ========== タイマー表示 ==========
+function startTimerDisplay() {
+  timerInterval = setInterval(() => {
+    const elapsed = (Date.now() - startTime) / 1000;
+    timerDisplay.textContent = formatTime(elapsed);
+    timerDisplay.className   = 'timer-display running';
+  }, 50);
+}
+
+function formatTime(sec) {
+  const s  = Math.floor(sec);
+  const ms = Math.floor((sec - s) * 100);
+  return `${String(s).padStart(2,'0')}.${String(ms).padStart(2,'0')}`;
+}
+
+function resetTimer() {
+  clearInterval(timerInterval);
+  timerDisplay.textContent = '00.00';
+  timerDisplay.className   = 'timer-display';
+}
+
+// ========== カメラ ==========
+btnCamera.addEventListener('click', async () => {
+  try {
+    const stream = await navigator.mediaDevices.getUserMedia({
+      video: { facingMode: 'environment', width: { ideal: 1280 }, height: { ideal: 720 } }
+    });
+    video.srcObject = stream;
+    video.onloadedmetadata = () => {
+      canvas.width  = video.videoWidth;
+      canvas.height = video.videoHeight;
+      cameraReady   = true;
+      cameraOverlay.classList.add('hidden');
+      detectLine.style.display = 'block';
+    };
+    btnCamera.style.display = 'none';
+  } catch(e) {
+    showError(true, 'カメラにアクセスできません: ' + e.message);
+  }
+});
+
+// ========== ライン検知 ==========
+function startDetection() {
+  if (!cameraReady) return;
+  prevPixels = null;
+
+  detectInterval = setInterval(() => {
+    ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+    const cx     = Math.floor(canvas.width / 2);
+    const pixels = ctx.getImageData(cx, 0, 1, canvas.height).data;
+
+    if (prevPixels) {
+      let diff = 0;
+      for (let i = 0; i < pixels.length; i += 4) {
+        diff += Math.abs(pixels[i] - prevPixels[i]);
+      }
+      const avgDiff = diff / (canvas.height * 255);
+      const thresh  = parseInt(sensitivity.value) / 1000;
+
+      if (avgDiff > thresh) {
+        goalDetected();
+      }
+    }
+
+    prevPixels = new Uint8ClampedArray(pixels);
+  }, 33); // 約30fps
+}
+
+function stopDetection() {
+  clearInterval(detectInterval);
+  prevPixels = null;
+}
+
+// ========== ゴール検知 ==========
+function goalDetected() {
+  if (state !== 'running') return;
+  const goalTime = Date.now();
+  const elapsed  = (goalTime - startTime) / 1000;
+
+  stopDetection();
+  clearInterval(timerInterval);
+
+  timerDisplay.textContent = formatTime(elapsed);
+  timerDisplay.className   = 'timer-display finished';
+
+  setStatus('finished');
+
+  // ベスト比較
+  showComparison(elapsed);
+
+  // GASに記録
+  recordToGAS(elapsed, goalTime);
+
+  // 今日の記録に追加
+  addTodayRecord(elapsed);
+
+  // Firebaseをfinished状態に
+  set(timingRef, {
+    ...currentAthlete,
+    status: 'finished',
+    goalTime: goalTime,
+    elapsedSec: elapsed
+  });
+
+  // ボタン表示
+  btnRetry.style.display = 'inline-block';
+  btnCancel.style.display = 'none';
+
+  // 30秒後に自動リセット
+  setTimeout(() => {
+    if (state === 'finished') resetAll();
+  }, 30000);
+}
+
+// ========== ベスト比較 ==========
+function showComparison(elapsed) {
+  const best = getBestTime(currentAthlete?.athleteId);
+  bestTimeEl.textContent = best ? formatTime(best) : '初回';
+  compareWrap.classList.add('visible');
+
+  if (!best) {
+    diffDisplay.textContent = '初記録！';
+    diffDisplay.className   = 'compare-card-value';
+    return;
+  }
+
+  const diff = elapsed - best;
+  if (diff < 0) {
+    diffDisplay.textContent = `▲ ${formatTime(Math.abs(diff))}`;
+    diffDisplay.className   = 'compare-card-value';
+    diffDisplay.style.color = 'var(--accent)';
+  } else {
+    diffDisplay.textContent = `▽ ${formatTime(diff)}`;
+    diffDisplay.className   = 'compare-card-value';
+    diffDisplay.style.color = 'var(--accent2)';
+  }
+}
+
+function getBestTime(athleteId) {
+  if (!athleteId) return null;
+  const records = todayRecords.filter(r => r.athleteId === athleteId && r.confirmed);
+  if (!records.length) return null;
+  return Math.min(...records.map(r => r.elapsed));
+}
+
+// ========== 今日の記録 ==========
+function addTodayRecord(elapsed) {
+  const record = {
+    athleteId:   currentAthlete?.athleteId,
+    athleteName: currentAthlete?.athleteName,
+    elapsed:     elapsed,
+    time:        new Date().toLocaleTimeString('ja-JP'),
+    confirmed:   true
+  };
+  todayRecords.unshift(record);
+  renderRecords();
+}
+
+function renderRecords() {
+  if (!todayRecords.length) {
+    recordsList.innerHTML = '<div style="color:var(--text-dim);font-size:0.8rem;padding:8px;">まだ記録がありません</div>';
+    return;
+  }
+  recordsList.innerHTML = todayRecords.map(r => `
+    <div class="record-item ${r.confirmed ? '' : 'pending'}">
+      <span class="r-name">${r.athleteName || '—'}</span>
+      <span class="r-time">${formatTime(r.elapsed)}</span>
+      <span class="r-date">${r.time}${r.confirmed ? '' : ' ⚠保留'}</span>
+    </div>
+  `).join('');
+}
+
+// ========== GAS記録 ==========
+function recordToGAS(elapsed, goalTime) {
+  const params = new URLSearchParams({
+    action:      'recordPerformance',
+    athleteId:   currentAthlete?.athleteId || '',
+    athleteName: currentAthlete?.athleteName || '',
+    event:       currentAthlete?.event || '50m走',
+    elapsedSec:  elapsed.toFixed(2),
+    goalTime:    goalTime
+  });
+
+  fetch(`${GAS_URL}?${params}&callback=cb`, { mode: 'no-cors' })
+    .catch(e => console.warn('GAS記録エラー:', e));
+}
+
+// ========== タイムアウト ==========
+function startTimeoutCountdown() {
+  timeoutBarWrap.classList.add('visible');
+  timeoutBar.style.transform = 'scaleX(1)';
+  timeoutBar.style.transition = `transform ${TIMEOUT_SEC}s linear`;
+  setTimeout(() => { timeoutBar.style.transform = 'scaleX(0)'; }, 100);
+
+  timeoutTimer = setTimeout(() => {
+    showError(true, `${TIMEOUT_SEC}秒以内にスタートされませんでした。キャンセルします。`);
+    set(timingRef, { status: 'waiting' });
+    resetAll();
+  }, TIMEOUT_SEC * 1000);
+}
+
+function hideTimeoutBar() {
+  timeoutBarWrap.classList.remove('visible');
+  clearTimeout(timeoutTimer);
+}
+
+// ========== キャンセル・やり直し ==========
+btnCancel.addEventListener('click', () => {
+  set(timingRef, { status: 'waiting' });
+  resetAll();
+});
+
+btnRetry.addEventListener('click', () => {
+  set(timingRef, { status: 'waiting' });
+  resetAll();
+});
+
+// ========== リセット ==========
+function resetAll() {
+  setStatus('waiting');
+  stopDetection();
+  clearInterval(timerInterval);
+  clearTimeout(timeoutTimer);
+  hideTimeoutBar();
+  resetTimer();
+  athleteInfo.classList.remove('visible');
+  compareWrap.classList.remove('visible');
+  showError(false);
+  currentAthlete = null;
+  startTime = null;
+  btnCancel.style.display = 'none';
+  btnRetry.style.display  = 'none';
+}
+
+// ========== UI補助 ==========
+function setStatus(s) {
+  state = s;
+  const labels = {
+    waiting:  'WAITING',
+    ready:    'READY',
+    running:  'RUNNING',
+    finished: 'FINISH!',
+    error:    'ERROR'
+  };
+  statusBadge.textContent = labels[s] || s.toUpperCase();
+  statusBadge.className   = `status-badge ${s}`;
+
+  if (s === 'ready')   { btnCancel.style.display = 'inline-block'; }
+  if (s === 'running') { btnCancel.style.display = 'none'; }
+}
+
+function showError(show, msg = '') {
+  errorMsg.textContent = msg;
+  errorMsg.classList.toggle('visible', show);
+  if (show) timerDisplay.className = 'timer-display error';
+}
+
+// ========== 感度スライダー ==========
+sensitivity.addEventListener('input', () => {
+  sensVal.textContent = sensitivity.value;
+});
+
+// ========== 初期化 ==========
+setStatus('waiting');
+</script>
+</body>
+</html>
