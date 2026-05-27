@@ -82,6 +82,24 @@
   .log-item.ok{color:var(--accent);}
   .log-item.err{color:var(--accent2);}
   .log-item.warn{color:var(--warn);}
+  /* モード選択 */
+  .mode-btns{display:flex;gap:5px;flex-wrap:wrap;}
+  .mode-btn{padding:6px 10px;border-radius:8px;border:1px solid var(--border);
+    background:var(--surface);color:var(--text-dim);font-size:0.7rem;cursor:pointer;
+    transition:all 0.2s;font-family:var(--body-font);}
+  .mode-btn.selected{border-color:var(--info);color:var(--info);background:rgba(0,170,255,0.08);}
+
+  /* 選手選択 */
+  .athlete-select{width:100%;padding:8px 10px;background:var(--surface);color:var(--text);
+    border:1px solid var(--border);border-radius:8px;font-family:var(--body-font);font-size:0.85rem;outline:none;}
+  .btn-add{width:100%;padding:10px;border-radius:8px;border:none;margin-top:6px;
+    background:var(--info);color:#000;font-family:var(--body-font);font-size:0.85rem;
+    font-weight:700;cursor:pointer;}
+  .btn-add:disabled{opacity:0.3;cursor:not-allowed;}
+  .btn-noone{width:100%;padding:8px;border-radius:8px;border:1px solid var(--border);
+    background:transparent;color:var(--text-dim);font-family:var(--body-font);
+    font-size:0.8rem;cursor:pointer;margin-top:4px;}
+
 </style>
 </head>
 <body>
@@ -102,6 +120,28 @@
     <div class="runner-list" id="runner-list">
       <div style="color:var(--text-dim);font-size:0.8rem;padding:4px;">走者なし</div>
     </div>
+  </div>
+
+  <!-- モード選択 -->
+  <div class="state-panel">
+    <div class="section-label">スタートモード</div>
+    <div class="mode-btns" id="mode-btns">
+      <button class="mode-btn selected" data-mode="camera">📷 カメラ</button>
+      <button class="mode-btn" data-mode="sound">🔔 音のみ</button>
+      <button class="mode-btn" data-mode="camera_fallback">📷+🔔</button>
+      <button class="mode-btn" data-mode="both">⚡ どちらでも</button>
+      <button class="mode-btn" data-mode="auto">🤖 自動</button>
+    </div>
+  </div>
+
+  <!-- 選手追加 -->
+  <div class="state-panel">
+    <div class="section-label">選手をキューに追加</div>
+    <select class="athlete-select" id="athlete-select">
+      <option value="">読み込み中...</option>
+    </select>
+    <button class="btn-add" id="btn-add-athlete">▶ キューに追加</button>
+    <button class="btn-noone" id="btn-add-noone">👤 nooneで追加</button>
   </div>
 
   <!-- コールボタン -->
@@ -271,6 +311,74 @@ function renderRecords() {
     </div>
   `).join('');
 }
+
+// モード選択
+document.querySelectorAll('.mode-btn').forEach(btn => {
+  btn.addEventListener('click', () => {
+    document.querySelectorAll('.mode-btn').forEach(b => b.classList.remove('selected'));
+    btn.classList.add('selected');
+    set(ref(db, 'timing/mode'), { mode: btn.dataset.mode });
+    addLog(`モード変更: ${btn.dataset.mode}`, 'warn');
+  });
+});
+
+// モード監視（スタート側が変更したら同期）
+onValue(ref(db, 'timing/mode'), (snapshot) => {
+  const data = snapshot.val();
+  if (!data?.mode) return;
+  document.querySelectorAll('.mode-btn').forEach(b => {
+    b.classList.toggle('selected', b.dataset.mode === data.mode);
+  });
+});
+
+// 選手リスト読み込み
+const MONJUNI_GAS = "https://script.google.com/macros/s/AKfycbyVH4yXtC0PsG4gwbWITAnsMFUdwvMSij2hNsZ9z4bfRTRS0RxHzqvZZeaN3AVIEOte/exec";
+let membersList = [];
+
+function loadMembers() {
+  const script = document.createElement('script');
+  script.src = `${MONJUNI_GAS}?action=getMembers&callback=onCtrlMembersLoaded`;
+  document.head.appendChild(script);
+}
+
+window.onCtrlMembersLoaded = function(data) {
+  membersList = data.members || [];
+  const select = document.getElementById('athlete-select');
+  select.innerHTML = '<option value="">-- 選手を選択 --</option>' +
+    membersList.map(m => `<option value="${m.nfcId||m.id}">${m.name}（${m.grade||''}）</option>`).join('');
+};
+
+// 選手追加ボタン
+document.getElementById('btn-add-athlete').addEventListener('click', () => {
+  const select = document.getElementById('athlete-select');
+  const found  = membersList.find(m => (m.nfcId||m.id) === select.value);
+  if (!found) return;
+  addToCtrlQueue({ id: found.nfcId||found.id, name: found.name, grade: found.grade||'', nfcId: found.nfcId||'' });
+});
+
+document.getElementById('btn-add-noone').addEventListener('click', () => {
+  addToCtrlQueue({ id: 'noone_'+Date.now(), name: 'noone', grade: '', nfcId: '' });
+});
+
+function addToCtrlQueue(athlete) {
+  // 現在のキューを取得して追加
+  const entry = {
+    laneId:      queue.length,
+    athleteId:   athlete.id || '',
+    athleteName: athlete.name,
+    grade:       athlete.grade || '',
+    nfcId:       athlete.nfcId || '',
+    event:       '50m走',
+    status:      'waiting',
+    startTime:   null,
+    addedAt:     Date.now()
+  };
+  const newQueue = [...queue, entry];
+  set(queueRef, newQueue);
+  addLog(`➕ 追加: ${athlete.name}`, 'ok');
+}
+
+loadMembers();
 
 function addLog(msg, type='') {
   const time = new Date().toLocaleTimeString('ja-JP');

@@ -97,6 +97,18 @@
   .record-item.invalid{opacity:0.4;border-color:var(--accent2);}
   .record-item.invalid .r-time{color:var(--accent2);text-decoration:line-through;}
 
+
+  /* 横向き対応 */
+  @media (orientation: landscape) {
+    .main { flex-direction: row; flex-wrap: wrap; align-items: flex-start; padding: 8px; gap: 8px; }
+    .next-goal { max-width: 48%; }
+    .runners-panel { max-width: 48%; }
+    .camera-section { max-width: 48%; }
+    .sensitivity-wrap { max-width: 48%; }
+    .btn-row { max-width: 48%; }
+    .records-panel { max-width: 100%; }
+    .next-goal-timer { font-size: 3rem; }
+  }
   canvas{display:none;}
 </style>
 </head>

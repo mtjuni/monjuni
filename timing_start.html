@@ -432,6 +432,17 @@ function updateModeUI() {
   }
 }
 
+// コントローラーからのモード変更を受信
+onValue(modeRef, (snapshot) => {
+  const data = snapshot.val();
+  if (!data?.mode) return;
+  selectedMode = data.mode;
+  document.querySelectorAll('.mode-btn').forEach(b => {
+    b.classList.toggle('selected', b.dataset.mode === selectedMode);
+  });
+  updateModeUI();
+});
+
 // 種目選択
 document.querySelectorAll('.event-btn').forEach(btn => {
   btn.addEventListener('click', () => {
