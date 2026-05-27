@@ -1,0 +1,292 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+<title>CONTROLLER – モンジュニ計測</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Noto+Sans+JP:wght@400;700&display=swap');
+  :root {
+    --bg:#0a0a14;--surface:#11111e;--border:#1e1e35;
+    --accent:#00ff88;--accent2:#ff3366;--warn:#ffaa00;--info:#00aaff;
+    --text:#e8e8f8;--text-dim:#555570;
+    --timer-font:'Bebas Neue',sans-serif;--body-font:'Noto Sans JP',sans-serif;
+  }
+  *{box-sizing:border-box;margin:0;padding:0;}
+  body{background:var(--bg);color:var(--text);font-family:var(--body-font);min-height:100vh;}
+  body::before{content:'';position:fixed;inset:0;pointer-events:none;
+    background-image:linear-gradient(rgba(0,170,255,0.03) 1px,transparent 1px),linear-gradient(90deg,rgba(0,170,255,0.03) 1px,transparent 1px);
+    background-size:40px 40px;}
+  .header{display:flex;align-items:center;justify-content:space-between;padding:10px 16px;
+    border-bottom:1px solid var(--border);background:var(--surface);position:sticky;top:0;z-index:10;}
+  .header-title{font-family:var(--timer-font);font-size:1.3rem;letter-spacing:4px;color:var(--info);}
+  .conn-wrap{display:flex;align-items:center;gap:6px;font-size:0.7rem;color:var(--text-dim);}
+  .conn-dot{width:7px;height:7px;border-radius:50%;background:var(--text-dim);}
+  .conn-dot.ok{background:var(--accent);box-shadow:0 0 5px var(--accent);}
+  .main{display:flex;flex-direction:column;align-items:center;padding:12px;gap:12px;}
+
+  /* 状態パネル */
+  .state-panel{width:100%;max-width:440px;background:var(--surface);
+    border:1px solid var(--border);border-radius:10px;padding:12px 16px;}
+  .section-label{font-size:0.6rem;letter-spacing:3px;color:var(--text-dim);text-transform:uppercase;margin-bottom:8px;}
+
+  /* ランナー状態 */
+  .runner-list{display:flex;flex-direction:column;gap:6px;}
+  .runner-item{display:flex;align-items:center;gap:10px;padding:8px 12px;
+    background:var(--bg);border:1px solid var(--border);border-radius:8px;}
+  .runner-item.started{border-color:var(--warn);}
+  .runner-item.finished{border-color:var(--accent);opacity:0.6;}
+  .runner-num{font-family:var(--timer-font);font-size:1.1rem;color:var(--text-dim);width:18px;}
+  .runner-name{flex:1;font-weight:700;font-size:0.85rem;}
+  .runner-timer{font-family:var(--timer-font);font-size:1rem;color:var(--warn);}
+  .runner-status{font-size:0.6rem;color:var(--text-dim);letter-spacing:1px;text-transform:uppercase;}
+
+  /* コールボタン */
+  .call-wrap{width:100%;max-width:440px;}
+  .btn-call{width:100%;padding:20px;border-radius:10px;border:none;
+    font-family:var(--timer-font);font-size:1.8rem;letter-spacing:5px;
+    background:var(--warn);color:#000;cursor:pointer;transition:all 0.2s;
+    box-shadow:0 0 15px rgba(255,170,0,0.2);}
+  .btn-call:hover{filter:brightness(1.1);}
+  .btn-call:active{transform:scale(0.97);}
+  .btn-call:disabled{opacity:0.3;cursor:not-allowed;}
+
+  /* サブボタン */
+  .sub-btns{display:flex;gap:8px;width:100%;max-width:440px;flex-wrap:wrap;}
+  .btn-sub{flex:1;padding:11px;border-radius:8px;border:1px solid var(--border);
+    background:var(--surface);color:var(--text-dim);font-family:var(--body-font);
+    font-size:0.8rem;font-weight:700;cursor:pointer;transition:all 0.2s;min-width:80px;}
+  .btn-sub:hover{border-color:var(--text-dim);color:var(--text);}
+  .btn-sub.warn{color:var(--warn);border-color:var(--warn);}
+  .btn-sub.warn:hover{background:rgba(255,170,0,0.1);}
+  .btn-sub.danger{color:var(--accent2);border-color:var(--accent2);}
+  .btn-sub.danger:hover{background:rgba(255,51,102,0.1);}
+
+  /* 記録 */
+  .records-panel{width:100%;max-width:440px;}
+  .records-list{display:flex;flex-direction:column;gap:4px;max-height:200px;overflow-y:auto;}
+  .record-item{display:flex;align-items:center;justify-content:space-between;
+    background:var(--surface);border:1px solid var(--border);border-radius:8px;
+    padding:8px 12px;animation:slide-in 0.3s ease;}
+  @keyframes slide-in{from{opacity:0;transform:translateX(-8px);}to{opacity:1;transform:translateX(0);}}
+  .r-name{font-weight:700;font-size:0.85rem;}
+  .r-time{font-family:var(--timer-font);font-size:1.2rem;color:var(--accent);}
+  .r-meta{font-size:0.65rem;color:var(--text-dim);}
+  .record-item.invalid{opacity:0.4;}
+  .record-item.invalid .r-time{color:var(--accent2);text-decoration:line-through;}
+
+  /* ログ */
+  .log-panel{width:100%;max-width:440px;}
+  .log-list{display:flex;flex-direction:column;gap:2px;max-height:100px;overflow-y:auto;}
+  .log-item{font-size:0.7rem;color:var(--text-dim);padding:2px 0;border-bottom:1px solid var(--border);}
+  .log-item.ok{color:var(--accent);}
+  .log-item.err{color:var(--accent2);}
+  .log-item.warn{color:var(--warn);}
+</style>
+</head>
+<body>
+
+<div class="header">
+  <div class="header-title">🎮 CTRL</div>
+  <div class="conn-wrap">
+    <span class="conn-dot" id="conn-dot"></span>
+    <span id="conn-label">接続中...</span>
+  </div>
+</div>
+
+<div class="main">
+
+  <!-- 走者状態 -->
+  <div class="state-panel">
+    <div class="section-label">走者状態</div>
+    <div class="runner-list" id="runner-list">
+      <div style="color:var(--text-dim);font-size:0.8rem;padding:4px;">走者なし</div>
+    </div>
+  </div>
+
+  <!-- コールボタン -->
+  <div class="call-wrap">
+    <button class="btn-call" id="btn-call">🔔 コール音を鳴らす</button>
+  </div>
+
+  <!-- サブボタン -->
+  <div class="sub-btns">
+    <button class="btn-sub warn" id="btn-reset">🔄 リセット</button>
+    <button class="btn-sub danger" id="btn-cancel">❌ キャンセル</button>
+    <button class="btn-sub" id="btn-log-clear">ログ消去</button>
+  </div>
+
+  <!-- 記録 -->
+  <div class="records-panel">
+    <div class="section-label">本日の記録</div>
+    <div class="records-list" id="records-list">
+      <div style="color:var(--text-dim);font-size:0.8rem;padding:6px;">まだ記録がありません</div>
+    </div>
+  </div>
+
+  <!-- ログ -->
+  <div class="log-panel">
+    <div class="section-label">操作ログ</div>
+    <div class="log-list" id="log-list"></div>
+  </div>
+
+</div>
+
+<script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
+import { getDatabase, ref, onValue, set } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-database.js";
+
+const firebaseConfig = {
+  apiKey:"AIzaSyD8o8tRvsuqxr012DyR10j_DOY0dQ0uL7w",
+  authDomain:"monjuni-timing.firebaseapp.com",
+  databaseURL:"https://monjuni-timing-default-rtdb.asia-southeast1.firebasedatabase.app",
+  projectId:"monjuni-timing",
+  storageBucket:"monjuni-timing.firebasestorage.app",
+  messagingSenderId:"705263409750",
+  appId:"1:705263409750:web:cc8e7ee0700887680cb9f7"
+};
+
+const app = initializeApp(firebaseConfig);
+const db  = getDatabase(app);
+const queueRef   = ref(db, 'timing/queue');
+const callRef    = ref(db, 'timing/callSignal');
+const finishedRef= ref(db, 'timing/lastFinished');
+
+const connDot     = document.getElementById('conn-dot');
+const connLabel   = document.getElementById('conn-label');
+const runnerList  = document.getElementById('runner-list');
+const recordsList = document.getElementById('records-list');
+const logList     = document.getElementById('log-list');
+const btnCall     = document.getElementById('btn-call');
+const btnReset    = document.getElementById('btn-reset');
+const btnCancel   = document.getElementById('btn-cancel');
+const btnLogClear = document.getElementById('btn-log-clear');
+
+let queue        = [];
+let todayRecords = [];
+let timerInterval= null;
+
+// キュー監視
+onValue(queueRef, (snapshot) => {
+  connDot.classList.add('ok');
+  connDot.classList.remove('err');
+  connLabel.textContent = '接続済';
+  const data = snapshot.val();
+  queue = data ? (Array.isArray(data) ? data : Object.values(data)) : [];
+  renderRunners();
+}, () => {
+  connDot.classList.remove('ok');
+  connLabel.textContent = '接続エラー';
+});
+
+// ゴール完了監視
+onValue(finishedRef, (snapshot) => {
+  const data = snapshot.val();
+  if (!data || !data.athleteName || !data.ts) return;
+  const existing = todayRecords.find(r => r.ts === data.ts);
+  if (existing) return;
+  todayRecords.unshift({
+    uid:         Date.now(),
+    ts:          data.ts,
+    athleteName: data.athleteName,
+    event:       data.event,
+    elapsedSec:  data.elapsedSec,
+    time:        new Date().toLocaleTimeString('ja-JP'),
+    invalid:     false
+  });
+  renderRecords();
+  addLog(`✅ ${data.athleteName}  ${formatTime(data.elapsedSec)}`, 'ok');
+});
+
+// ランナー描画
+function renderRunners() {
+  if (!queue.length) {
+    runnerList.innerHTML = '<div style="color:var(--text-dim);font-size:0.8rem;padding:4px;">走者なし</div>';
+    return;
+  }
+  runnerList.innerHTML = queue.map((q, i) => {
+    const elapsed = q.status === 'started' && q.startTime
+      ? formatTime((Date.now() - q.startTime) / 1000)
+      : q.status === 'finished' ? formatTime(q.elapsedSec || 0) : '待機中';
+    return `
+      <div class="runner-item ${q.status}">
+        <span class="runner-num">${i+1}</span>
+        <div style="flex:1;">
+          <div class="runner-name">${q.athleteName}</div>
+          <div class="runner-status">${q.event||''} · ${q.status}</div>
+        </div>
+        <span class="runner-timer">${elapsed}</span>
+      </div>
+    `;
+  }).join('');
+}
+
+// タイマー更新
+timerInterval = setInterval(() => {
+  if (queue.some(q => q.status === 'started')) renderRunners();
+}, 100);
+
+// コールボタン → スタート側に指示
+btnCall.addEventListener('click', () => {
+  set(callRef, { play: true, ts: Date.now() });
+  addLog('🔔 コール音指示', 'warn');
+  btnCall.textContent = '🔔 コール中...';
+  btnCall.disabled = true;
+  setTimeout(() => {
+    btnCall.textContent = '🔔 コール音を鳴らす';
+    btnCall.disabled = false;
+  }, 11000);
+});
+
+// リセット
+btnReset.addEventListener('click', () => {
+  if (!confirm('キューをリセットしますか？')) return;
+  set(queueRef, null);
+  set(callRef, { play: false });
+  addLog('🔄 リセット', 'warn');
+});
+
+// キャンセル
+btnCancel.addEventListener('click', () => {
+  set(callRef, { play: false });
+  addLog('❌ キャンセル', 'err');
+});
+
+// ログ消去
+btnLogClear.addEventListener('click', () => { logList.innerHTML = ''; });
+
+// 記録描画
+function renderRecords() {
+  if (!todayRecords.length) {
+    recordsList.innerHTML = '<div style="color:var(--text-dim);font-size:0.8rem;padding:6px;">まだ記録がありません</div>';
+    return;
+  }
+  recordsList.innerHTML = todayRecords.map(r => `
+    <div class="record-item ${r.invalid ? 'invalid' : ''}">
+      <div>
+        <div class="r-name">${r.athleteName}</div>
+        <div class="r-meta">${r.event||''} · ${r.time}</div>
+      </div>
+      <span class="r-time">${formatTime(r.elapsedSec)}</span>
+    </div>
+  `).join('');
+}
+
+function addLog(msg, type='') {
+  const time = new Date().toLocaleTimeString('ja-JP');
+  const div  = document.createElement('div');
+  div.className = `log-item ${type}`;
+  div.textContent = `${time}  ${msg}`;
+  logList.prepend(div);
+  if (logList.children.length > 20) logList.removeChild(logList.lastChild);
+}
+
+function formatTime(sec) {
+  if (!sec) return '00.00';
+  const s  = Math.floor(sec);
+  const ms = Math.floor((sec - s) * 100);
+  return `${String(s).padStart(2,'0')}.${String(ms).padStart(2,'0')}`;
+}
+</script>
+</body>
+</html>
