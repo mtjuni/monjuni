@@ -843,7 +843,7 @@ async function renderStats() {
   const sorted=[...MEMBERS].sort((a,b)=>(memberCounts[a.id]||0)<(memberCounts[b.id]||0)?1:-1);
   document.getElementById('statsMemberTbody').innerHTML = sorted.map(m=>{
     const cnt = memberCounts[m.id] || memberCounts[m.nfcId] || memberCounts[m.name] || 0;
-    const dates=[...(memberDates[m.id||m.name]||new Set())].sort((a,b)=>parseInt(a)-parseInt(b)).join(', ');
+    const dates=[...(memberDates[m.id]||memberDates[m.nfcId]||memberDates[m.name]||new Set())].sort((a,b)=>parseInt(a)-parseInt(b)).join(', ');
     return `<tr><td style="font-weight:600;">${m.name}</td><td style="color:var(--text2);font-size:0.78rem;">${m.furigana||'—'}</td><td style="font-family:'DM Mono',monospace;font-weight:700;">${cnt}回</td><td style="font-size:0.75rem;color:var(--text2);">${dates||'—'}</td><td><span class="attend-badge ${cnt>0?'good':'none'}">${cnt>0?'出席あり':'未出席'}</span></td></tr>`;
   }).join('')||'<tr><td colspan="5" style="text-align:center;color:var(--text3);padding:16px;">データなし</td></tr>';
 }
