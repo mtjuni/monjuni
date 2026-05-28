@@ -494,6 +494,7 @@ let returnTimer = null;
 let members = [];
 let nfcReader = null;
 let isWebNfc = 'NDEFReader' in window;
+alert('Web NFC: ' + isWebNfc);  
 let pendingNfcId = null; // メンバー読み込み前に届いたNFC ID
 let lastPollTs = 0;       // 最後に処理したタイムスタンプ
 const LOCAL_PORT = 9876;
