@@ -414,8 +414,10 @@ async function init() {
     }
 
     ATTENDANCE = (aData.attendance || []).filter(a =>
-  String(a.memberId) === id || String(a.nfcId) === id ||
-  (MEMBER && (String(a.memberId) === String(MEMBER.nfcId) || String(a.nfcId) === String(MEMBER.nfcId)))
+  String(a.memberId) === id || String(a.nfcId) === id
+);
+PAYMENTS = (pData.payments || []).filter(p =>
+  String(p.memberId) === id || String(p.nfcId) === id
 );
 PAYMENTS = (pData.payments || []).filter(p =>
   String(p.memberId) === id || String(p.nfcId) === id
