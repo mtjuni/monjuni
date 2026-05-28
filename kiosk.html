@@ -610,6 +610,8 @@ async function startWebNfc() {
   if (!isWebNfc) return;
   const btn = document.getElementById('nfc-start-btn');
   try {
+    alert('NFC開始します');
+
     if (nfcReader) {
       nfcReader.onreading = null;
       nfcReader = null;
