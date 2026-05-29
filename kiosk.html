@@ -22,7 +22,7 @@
     --text3: #4a5380;
     --safe-top: env(safe-area-inset-top, 0px);
     --safe-bottom: env(safe-area-inset-bottom, 0px);
-    --return-sec: 5; /* 自動待機画面復帰秒数 */
+    --return-sec: 5;
   }
 
   * { margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
@@ -37,7 +37,6 @@
     flex-direction: column;
   }
 
-  /* ── 画面共通 ── */
   .screen {
     position: absolute;
     inset: 0;
@@ -54,7 +53,6 @@
     transform: scale(0.97);
   }
 
-  /* ── 待機画面 ── */
   #screen-wait {
     background: var(--bg);
     gap: 32px;
@@ -84,7 +82,6 @@
     line-height: 1.7;
   }
 
-  /* NFC リング */
   .nfc-ring-wrap {
     position: relative;
     width: 180px;
@@ -123,7 +120,6 @@
     letter-spacing: 0.06em;
   }
 
-  /* Android NFC ボタン */
   .nfc-start-btn {
     padding: 14px 36px;
     background: rgba(79,255,176,0.12);
@@ -136,12 +132,11 @@
     cursor: pointer;
     letter-spacing: 0.04em;
     transition: all 0.2s;
-    display: none; /* Android のみ表示 */
+    display: none;
   }
   .nfc-start-btn:hover { background: rgba(79,255,176,0.2); }
   .nfc-start-btn.active { background: rgba(79,255,176,0.25); border-color: var(--accent); }
 
-  /* ── 成功画面 ── */
   #screen-success {
     background: var(--bg);
     gap: 28px;
@@ -206,7 +201,6 @@
     animation: slide-up 0.4s 0.35s ease both;
   }
 
-  /* タイマーバー */
   .timer-bar-wrap {
     width: 100%;
     max-width: 320px;
@@ -250,7 +244,6 @@
   }
   .back-btn:hover { border-color: var(--accent); color: var(--accent); }
 
-  /* ── エラー画面 ── */
   #screen-error {
     background: var(--bg);
     gap: 24px;
@@ -269,7 +262,6 @@
     line-height: 1.7;
   }
 
-  /* ── 重複画面 ── */
   #screen-duplicate {
     background: var(--bg);
     gap: 24px;
@@ -288,7 +280,6 @@
     line-height: 1.7;
   }
 
-  /* ── 設定パネル ── */
   #settings-panel {
     position: fixed;
     bottom: 0; left: 0; right: 0;
@@ -347,7 +338,46 @@
     text-align: center;
   }
 
-  /* ── 右上メニューボタン ── */
+  /* トグルスイッチ */
+  .toggle-switch {
+    position: relative;
+    width: 44px;
+    height: 24px;
+  }
+  .toggle-switch input {
+    opacity: 0;
+    width: 0;
+    height: 0;
+  }
+  .toggle-slider {
+    position: absolute;
+    cursor: pointer;
+    inset: 0;
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: 24px;
+    transition: 0.3s;
+  }
+  .toggle-slider:before {
+    position: absolute;
+    content: "";
+    height: 16px;
+    width: 16px;
+    left: 3px;
+    bottom: 3px;
+    background: var(--text3);
+    border-radius: 50%;
+    transition: 0.3s;
+  }
+  .toggle-switch input:checked + .toggle-slider {
+    background: rgba(79,255,176,0.2);
+    border-color: var(--accent);
+  }
+  .toggle-switch input:checked + .toggle-slider:before {
+    transform: translateX(20px);
+    background: var(--accent);
+  }
+
   #menu-btn {
     position: fixed;
     top: calc(var(--safe-top) + 12px);
@@ -365,7 +395,6 @@
   }
   #menu-btn:hover { border-color: var(--accent); color: var(--accent); }
 
-  /* ── HOME リンク ── */
   #home-link {
     position: fixed;
     top: calc(var(--safe-top) + 12px);
@@ -383,7 +412,6 @@
   }
   #home-link:hover { color: var(--accent); border-color: var(--accent); }
 
-  /* オーバーレイ */
   #overlay {
     position: fixed; inset: 0;
     background: rgba(0,0,0,0.5);
@@ -410,7 +438,6 @@
   </div>
   <div class="wait-sub" id="wait-sub-text">NFCカードをかざしてください</div>
   <div class="nfc-state-label" id="nfc-state-label">待機中...</div>
-  <!-- Android Chrome 用：タップで NFC スキャン開始 -->
   <button class="nfc-start-btn" id="nfc-start-btn" onclick="startWebNfc()">
     📡 カードをスキャン
   </button>
@@ -470,6 +497,16 @@
     </div>
   </div>
 
+  <div class="setting-row">
+    <span class="setting-label">参加人数を非表示</span>
+    <div class="setting-control">
+      <label class="toggle-switch">
+        <input type="checkbox" id="hideCountToggle" onchange="saveHideCount()">
+        <span class="toggle-slider"></span>
+      </label>
+    </div>
+  </div>
+
   <div class="setting-row" id="nfc-mode-row" style="display:none;">
     <span class="setting-label">NFC スキャンモード</span>
     <div class="setting-control">
@@ -483,29 +520,23 @@
 </div>
 
 <script>
-// ─────────────────────────────────────────
-// 設定
-// ─────────────────────────────────────────
 const GAS_URL = 'https://script.google.com/macros/s/AKfycbyVH4yXtC0PsG4gwbWITAnsMFUdwvMSij2hNsZ9z4bfRTRS0RxHzqvZZeaN3AVIEOte/exec';
 const DEFAULT_CLASS = '通常';
 
 let returnSec = parseInt(localStorage.getItem('kiosk_return_sec') || '5');
+let hideCount = localStorage.getItem('kiosk_hide_count') === 'true';
 let returnTimer = null;
 let members = [];
 let nfcReader = null;
 let isWebNfc = 'NDEFReader' in window;
-alert('Web NFC: ' + isWebNfc);  
-let pendingNfcId = null; // メンバー読み込み前に届いたNFC ID
-let lastPollTs = 0;       // 最後に処理したタイムスタンプ
+let pendingNfcId = null;
+let lastPollTs = 0;
 const LOCAL_PORT = 9876;
 
-// ─────────────────────────────────────────
-// 初期化
-// ─────────────────────────────────────────
 document.getElementById('sec-display').textContent = returnSec;
+document.getElementById('hideCountToggle').checked = hideCount;
 updateTimerLabels();
 
-// Android Web NFC ボタン表示制御
 if (isWebNfc) {
   document.getElementById('nfc-start-btn').style.display = '';
   document.getElementById('nfc-mode-row').style.display = '';
@@ -516,15 +547,9 @@ if (isWebNfc) {
   document.getElementById('nfc-mode-label').textContent = 'URLパラメータ (Mac)';
 }
 
-// URLパラメータを先にチェック（pendingNfcIdにセット）
 checkUrlParam();
-
-// メンバー読み込み（完了後にpendingNfcIdがあれば処理）
 loadMembers();
 
-// ─────────────────────────────────────────
-// JSONP
-// ─────────────────────────────────────────
 function jsonpFetch(url) {
   return new Promise((resolve, reject) => {
     const cbName = '_cb_' + Date.now() + '_' + Math.random().toString(36).slice(2,7);
@@ -545,30 +570,23 @@ function jsonpFetch(url) {
   });
 }
 
-// ─────────────────────────────────────────
-// メンバー読み込み
-// ─────────────────────────────────────────
 async function loadMembers() {
   try {
     const data = await jsonpFetch(GAS_URL + '?action=getMembers');
     if (data && data.members) members = data.members;
-    document.getElementById('nfc-state-label').textContent = `準備完了 (${members.length}名登録)`;
-    // 読み込み前に届いていたNFC IDがあれば処理する
+    document.getElementById('nfc-state-label').textContent =
+      hideCount ? '準備完了' : `準備完了 (${members.length}名登録)`;
     if (pendingNfcId) {
       const id = pendingNfcId;
       pendingNfcId = null;
       processNfcId(id);
     }
-    // ローカルサーバーのポーリング開始
     startPolling();
   } catch(e) {
     document.getElementById('nfc-state-label').textContent = '⚠ メンバー読み込み失敗';
   }
 }
 
-// ─────────────────────────────────────────
-// ローカルサーバーポーリング（Mac用）
-// ─────────────────────────────────────────
 function startPolling() {
   setInterval(async () => {
     try {
@@ -578,23 +596,16 @@ function startPolling() {
         lastPollTs = data.ts;
         processNfcId(data.id);
       }
-    } catch(e) {
-      // ローカルサーバー未起動の場合は無視
-    }
+    } catch(e) {}
   }, 500);
 }
 
-// ─────────────────────────────────────────
-// URLパラメータ処理（Mac用）
-// Pythonスクリプトから kiosk.html?nfcId=NFC007 で呼び出す
-// ─────────────────────────────────────────
 function checkUrlParam() {
   const params = new URLSearchParams(window.location.search);
   const nfcId = params.get('nfcId') || params.get('uid') || params.get('id');
   if (nfcId) {
     history.replaceState({}, '', window.location.pathname);
     if (members.length === 0) {
-      // まだメンバー未読み込み → 保留してloadMembers完了後に処理
       pendingNfcId = nfcId;
       document.getElementById('nfc-state-label').textContent = 'メンバー読み込み中...';
     } else {
@@ -603,15 +614,10 @@ function checkUrlParam() {
   }
 }
 
-// ─────────────────────────────────────────
-// Web NFC (Android Chrome)
-// ─────────────────────────────────────────
 async function startWebNfc() {
   if (!isWebNfc) return;
   const btn = document.getElementById('nfc-start-btn');
   try {
-    alert('NFC開始します');
-
     if (nfcReader) {
       nfcReader.onreading = null;
       nfcReader = null;
@@ -649,23 +655,15 @@ async function startWebNfc() {
   }
 }
 
-// ─────────────────────────────────────────
-// NFC ID処理メイン（Mac: nfcId、Android: serialNumber両対応）
-// ─────────────────────────────────────────
 async function processNfcId(nfcId) {
   if (navigator.vibrate) navigator.vibrate([40, 20, 40]);
-
-  // nfcId（NFC007等）またはUID（535C78D1等）どちらでも照合
   const member = members.find(m =>
-    (m.nfcId && m.nfcId.toUpperCase() === nfcId.toUpperCase())
+    m.nfcId && m.nfcId.toUpperCase() === nfcId.toUpperCase()
   );
-
   if (!member) {
     showError(nfcId);
     return;
   }
-
-  // GASに出席登録
   try {
     const res = await jsonpFetch(GAS_URL
       + '?action=recordAttendance'
@@ -680,14 +678,10 @@ async function processNfcId(nfcId) {
       showSuccess(member);
     }
   } catch(e) {
-    // 通信失敗でも表示だけする（オフライン許容）
     showSuccess(member, true);
   }
 }
 
-// ─────────────────────────────────────────
-// 画面切り替え
-// ─────────────────────────────────────────
 function showScreen(id) {
   clearReturnTimer();
   ['screen-wait','screen-success','screen-duplicate','screen-error'].forEach(s => {
@@ -713,7 +707,7 @@ function showDuplicate(member) {
 
 function showError(uid) {
   document.getElementById('error-msg').textContent =
-    `このカードはシステムに登録されていません。\n先生に声をかけてください。\n(UID: ${uid})`;
+    'このカードはシステムに登録されていません。\n先生に声をかけてください。\n(UID: ' + uid + ')';
   showScreen('screen-error');
   startReturnTimer('err-timer-bar', 'err-timer-label');
 }
@@ -721,7 +715,6 @@ function showError(uid) {
 function goWait() {
   clearReturnTimer();
   showScreen('screen-wait');
-  // タイマーバーをリセット
   ['timer-bar','dup-timer-bar','err-timer-bar'].forEach(id => {
     const el = document.getElementById(id);
     el.classList.remove('running');
@@ -729,9 +722,6 @@ function goWait() {
   });
 }
 
-// ─────────────────────────────────────────
-// 自動復帰タイマー
-// ─────────────────────────────────────────
 function startReturnTimer(barId, labelId) {
   clearReturnTimer();
   const bar = document.getElementById(barId);
@@ -739,24 +729,19 @@ function startReturnTimer(barId, labelId) {
   bar.style.transition = 'none';
   bar.style.width = '100%';
   const sec = returnSec;
-  label.textContent = `${sec}秒後に自動で戻ります`;
-
-  // アニメーション開始
+  label.textContent = sec + '秒後に自動で戻ります';
   requestAnimationFrame(() => {
     requestAnimationFrame(() => {
       bar.classList.add('running');
-      bar.style.transition = `width ${sec}s linear`;
+      bar.style.transition = 'width ' + sec + 's linear';
       bar.style.width = '0%';
     });
   });
-
   let remaining = sec;
   returnTimer = setInterval(() => {
     remaining--;
-    label.textContent = `${remaining}秒後に自動で戻ります`;
-    if (remaining <= 0) {
-      goWait();
-    }
+    label.textContent = remaining + '秒後に自動で戻ります';
+    if (remaining <= 0) goWait();
   }, 1000);
 }
 
@@ -764,13 +749,12 @@ function clearReturnTimer() {
   if (returnTimer) { clearInterval(returnTimer); returnTimer = null; }
 }
 
-// ─────────────────────────────────────────
-// 設定
-// ─────────────────────────────────────────
 function toggleSettings() {
+  document.getElementById('hideCountToggle').checked = hideCount;
   document.getElementById('settings-panel').classList.toggle('open');
   document.getElementById('overlay').classList.toggle('show');
 }
+
 function closeSettings() {
   document.getElementById('settings-panel').classList.remove('open');
   document.getElementById('overlay').classList.remove('show');
@@ -786,14 +770,19 @@ function changeReturnSec(delta) {
 function updateTimerLabels() {
   ['timer-label','dup-timer-label','err-timer-label'].forEach(id => {
     const el = document.getElementById(id);
-    if (el) el.textContent = `${returnSec}秒後に自動で戻ります`;
+    if (el) el.textContent = returnSec + '秒後に自動で戻ります';
   });
 }
 
-// ─────────────────────────────────────────
-// Mac用：ページフォーカス時にURLパラメータ再チェック
-// Pythonスクリプトが kiosk.html?uid=XXXXXX を開く想定
-// ─────────────────────────────────────────
+function saveHideCount() {
+  hideCount = document.getElementById('hideCountToggle').checked;
+  localStorage.setItem('kiosk_hide_count', hideCount);
+  if (members.length > 0) {
+    document.getElementById('nfc-state-label').textContent =
+      hideCount ? '準備完了' : '準備完了 (' + members.length + '名登録)';
+  }
+}
+
 window.addEventListener('focus', checkUrlParam);
 </script>
 </body>
