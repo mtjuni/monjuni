@@ -273,10 +273,10 @@ function renderRunners() {
     const isNext  = i === 0;
     return `
       <div class="runner-item started ${isNext ? 'next' : ''}">
-        <span class="runner-num">${isNext ? '▶' : i+1}</span>
+        <span class="runner-num">${i+1}</span>
         <div class="runner-info">
-          <div class="runner-name">${q.athleteName}</div>
-          <div class="runner-event">${q.event || ''} · ${q.startTime ? formatTime((Date.now() - Number(q.startTime)) / 1000) : '--'}</div>
+          <div class="runner-name">${isNext ? '▶ ' : ''}${q.athleteName}</div>
+          <div class="runner-event">${q.event || ''}</div>
         </div>
         <span class="runner-timer" id="${uniqueId}">${elapsed}</span>
       </div>
@@ -295,7 +295,7 @@ function updateNextGoal() {
   }
 }
 
-// タイマー更新
+// タイマー更新（100msごとにDOM直接更新）
 timerInterval = setInterval(() => {
   const started = queue.filter(q => q.status === 'started');
   if (!started.length) return;
@@ -309,13 +309,14 @@ timerInterval = setInterval(() => {
 
   // 各ランナーのタイマー（一意IDで更新）
   started.forEach((q, i) => {
+    if (!q.startTime) return;
     const uniqueId = `rt-${q.athleteId}-${q.startTime || i}`;
     const el = document.getElementById(uniqueId);
-    if (el && q.startTime) {
+    if (el) {
       el.textContent = formatTime((Date.now() - Number(q.startTime)) / 1000);
     }
   });
-}, 50);
+}, 100);
 
 // カメラ起動
 btnCamera.addEventListener('click', async () => {
@@ -362,20 +363,20 @@ function goalDetected() {
   const nextIdx = queue.findIndex(q => q.status === 'started');
   if (nextIdx === -1) return;
 
-  // スタートから最低2秒間はゴール検知しない（誤検知防止）
   const runner = queue[nextIdx];
+
+  // スタートから最低3秒間はゴール検知しない（誤検知防止）
   if (runner.startTime) {
-    const elapsed = (Date.now() - Number(runner.startTime)) / 1000;
-    if (elapsed < 2.0) return;
+    const sinceStart = (Date.now() - Number(runner.startTime)) / 1000;
+    if (sinceStart < 3.0) return;
   }
 
-  const runner   = queue[nextIdx];
   const goalTime = Date.now();
   const elapsed  = (goalTime - Number(runner.startTime)) / 1000;
 
-  // クールダウン（1秒間は次の検知をしない）
+  // クールダウン（2秒間は次の検知をしない）
   goalCooldown = true;
-  setTimeout(() => { goalCooldown = false; }, 1500);
+  setTimeout(() => { goalCooldown = false; }, 2000);
 
   // フラッシュ
   resultFlash.classList.add('show');
