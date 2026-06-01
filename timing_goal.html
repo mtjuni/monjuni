@@ -267,16 +267,18 @@ function renderRunners() {
   }
 
   runnerList.innerHTML = started.map((q, i) => {
-    const elapsed = q.startTime ? formatTime((Date.now() - q.startTime) / 1000) : '00.00';
+    // 一意なIDとして athleteId + startTime を使う（noone重複対策）
+    const uniqueId = `rt-${q.athleteId}-${q.startTime || i}`;
+    const elapsed = q.startTime ? formatTime((Date.now() - Number(q.startTime)) / 1000) : '00.00';
     const isNext  = i === 0;
     return `
       <div class="runner-item started ${isNext ? 'next' : ''}">
         <span class="runner-num">${isNext ? '▶' : i+1}</span>
         <div class="runner-info">
           <div class="runner-name">${q.athleteName}</div>
-          <div class="runner-event">${q.event || ''}</div>
+          <div class="runner-event">${q.event || ''} · ${q.startTime ? formatTime((Date.now() - Number(q.startTime)) / 1000) : '--'}</div>
         </div>
-        <span class="runner-timer" id="rt-${q.athleteId}">${elapsed}</span>
+        <span class="runner-timer" id="${uniqueId}">${elapsed}</span>
       </div>
     `;
   }).join('');
@@ -301,15 +303,16 @@ timerInterval = setInterval(() => {
   // 次のゴール大タイマー
   const next = started[0];
   if (next?.startTime) {
-    const elapsed = (Date.now() - next.startTime) / 1000;
+    const elapsed = (Date.now() - Number(next.startTime)) / 1000;
     nextGoalTimer.textContent = formatTime(elapsed);
   }
 
-  // 各ランナーのタイマー
-  started.forEach(q => {
-    const el = document.getElementById(`rt-${q.athleteId}`);
+  // 各ランナーのタイマー（一意IDで更新）
+  started.forEach((q, i) => {
+    const uniqueId = `rt-${q.athleteId}-${q.startTime || i}`;
+    const el = document.getElementById(uniqueId);
     if (el && q.startTime) {
-      el.textContent = formatTime((Date.now() - q.startTime) / 1000);
+      el.textContent = formatTime((Date.now() - Number(q.startTime)) / 1000);
     }
   });
 }, 50);
@@ -359,9 +362,16 @@ function goalDetected() {
   const nextIdx = queue.findIndex(q => q.status === 'started');
   if (nextIdx === -1) return;
 
+  // スタートから最低2秒間はゴール検知しない（誤検知防止）
+  const runner = queue[nextIdx];
+  if (runner.startTime) {
+    const elapsed = (Date.now() - Number(runner.startTime)) / 1000;
+    if (elapsed < 2.0) return;
+  }
+
   const runner   = queue[nextIdx];
   const goalTime = Date.now();
-  const elapsed  = (goalTime - runner.startTime) / 1000;
+  const elapsed  = (goalTime - Number(runner.startTime)) / 1000;
 
   // クールダウン（1秒間は次の検知をしない）
   goalCooldown = true;
@@ -381,7 +391,7 @@ btnManualGoal.addEventListener('click', () => {
   if (nextIdx === -1) { alert('計測中の走者がいません'); return; }
   const runner   = queue[nextIdx];
   const goalTime = Date.now();
-  const elapsed  = (goalTime - runner.startTime) / 1000;
+  const elapsed  = (goalTime - Number(runner.startTime)) / 1000;
   recordGoal(runner, elapsed, goalTime);
 });
 
