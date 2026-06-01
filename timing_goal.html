@@ -110,6 +110,21 @@
     .next-goal-timer { font-size: 3rem; }
   }
   canvas{display:none;}
+
+  /* 手動ゴールボタン（大きく） */
+  .btn-manual-goal-big{
+    width:100%;max-width:480px;
+    padding:24px 20px;
+    border-radius:14px;border:none;
+    font-family:var(--timer-font);font-size:2.4rem;letter-spacing:4px;
+    background:var(--accent2);color:#fff;
+    cursor:pointer;transition:all 0.15s;
+    box-shadow:0 0 20px rgba(255,51,102,0.3);
+    line-height:1.2;
+    margin-bottom:8px;
+  }
+  .btn-manual-goal-big:active{transform:scale(0.96);filter:brightness(1.2);}
+  .btn-manual-goal-big:disabled{opacity:0.3;cursor:not-allowed;}
 </style>
 </head>
 <body>
@@ -164,10 +179,15 @@
     <span id="sens-val">30</span>
   </div>
 
-  <!-- ボタン -->
+  <!-- 手動ゴールボタン（大きく・押しやすく） -->
+  <button class="btn-manual-goal-big" id="btn-manual-goal">
+    ⏱ STOP<br><span style="font-size:0.8rem;letter-spacing:2px;">手動ゴール</span>
+  </button>
+
+  <!-- カメラボタン行 -->
   <div class="btn-row">
     <button class="btn-sm btn-primary" id="btn-camera">📷 カメラ起動</button>
-    <button class="btn-sm btn-danger" id="btn-manual-goal">手動ゴール</button>
+    <button class="btn-sm btn-ghost" id="btn-camera-stop" style="display:none;">⏹ カメラ停止</button>
   </div>
 
   <!-- 本日の記録 -->
@@ -319,6 +339,8 @@ timerInterval = setInterval(() => {
 }, 100);
 
 // カメラ起動
+const btnCameraStop = document.getElementById('btn-camera-stop');
+
 btnCamera.addEventListener('click', async () => {
   try {
     const stream = await navigator.mediaDevices.getUserMedia({
@@ -334,7 +356,23 @@ btnCamera.addEventListener('click', async () => {
       startDetection();
     };
     btnCamera.style.display = 'none';
+    btnCameraStop.style.display = '';
   } catch(e) { alert('カメラエラー: ' + e.message); }
+});
+
+// カメラ停止
+btnCameraStop.addEventListener('click', () => {
+  if (video.srcObject) {
+    video.srcObject.getTracks().forEach(t => t.stop());
+    video.srcObject = null;
+  }
+  clearInterval(detectInterval);
+  detectInterval = null;
+  cameraReady = false;
+  cameraOverlay.classList.remove('hidden');
+  detectLine.style.display = 'none';
+  btnCamera.style.display = '';
+  btnCameraStop.style.display = 'none';
 });
 
 // ライン検知
@@ -386,10 +424,14 @@ function goalDetected() {
   recordGoal(runner, elapsed, goalTime);
 }
 
-// 手動ゴール
+// 手動ゴール（連続タップ対応・クールダウンなし）
+let manualCooldown = false;
 btnManualGoal.addEventListener('click', () => {
+  if (manualCooldown) return;
   const nextIdx = queue.findIndex(q => q.status === 'started');
-  if (nextIdx === -1) { alert('計測中の走者がいません'); return; }
+  if (nextIdx === -1) { return; }
+  manualCooldown = true;
+  setTimeout(() => { manualCooldown = false; }, 500); // 0.5秒クールダウン
   const runner   = queue[nextIdx];
   const goalTime = Date.now();
   const elapsed  = (goalTime - Number(runner.startTime)) / 1000;
