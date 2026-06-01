@@ -236,7 +236,18 @@ onValue(queueRef, (snapshot) => {
   connLabel.textContent = '接続済';
 
   const data = snapshot.val();
-  queue = data ? (Array.isArray(data) ? data : Object.values(data)) : [];
+  if (!data) {
+    queue = [];
+  } else if (Array.isArray(data)) {
+    queue = data.filter(item => item && item.id);
+  } else {
+    // Start App のオブジェクト形式 {item_0: {...}, item_1: {...}}
+    queue = Object.values(data).filter(item => item && item.id);
+    // startTime が数値であることを保証
+    queue.forEach(item => {
+      if (item.startTime) item.startTime = Number(item.startTime);
+    });
+  }
   renderRunners();
   updateNextGoal();
 }, () => {
@@ -386,12 +397,14 @@ function recordGoal(runner, elapsed, goalTime) {
   });
   fetch(`${TIMING_GAS}?${params}&callback=cb`, { mode:'no-cors' }).catch(() => {});
 
-  // Firebaseのキューを更新
+  // Firebaseのキューを更新（Start Appと同じオブジェクト形式）
   const updatedQueue = [...queue];
   updatedQueue[queue.findIndex(q => q.athleteId === runner.athleteId && q.status === 'started')] = {
     ...runner, status:'finished', elapsedSec: elapsed
   };
-  set(ref(db, 'timing/queue'), updatedQueue);
+  const queueMap = {};
+  updatedQueue.forEach((item, idx) => { queueMap[`item_${idx}`] = item; });
+  set(ref(db, 'timing/queue'), queueMap);
 
   // lastFinishedに通知（スタート側・コントローラーに伝える）
   set(ref(db, 'timing/lastFinished'), {
