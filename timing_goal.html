@@ -276,32 +276,63 @@ onValue(queueRef, (snapshot) => {
   connLabel.textContent = '接続エラー';
 });
 
+// ゴール済みリスト（ローカル保持）
+let finishedList = [];
+
 // ランナー描画
 function renderRunners() {
   const started = queue.filter(q => q.status === 'started');
-  runningCount.textContent = `走者: ${started.length}人`;
+  document.getElementById('running-count').textContent = `計測中: ${started.length}人`;
 
-  if (!started.length) {
+  // 待機走者数を Firebase から受け取る（別で処理）
+  let html = '';
+
+  if (!started.length && !finishedList.length) {
     runnerList.innerHTML = '<div style="color:var(--text-dim);font-size:0.8rem;padding:6px;">走者なし</div>';
     return;
   }
 
-  runnerList.innerHTML = started.map((q, i) => {
-    // 一意なIDとして athleteId + startTime を使う（noone重複対策）
+  // 計測中（上に表示）
+  html += started.map((q, i) => {
     const uniqueId = `rt-${q.athleteId}-${q.startTime || i}`;
     const elapsed = q.startTime ? formatTime((Date.now() - Number(q.startTime)) / 1000) : '00.00';
-    const isNext  = i === 0;
     return `
-      <div class="runner-item started ${isNext ? 'next' : ''}">
+      <div class="runner-item started ${i === 0 ? 'next' : ''}">
         <span class="runner-num">${i+1}</span>
         <div class="runner-info">
-          <div class="runner-name">${isNext ? '▶ ' : ''}${q.athleteName}</div>
+          <div class="runner-name">${i === 0 ? '▶ ' : ''}${q.athleteName}</div>
           <div class="runner-event">${q.event || ''}</div>
         </div>
         <span class="runner-timer" id="${uniqueId}">${elapsed}</span>
-      </div>
-    `;
+      </div>`;
   }).join('');
+
+  // 区切り線
+  if (started.length && finishedList.length) {
+    html += '<div style="border-top:1px solid var(--border);margin:8px 0;"></div>';
+  }
+
+  // ゴール済み（下に表示・削除ボタン付き）
+  html += finishedList.map((f, i) => `
+    <div class="runner-item finished" style="opacity:0.7;">
+      <span class="runner-num" style="color:var(--accent);">✓</span>
+      <div class="runner-info">
+        <div class="runner-name">${f.athleteName}</div>
+        <div class="runner-event">${f.event || ''}</div>
+      </div>
+      <span class="runner-timer" style="color:var(--accent);">${formatTime(f.elapsedSec)}</span>
+      <button onclick="removeFinished(${i})" style="
+        background:none;border:none;color:var(--accent2);
+        font-size:1rem;cursor:pointer;padding:4px 8px;margin-left:4px;">✕</button>
+    </div>`).join('');
+
+  runnerList.innerHTML = html;
+}
+
+// ゴール済みを削除
+function removeFinished(idx) {
+  finishedList.splice(idx, 1);
+  renderRunners();
 }
 
 // 次のゴール表示更新
