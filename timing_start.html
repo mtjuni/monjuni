@@ -807,7 +807,20 @@ function formatTime(sec) {
   return `${String(s).padStart(2,'0')}.${String(ms).padStart(2,'0')}`;
 }
 
-sensitivity.addEventListener('input', () => { sensVal.textContent = sensitivity.value; });
+sensitivity.addEventListener('input', () => {
+  sensVal.textContent = sensitivity.value;
+  // Firebase に感度を同期
+  set(ref(db, 'timing/settings/sensitivity'), parseInt(sensitivity.value));
+});
+
+// Firebase から感度を読み込み（初期化時）
+onValue(ref(db, 'timing/settings/sensitivity'), (snapshot) => {
+  const val = snapshot.val();
+  if (val !== null) {
+    sensitivity.value = val;
+    sensVal.textContent = val;
+  }
+});
 
 // キュータイマー更新
 setInterval(() => { if (queue.some(q => q.status === 'started')) renderQueue(); }, 100);
