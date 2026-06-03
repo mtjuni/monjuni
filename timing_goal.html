@@ -200,6 +200,11 @@
 
 </div>
 
+<script>
+// サーバー補正済みの現在時刻（グローバルスコープ）
+let serverTimeOffset = 0;
+function serverNow() { return Date.now() + serverTimeOffset; }
+</script>
 <script type="module">
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
 import { getDatabase, ref, onValue, set, get } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-database.js";
