@@ -301,7 +301,7 @@ function renderRunners() {
   // 計測中（上に表示）
   html += started.map((q, i) => {
     const uniqueId = `rt-${q.athleteId}-${q.startTime || i}`;
-    const elapsed = q.startTime ? formatTime((Date.now() - Number(q.startTime)) / 1000) : '00.00';
+    const elapsed = q.startTime ? formatTime((serverNow() - Number(q.startTime)) / 1000) : '00.00';
     return `
       <div class="runner-item started ${i === 0 ? 'next' : ''}">
         <span class="runner-num">${i+1}</span>
@@ -360,7 +360,7 @@ timerInterval = setInterval(() => {
   // 次のゴール大タイマー
   const next = started[0];
   if (next?.startTime) {
-    const elapsed = (Date.now() - Number(next.startTime)) / 1000;
+    const elapsed = (serverNow() - Number(next.startTime)) / 1000;
     nextGoalTimer.textContent = formatTime(elapsed);
   }
 
@@ -370,7 +370,7 @@ timerInterval = setInterval(() => {
     const uniqueId = `rt-${q.athleteId}-${q.startTime || i}`;
     const el = document.getElementById(uniqueId);
     if (el) {
-      el.textContent = formatTime((Date.now() - Number(q.startTime)) / 1000);
+      el.textContent = formatTime((serverNow() - Number(q.startTime)) / 1000);
     }
   });
 }, 100);
