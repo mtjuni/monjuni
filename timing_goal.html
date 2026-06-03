@@ -263,11 +263,17 @@ onValue(queueRef, (snapshot) => {
   } else {
     // Start App のオブジェクト形式 {item_0: {...}, item_1: {...}}
     queue = Object.values(data).filter(item => item && item.id);
-    // startTime が数値であることを保証
-    queue.forEach(item => {
-      if (item.startTime) item.startTime = Number(item.startTime);
-    });
   }
+  // startTime を必ず数値に変換
+  queue.forEach(item => {
+    item.startTime = item.startTime ? Number(item.startTime) : 0;
+  });
+  console.log('[Goal] queue updated:', queue.map(q => ({
+    name: q.athleteName,
+    status: q.status,
+    startTime: q.startTime,
+    sinceStart: q.startTime ? ((Date.now() - q.startTime)/1000).toFixed(1)+'s' : 'none'
+  })));
   renderRunners();
   updateNextGoal();
 }, () => {
