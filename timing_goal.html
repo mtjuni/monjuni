@@ -441,24 +441,25 @@ function startDetection() {
 
 // ゴール検知
 function goalDetected() {
-  // 追い越しなし前提：最初にstartedになった選手がゴール
   const nextIdx = queue.findIndex(q => q.status === 'started');
   if (nextIdx === -1) return;
 
   const runner = queue[nextIdx];
 
-  // スタートから最低3秒間はゴール検知しない（誤検知防止）
-  if (runner.startTime) {
-    const sinceStart = (Date.now() - Number(runner.startTime)) / 1000;
-    if (sinceStart < 3.0) return;
-  }
+  // startTime が 0 または未設定なら検知しない
+  const startTime = Number(runner.startTime);
+  if (!startTime || startTime === 0) return;
 
-  const goalTime = Date.now();
-  const elapsed  = (goalTime - Number(runner.startTime)) / 1000;
+  // スタートから最低1秒は検知しない
+  const sinceStart = (serverNow() - startTime) / 1000;
+  if (sinceStart < 1.0) return;
 
-  // クールダウン（2秒間は次の検知をしない）
+  const goalTime = serverNow();
+  const elapsed  = (goalTime - startTime) / 1000;
+
+  // クールダウン（1.5秒間は次の検知をしない）
   goalCooldown = true;
-  setTimeout(() => { goalCooldown = false; }, 2000);
+  setTimeout(() => { goalCooldown = false; }, 1500);
 
   // フラッシュ
   resultFlash.classList.add('show');
@@ -477,8 +478,9 @@ btnManualGoal.addEventListener('click', () => {
   manualCooldown = true;
   setTimeout(() => { manualCooldown = false; }, 500); // 0.5秒クールダウン
   const runner   = queue[nextIdx];
-  const goalTime = Date.now();
-  const elapsed  = (goalTime - Number(runner.startTime)) / 1000;
+  const startTime = Number(runner.startTime);
+  const goalTime = serverNow();
+  const elapsed  = startTime ? (goalTime - startTime) / 1000 : 0;
   recordGoal(runner, elapsed, goalTime);
 });
 
