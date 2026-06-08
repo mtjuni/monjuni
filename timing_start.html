@@ -17,97 +17,108 @@
   body::before{content:'';position:fixed;inset:0;pointer-events:none;
     background-image:linear-gradient(rgba(0,255,136,0.03) 1px,transparent 1px),linear-gradient(90deg,rgba(0,255,136,0.03) 1px,transparent 1px);
     background-size:40px 40px;}
+
+  /* ヘッダー */
   .header{display:flex;align-items:center;justify-content:space-between;padding:10px 16px;
     border-bottom:1px solid var(--border);background:var(--surface);position:sticky;top:0;z-index:10;}
   .header-title{font-family:var(--timer-font);font-size:1.3rem;letter-spacing:4px;color:var(--accent);}
+  .header-right{display:flex;align-items:center;gap:10px;}
   .status-badge{padding:3px 10px;border-radius:20px;font-size:0.65rem;font-weight:700;
     letter-spacing:2px;text-transform:uppercase;border:1px solid currentColor;}
-  .status-badge.waiting{color:var(--text-dim);border-color:var(--border);}
-  .status-badge.confirm{color:var(--warn);animation:pulse 1s infinite;}
-  .status-badge.ready{color:var(--accent);animation:pulse 0.8s infinite;}
-  .status-badge.running{color:var(--accent);animation:pulse 0.4s infinite;}
-  .status-badge.error{color:var(--accent2);}
+  .status-badge.stop{color:var(--text-dim);border-color:var(--border);}
+  .status-badge.running{color:var(--accent);animation:pulse 0.6s infinite;}
+  .status-badge.ready{color:var(--warn);}
   @keyframes pulse{0%,100%{opacity:1;}50%{opacity:0.3;}}
-  .conn-wrap{display:flex;align-items:center;gap:6px;font-size:0.7rem;color:var(--text-dim);}
+  .conn-wrap{display:flex;align-items:center;gap:5px;font-size:0.7rem;color:var(--text-dim);}
   .conn-dot{width:7px;height:7px;border-radius:50%;background:var(--text-dim);}
   .conn-dot.ok{background:var(--accent);box-shadow:0 0 5px var(--accent);}
   .conn-dot.err{background:var(--accent2);}
+
   .main{display:flex;flex-direction:column;align-items:center;padding:12px;gap:10px;}
 
-  /* キュー表示 */
-  .queue-panel{width:100%;max-width:440px;background:var(--surface);border:1px solid var(--border);
-    border-radius:10px;padding:12px 16px;}
-  .queue-title{font-size:0.6rem;letter-spacing:3px;color:var(--text-dim);text-transform:uppercase;margin-bottom:8px;}
+  /* パネル共通 */
+  .panel{width:100%;max-width:480px;background:var(--surface);border:1px solid var(--border);
+    border-radius:10px;padding:14px 16px;}
+  .panel-title{font-size:0.6rem;letter-spacing:3px;color:var(--text-dim);text-transform:uppercase;margin-bottom:10px;}
+
+  /* ステータスバー（待機/計測中人数） */
+  .count-bar{width:100%;max-width:480px;display:flex;gap:8px;}
+  .count-card{flex:1;background:var(--surface);border:1px solid var(--border);border-radius:10px;
+    padding:10px 14px;text-align:center;}
+  .count-card.waiting-card{border-color:var(--border);}
+  .count-card.running-card{border-color:var(--warn);}
+  .count-num{font-family:var(--timer-font);font-size:2rem;color:var(--warn);line-height:1;}
+  .count-card.waiting-card .count-num{color:var(--text-dim);}
+  .count-label{font-size:0.6rem;color:var(--text-dim);letter-spacing:2px;margin-top:2px;}
+
+  /* キュー */
   .queue-list{display:flex;flex-direction:column;gap:6px;}
   .queue-item{display:flex;align-items:center;gap:10px;padding:8px 12px;
     background:var(--bg);border:1px solid var(--border);border-radius:8px;}
-  .queue-item.active{border-color:var(--accent);background:rgba(0,255,136,0.05);}
-  .queue-item.running{border-color:var(--warn);background:rgba(255,170,0,0.05);}
-  .queue-num{font-family:var(--timer-font);font-size:1.2rem;color:var(--text-dim);width:20px;}
+  .queue-item.started{border-color:var(--warn);background:rgba(255,170,0,0.05);}
+  .queue-num{font-family:var(--timer-font);font-size:1.2rem;color:var(--accent);width:22px;}
   .queue-name{flex:1;font-weight:700;font-size:0.9rem;}
-  .queue-timer{font-family:var(--timer-font);font-size:1rem;color:var(--warn);}
   .queue-status{font-size:0.65rem;color:var(--text-dim);letter-spacing:1px;}
+  .queue-remove{background:transparent;border:none;color:var(--accent2);cursor:pointer;
+    font-size:0.8rem;padding:4px 8px;}
 
-  /* モード選択 */
-  .mode-wrap{width:100%;max-width:440px;}
-  .section-label{font-size:0.6rem;letter-spacing:3px;color:var(--text-dim);text-transform:uppercase;margin-bottom:6px;}
-  .mode-btns{display:flex;gap:6px;flex-wrap:wrap;}
-  .mode-btn{padding:7px 12px;border-radius:8px;border:1px solid var(--border);
-    background:var(--surface);color:var(--text-dim);font-size:0.75rem;cursor:pointer;
-    transition:all 0.2s;font-family:var(--body-font);line-height:1.3;text-align:center;}
+  /* モードボタン */
+  .mode-grid{display:grid;grid-template-columns:1fr 1fr 1fr;gap:6px;}
+  .mode-btn{padding:8px 6px;border-radius:8px;border:1px solid var(--border);
+    background:var(--bg);color:var(--text-dim);font-size:0.72rem;cursor:pointer;
+    transition:all 0.2s;font-family:var(--body-font);line-height:1.4;text-align:center;}
   .mode-btn.selected{border-color:var(--accent);color:var(--accent);background:rgba(0,255,136,0.08);}
 
   /* インターバル */
-  .interval-wrap{width:100%;max-width:440px;display:flex;align-items:center;gap:10px;}
-  .interval-wrap input[type=range]{flex:1;accent-color:var(--warn);}
-  .interval-val{font-family:var(--timer-font);font-size:1.2rem;color:var(--warn);min-width:50px;}
+  .interval-row{display:flex;align-items:center;gap:10px;margin-top:8px;}
+  .interval-row input[type=range]{flex:1;accent-color:var(--warn);}
+  .interval-val{font-family:var(--timer-font);font-size:1.2rem;color:var(--warn);min-width:52px;text-align:right;}
 
-  /* 種目選択 */
-  .event-wrap{width:100%;max-width:440px;}
-  .event-btns{display:flex;gap:6px;flex-wrap:wrap;}
-  .event-btn{padding:7px 14px;border-radius:20px;border:1px solid var(--border);
-    background:var(--surface);color:var(--text-dim);font-size:0.8rem;cursor:pointer;
-    transition:all 0.2s;font-family:var(--body-font);}
-  .event-btn.selected{border-color:var(--accent);color:var(--accent);background:rgba(0,255,136,0.08);}
-  .other-input{width:100%;margin-top:6px;padding:8px 12px;background:var(--surface);
-    color:var(--text);border:1px solid var(--accent);border-radius:8px;
-    font-family:var(--body-font);font-size:0.9rem;outline:none;display:none;}
+  /* 種目 */
+  .event-input{width:100%;padding:9px 12px;background:var(--bg);
+    color:var(--text);border:1px solid var(--border);border-radius:8px;
+    font-family:var(--body-font);font-size:0.9rem;outline:none;margin-top:4px;}
+  .event-input:focus{border-color:var(--accent);}
 
-  /* NFC */
-  .nfc-area{width:100%;max-width:440px;background:var(--surface);border:2px solid var(--border);
-    border-radius:14px;padding:20px;text-align:center;transition:all 0.4s;}
-  .nfc-area.active{border-color:var(--accent);box-shadow:0 0 20px rgba(0,255,136,0.15);}
-  .nfc-area.confirmed{border-color:var(--warn);box-shadow:0 0 20px rgba(255,170,0,0.15);}
-  .nfc-icon{font-size:2.5rem;margin-bottom:8px;display:block;animation:float 3s ease-in-out infinite;}
-  @keyframes float{0%,100%{transform:translateY(0);}50%{transform:translateY(-6px);}}
-  .nfc-label{font-size:0.75rem;color:var(--text-dim);letter-spacing:2px;text-transform:uppercase;margin-bottom:6px;}
-  .nfc-instruction{font-size:0.95rem;color:var(--text);font-weight:700;}
+  /* メンバーリスト */
+  .member-search{width:100%;padding:9px 12px;background:var(--bg);
+    color:var(--text);border:1px solid var(--border);border-radius:8px;
+    font-family:var(--body-font);font-size:0.9rem;outline:none;margin-bottom:8px;}
+  .member-search:focus{border-color:var(--accent);}
+  .member-list{display:flex;flex-direction:column;gap:4px;max-height:220px;overflow-y:auto;}
+  .member-item{display:flex;align-items:center;justify-content:space-between;
+    padding:9px 12px;background:var(--bg);border:1px solid var(--border);
+    border-radius:8px;cursor:pointer;transition:all 0.15s;}
+  .member-item:active{border-color:var(--accent);background:rgba(0,255,136,0.05);}
+  .member-item.in-queue{opacity:0.35;pointer-events:none;}
+  .member-name{font-weight:700;font-size:0.9rem;}
+  .member-meta{font-size:0.7rem;color:var(--text-dim);}
+  .member-add-btn{background:var(--accent);color:#000;border:none;border-radius:6px;
+    padding:5px 12px;font-size:0.75rem;font-weight:700;cursor:pointer;white-space:nowrap;}
+  .member-item.in-queue .member-add-btn{background:var(--border);color:var(--text-dim);}
+  .member-loading{color:var(--text-dim);font-size:0.8rem;padding:12px;text-align:center;}
 
-  /* 選手確認 */
-  .athlete-card{width:100%;max-width:440px;background:var(--surface);border:2px solid var(--warn);
-    border-radius:10px;padding:14px 16px;display:none;}
-  .athlete-card.visible{display:block;}
-  .athlete-card-header{font-size:0.6rem;letter-spacing:3px;color:var(--warn);text-transform:uppercase;margin-bottom:6px;}
-  .athlete-card-name{font-size:1.6rem;font-weight:700;color:var(--text);margin-bottom:3px;}
-  .athlete-card-meta{font-size:0.75rem;color:var(--text-dim);margin-bottom:12px;}
-  .confirm-btns{display:flex;gap:8px;}
-  .btn{flex:1;padding:11px;border-radius:8px;border:none;font-family:var(--body-font);
-    font-size:0.85rem;font-weight:700;cursor:pointer;transition:all 0.2s;}
-  .btn-ok{background:var(--accent);color:#000;}
-  .btn-ng{background:transparent;color:var(--accent2);border:1px solid var(--accent2);}
+  /* 計測スタート/停止ボタン */
+  .measure-row{width:100%;max-width:480px;display:flex;gap:8px;}
+  .btn-start{flex:2;padding:16px;border-radius:10px;border:none;
+    font-family:var(--timer-font);font-size:1.5rem;letter-spacing:3px;
+    background:var(--accent);color:#000;cursor:pointer;transition:all 0.2s;}
+  .btn-start:disabled{opacity:0.3;cursor:not-allowed;}
+  .btn-start.measuring{background:#1a5a3a;color:var(--accent);}
+  .btn-stop{flex:1;padding:16px;border-radius:10px;border:none;
+    font-family:var(--timer-font);font-size:1.2rem;letter-spacing:2px;
+    background:var(--accent2);color:#fff;cursor:pointer;transition:all 0.2s;}
+  .btn-stop:disabled{opacity:0.3;cursor:not-allowed;}
 
-  /* コール音ボタン */
-  .call-btn-wrap{width:100%;max-width:440px;}
-  .btn-call{width:100%;padding:18px;border-radius:10px;border:none;
-    font-family:var(--timer-font);font-size:1.8rem;letter-spacing:5px;
-    background:var(--warn);color:#000;cursor:pointer;transition:all 0.2s;
-    box-shadow:0 0 15px rgba(255,170,0,0.2);}
-  .btn-call:hover{filter:brightness(1.1);}
-  .btn-call:active{transform:scale(0.97);}
-  .btn-call:disabled{opacity:0.3;cursor:not-allowed;}
+  /* カウントダウン */
+  .auto-countdown{width:100%;max-width:480px;text-align:center;
+    background:var(--surface);border:1px solid var(--border);border-radius:10px;
+    padding:12px;display:none;}
+  .auto-countdown.visible{display:block;}
+  .countdown-num{font-family:var(--timer-font);font-size:3.5rem;color:var(--warn);letter-spacing:3px;}
+  .countdown-label{font-size:0.65rem;color:var(--text-dim);letter-spacing:2px;}
 
   /* カメラ */
-  .camera-section{width:100%;max-width:440px;}
   .camera-container{width:100%;aspect-ratio:16/9;background:#000;border-radius:8px;
     overflow:hidden;position:relative;border:1px solid var(--border);}
   #camera-feed{width:100%;height:100%;object-fit:cover;}
@@ -119,23 +130,17 @@
   .camera-overlay.hidden{display:none;}
 
   /* 感度 */
-  .sensitivity-wrap{display:flex;align-items:center;gap:8px;font-size:0.7rem;
-    color:var(--text-dim);width:100%;max-width:440px;}
-  .sensitivity-wrap input[type=range]{flex:1;accent-color:var(--warn);}
+  .sens-row{display:flex;align-items:center;gap:8px;font-size:0.7rem;color:var(--text-dim);
+    width:100%;max-width:480px;}
+  .sens-row input[type=range]{flex:1;accent-color:var(--warn);}
 
   /* ボタン行 */
-  .btn-row{display:flex;gap:8px;flex-wrap:wrap;justify-content:center;width:100%;max-width:440px;}
-  .btn-sm{padding:9px 18px;border-radius:6px;border:none;font-family:var(--body-font);
+  .btn-row{display:flex;gap:8px;flex-wrap:wrap;width:100%;max-width:480px;}
+  .btn-sm{padding:9px 16px;border-radius:6px;border:none;font-family:var(--body-font);
     font-size:0.8rem;font-weight:700;cursor:pointer;transition:all 0.2s;}
   .btn-primary{background:var(--accent);color:#000;}
   .btn-danger{background:transparent;color:var(--accent2);border:1px solid var(--accent2);}
   .btn-ghost{background:transparent;color:var(--text-dim);border:1px solid var(--border);}
-
-  /* エラー */
-  .error-msg{background:rgba(255,51,102,0.1);border:1px solid var(--accent2);border-radius:8px;
-    padding:8px 14px;font-size:0.8rem;color:var(--accent2);text-align:center;
-    width:100%;max-width:440px;display:none;}
-  .error-msg.visible{display:block;}
 
   /* ゴール完了トースト */
   .finish-toast{position:fixed;top:65px;left:50%;transform:translateX(-50%) translateY(-20px);
@@ -144,12 +149,6 @@
     transition:all 0.4s ease;pointer-events:none;z-index:100;}
   .finish-toast.show{opacity:1;transform:translateX(-50%) translateY(0);}
 
-  /* 自動モードカウントダウン */
-  .auto-countdown{width:100%;max-width:440px;text-align:center;display:none;}
-  .auto-countdown.visible{display:block;}
-  .countdown-num{font-family:var(--timer-font);font-size:3rem;color:var(--warn);letter-spacing:3px;}
-  .countdown-label{font-size:0.7rem;color:var(--text-dim);letter-spacing:2px;}
-
   canvas{display:none;}
 </style>
 </head>
@@ -157,12 +156,12 @@
 
 <div class="header">
   <div class="header-title">🚀 START</div>
-  <div style="display:flex;align-items:center;gap:10px;">
+  <div class="header-right">
     <div class="conn-wrap">
       <span class="conn-dot" id="conn-dot"></span>
       <span id="conn-label">接続中...</span>
     </div>
-    <span class="status-badge waiting" id="status-badge">WAITING</span>
+    <span class="status-badge stop" id="status-badge">STOP</span>
   </div>
 </div>
 
@@ -170,79 +169,82 @@
 
 <div class="main">
 
-  <!-- キュー表示 -->
-  <div class="queue-panel">
-    <div class="queue-title">計測キュー（最大4人）</div>
-    <div class="queue-list" id="queue-list">
-      <div style="color:var(--text-dim);font-size:0.8rem;padding:4px;">待機中...</div>
+  <!-- 待機/計測中カウント -->
+  <div class="count-bar">
+    <div class="count-card waiting-card">
+      <div class="count-num" id="waiting-count">0</div>
+      <div class="count-label">待機</div>
+    </div>
+    <div class="count-card running-card">
+      <div class="count-num" id="running-count">0</div>
+      <div class="count-label">計測中</div>
     </div>
   </div>
+
+  <!-- キュー -->
+  <div class="panel">
+    <div class="panel-title">計測キュー（最大10人）</div>
+    <div class="queue-list" id="queue-list">
+      <div style="color:var(--text-dim);font-size:0.8rem;padding:4px 0;">待機中...</div>
+    </div>
+  </div>
+
+  <!-- 全リセット（キュー直下・スタートモード上） -->
+  <button class="btn-sm btn-danger" id="btn-cancel-all" style="display:none;width:100%;max-width:480px;">❌ 全リセット</button>
 
   <!-- スタートモード -->
-  <div class="mode-wrap">
-    <div class="section-label">スタートモード</div>
-    <div class="mode-btns">
+  <div class="panel">
+    <div class="panel-title">スタートモード</div>
+    <div class="mode-grid">
       <button class="mode-btn selected" data-mode="camera">📷 カメラのみ</button>
       <button class="mode-btn" data-mode="sound">🔔 音のみ</button>
-      <button class="mode-btn" data-mode="camera_fallback">📷+🔔 カメラ優先</button>
-      <button class="mode-btn" data-mode="both">⚡ どちらでも</button>
-      <button class="mode-btn" data-mode="auto">🤖 自動インターバル</button>
+      <button class="mode-btn" data-mode="both">📷+🔔 両方</button>
+      <button class="mode-btn" data-mode="auto_camera_only">🤖 自動<br>(カメラのみ)</button>
+      <button class="mode-btn" data-mode="auto_sound">🤖 自動<br>(音のみ)</button>
+      <button class="mode-btn" data-mode="auto_camera">🤖 自動<br>(音+カメラ)</button>
     </div>
   </div>
 
-  <!-- インターバル設定（自動モード時） -->
-  <div class="interval-wrap" id="interval-wrap" style="display:none;">
-    <div class="section-label" style="margin-bottom:0;white-space:nowrap;">間隔</div>
-    <input type="range" id="interval-slider" min="5" max="30" value="10">
-    <div class="interval-val"><span id="interval-val">10</span>秒</div>
-  </div>
-
-  <!-- 種目選択 -->
-  <div class="event-wrap">
-    <div class="section-label">種目</div>
-    <div class="event-btns">
-      <button class="event-btn selected" data-event="50m走">50m走</button>
-      <button class="event-btn" data-event="100m走">100m走</button>
-      <button class="event-btn" data-event="立ち幅跳び">立ち幅跳び</button>
-      <button class="event-btn" data-event="__other__">その他</button>
-    </div>
-    <input type="text" id="other-event-input" class="other-input" placeholder="種目名を入力（例：障害物走）">
-  </div>
-
-  <!-- NFC待機 -->
-  <div class="nfc-area" id="nfc-area">
-    <span class="nfc-icon">📡</span>
-    <div class="nfc-label">NFC</div>
-    <div class="nfc-instruction" id="nfc-instruction">カードをかざして選手登録</div>
-  </div>
-
-  <!-- 選手確認 -->
-  <div class="athlete-card" id="athlete-card">
-    <div class="athlete-card-header">✅ 選手確認</div>
-    <div class="athlete-card-name" id="athlete-name">—</div>
-    <div class="athlete-card-meta" id="athlete-meta">—</div>
-    <div class="confirm-btns">
-      <button class="btn btn-ok" id="btn-ok">▶ キューに追加</button>
-      <button class="btn btn-ng" id="btn-ng">✕ 違う</button>
+  <!-- インターバル設定（自動モード時のみ表示） -->
+  <div class="panel" id="interval-wrap" style="display:none;">
+    <div class="panel-title">コール音の間隔</div>
+    <div class="interval-row">
+      <input type="range" id="interval-slider" min="3" max="60" value="10">
+      <div class="interval-val"><span id="interval-val">10</span>秒</div>
     </div>
   </div>
 
-  <!-- コール音ボタン -->
-  <div class="call-btn-wrap">
-    <button class="btn-call" id="btn-call" disabled>🔔 コール音を鳴らす</button>
+  <!-- 種目 -->
+  <div class="panel">
+    <div class="panel-title">種目</div>
+    <input type="text" class="event-input" id="event-input" value="50m走" placeholder="種目を入力（例：50m走）">
   </div>
 
-  <!-- 自動モードカウントダウン -->
+  <!-- メンバーリスト（NFC代替：タップで追加） -->
+  <div class="panel" id="member-panel">
+    <div class="panel-title">選手を選択してキューに追加</div>
+    <input type="text" class="member-search" id="member-search" placeholder="名前で検索...">
+    <div class="member-list" id="member-list">
+      <div class="member-loading">読み込み中...</div>
+    </div>
+    <!-- nooneボタン -->
+    <button class="btn-sm btn-ghost" id="btn-noone" style="width:100%;margin-top:8px;">👤 nooneで追加</button>
+  </div>
+
+  <!-- 計測スタート/停止 -->
+  <div class="measure-row">
+    <button class="btn-start" id="btn-start" disabled>▶ 計測スタート</button>
+    <button class="btn-stop" id="btn-stop" disabled>⏹ 停止</button>
+  </div>
+
+  <!-- 自動カウントダウン -->
   <div class="auto-countdown" id="auto-countdown">
     <div class="countdown-label">次のコールまで</div>
     <div class="countdown-num" id="countdown-num">--</div>
   </div>
 
-  <!-- エラー -->
-  <div class="error-msg" id="error-msg"></div>
-
   <!-- カメラ -->
-  <div class="camera-section" id="camera-section">
+  <div id="camera-section" style="width:100%;max-width:480px;display:block;">
     <div class="camera-container">
       <video id="camera-feed" autoplay playsinline muted></video>
       <canvas id="detect-canvas"></canvas>
@@ -255,24 +257,22 @@
   </div>
 
   <!-- 感度 -->
-  <div class="sensitivity-wrap" id="sensitivity-wrap">
+  <div class="sens-row" id="sensitivity-wrap" style="display:flex;">
     <span>感度</span>
     <input type="range" id="sensitivity" min="10" max="80" value="30">
     <span id="sens-val">30</span>
   </div>
 
-  <!-- ボタン -->
+  <!-- ボタン行 -->
   <div class="btn-row">
     <button class="btn-sm btn-primary" id="btn-camera">📷 カメラ起動</button>
-    <button class="btn-sm btn-danger" id="btn-cancel-all" style="display:none;">❌ 全リセット</button>
-    <button class="btn-sm btn-ghost" id="btn-noone">👤 nooneで追加</button>
   </div>
 
 </div>
 
 <script type="module">
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
-import { getDatabase, ref, onValue, set, get } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-database.js";
+import { getDatabase, ref, onValue, set } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-database.js";
 
 const firebaseConfig = {
   apiKey:"AIzaSyD8o8tRvsuqxr012DyR10j_DOY0dQ0uL7w",
@@ -284,78 +284,86 @@ const firebaseConfig = {
   appId:"1:705263409750:web:cc8e7ee0700887680cb9f7"
 };
 
-const MONJUNI_GAS = "https://script.google.com/macros/s/AKfycbyVH4yXtC0PsG4gwbWITAnsMFUdwvMSij2hNsZ9z4bfRTRS0RxHzqvZZeaN3AVIEOte/exec";
-const SOUND_URL   = "https://mtjuni.github.io/monjuni/start_beep.wav";
-const START_TIME_SEC = 9.9; // ピーーーーのタイミング
+const GAS_URL      = "https://script.google.com/macros/s/AKfycbyVH4yXtC0PsG4gwbWITAnsMFUdwvMSij2hNsZ9z4bfRTRS0RxHzqvZZeaN3AVIEOte/exec";
+const SOUND_URL    = "https://mtjuni.github.io/monjuni/start_beep.wav";
+const DETECT_URL   = "https://mtjuni.github.io/monjuni/CameraRegognitionSound.wav";
+const START_TIME_MS = 9900;
+// カメラ検知タイミング（Androidアプリと同じ定数）
+const CAMERA_DETECT_START_MS = 5000;
+const CAMERA_DETECT_END_MS   = 9958;
 
 const app = initializeApp(firebaseConfig);
 const db  = getDatabase(app);
 const queueRef = ref(db, 'timing/queue');
 const modeRef  = ref(db, 'timing/mode');
+const callRef  = ref(db, 'timing/callSignal');
 
 // DOM
-const statusBadge    = document.getElementById('status-badge');
-const nfcArea        = document.getElementById('nfc-area');
-const nfcInstruction = document.getElementById('nfc-instruction');
-const athleteCard    = document.getElementById('athlete-card');
-const athleteNameEl  = document.getElementById('athlete-name');
-const athleteMetaEl  = document.getElementById('athlete-meta');
-const errorMsg       = document.getElementById('error-msg');
 const connDot        = document.getElementById('conn-dot');
 const connLabel      = document.getElementById('conn-label');
-const finishToast    = document.getElementById('finish-toast');
-const cameraOverlay  = document.getElementById('camera-overlay');
-const detectLine     = document.getElementById('detect-line');
-const sensitivity    = document.getElementById('sensitivity');
-const sensVal        = document.getElementById('sens-val');
-const btnOk          = document.getElementById('btn-ok');
-const btnNg          = document.getElementById('btn-ng');
-const btnCall        = document.getElementById('btn-call');
+const statusBadge    = document.getElementById('status-badge');
+const waitingCountEl = document.getElementById('waiting-count');
+const runningCountEl = document.getElementById('running-count');
+const queueListEl    = document.getElementById('queue-list');
+const memberListEl   = document.getElementById('member-list');
+const memberSearch   = document.getElementById('member-search');
+const eventInput     = document.getElementById('event-input');
+const btnStart       = document.getElementById('btn-start');
+const btnStop        = document.getElementById('btn-stop');
 const btnCamera      = document.getElementById('btn-camera');
-const btnCancelAll   = document.getElementById('btn-cancel-all');
 const btnNoone       = document.getElementById('btn-noone');
-const video          = document.getElementById('camera-feed');
-const canvas         = document.getElementById('detect-canvas');
-const ctx            = canvas.getContext('2d');
-const otherInput     = document.getElementById('other-event-input');
-const queueList      = document.getElementById('queue-list');
+const btnCancelAll   = document.getElementById('btn-cancel-all');
+const cameraSection  = document.getElementById('camera-section');
+const sensitivityWrap= document.getElementById('sensitivity-wrap');
+const sensitivityEl  = document.getElementById('sensitivity');
+const sensVal        = document.getElementById('sens-val');
 const intervalWrap   = document.getElementById('interval-wrap');
 const intervalSlider = document.getElementById('interval-slider');
 const intervalValEl  = document.getElementById('interval-val');
 const autoCountdown  = document.getElementById('auto-countdown');
 const countdownNum   = document.getElementById('countdown-num');
-const cameraSection  = document.getElementById('camera-section');
-const sensitivityWrap= document.getElementById('sensitivity-wrap');
+const video          = document.getElementById('camera-feed');
+const canvas         = document.getElementById('detect-canvas');
+const ctx            = canvas.getContext('2d');
+const cameraOverlay  = document.getElementById('camera-overlay');
+const detectLine     = document.getElementById('detect-line');
+const finishToast    = document.getElementById('finish-toast');
 
 // 状態
-let queue          = []; // 最大4人
-let currentAthlete = null;
+let queue          = [];
+let members        = [];
 let selectedEvent  = '50m走';
 let selectedMode   = 'camera';
 let cameraReady    = false;
 let detectInterval = null;
 let prevPixels     = null;
+let isPlaying      = false;
+let isMeasuring    = false;
 let audioCtx       = null;
 let audioBuffer    = null;
-let autoTimer      = null;
+let detectBuffer   = null;
 let autoCountTimer = null;
 let intervalSec    = 10;
-let isPlaying      = false;
+let serverTimeOffset = 0;
+let cameraOnlyRunning = false;
+let consecutiveTriggerCount = 0;
+const REQUIRED_CONSECUTIVE = 2;
 
-// 音源読み込み
+// ========== 音声 ==========
+
 async function loadAudio() {
   try {
     audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-    const res = await fetch(SOUND_URL);
-    const buf = await res.arrayBuffer();
-    audioBuffer = await audioCtx.decodeAudioData(buf);
-  } catch(e) {
-    console.warn('音源読み込みエラー:', e);
-  }
+    const [res1, res2] = await Promise.all([fetch(SOUND_URL), fetch(DETECT_URL)]);
+    const [buf1, buf2] = await Promise.all([res1.arrayBuffer(), res2.arrayBuffer()]);
+    [audioBuffer, detectBuffer] = await Promise.all([
+      audioCtx.decodeAudioData(buf1),
+      audioCtx.decodeAudioData(buf2)
+    ]);
+  } catch(e) { console.warn('音源読み込みエラー:', e); }
 }
 loadAudio();
 
-// コール音再生
 function playCallSound(onStart) {
   if (!audioBuffer || !audioCtx || isPlaying) return;
   if (audioCtx.state === 'suspended') audioCtx.resume();
@@ -364,47 +372,205 @@ function playCallSound(onStart) {
   source.buffer = audioBuffer;
   source.connect(audioCtx.destination);
   source.start(0);
-
-  // 9.9秒後にスタート処理
-  setTimeout(() => {
-    if (onStart) onStart();
-    isPlaying = false;
-  }, START_TIME_SEC * 1000);
-
+  setTimeout(() => { if (onStart) onStart(); isPlaying = false; }, START_TIME_MS);
   source.onended = () => { isPlaying = false; };
 }
 
-// Firebase監視
+function playDetectSound() {
+  if (!audioCtx || !detectBuffer) return;
+  if (audioCtx.state === 'suspended') audioCtx.resume();
+  const source = audioCtx.createBufferSource();
+  source.buffer = detectBuffer;
+  source.connect(audioCtx.destination);
+  source.start(0);
+}
+
+// ========== Firebase サーバー時刻補正 ==========
+
+onValue(ref(db, '.info/serverTimeOffset'), (snap) => {
+  serverTimeOffset = snap.val() || 0;
+});
+
+function serverNow() { return Date.now() + serverTimeOffset; }
+
+// ========== Firebase 接続状態 ==========
+
+onValue(ref(db, '.info/connected'), (snap) => {
+  const ok = snap.val();
+  connDot.className = 'conn-dot ' + (ok ? 'ok' : 'err');
+  connLabel.textContent = ok ? '接続済' : '未接続';
+});
+
+// ========== Firebaseキュー監視 ==========
+
 onValue(queueRef, (snapshot) => {
-  connDot.classList.add('ok');
-  connDot.classList.remove('err');
-  connLabel.textContent = 'Firebase接続済';
   const data = snapshot.val();
   if (data) {
-    queue = Array.isArray(data) ? data : Object.values(data);
+    queue = Array.isArray(data) ? data.filter(Boolean) : Object.values(data).filter(Boolean);
   } else {
     queue = [];
   }
   renderQueue();
-  updateUI();
-}, () => {
-  connDot.classList.remove('ok');
-  connDot.classList.add('err');
-  connLabel.textContent = '接続エラー';
+  updateCounts();
+  updateStartBtn();
+  renderMemberList();
 });
 
-// コントローラーからのコール指示を監視
-const callRef = ref(db, 'timing/callSignal');
-onValue(callRef, (snapshot) => {
-  const sig = snapshot.val();
+// Firebase callSignal 監視
+onValue(callRef, (snap) => {
+  const sig = snap.val();
   if (sig && sig.play && !isPlaying) {
     triggerCall();
-    // シグナルをリセット
     set(callRef, { play: false });
   }
 });
 
-// モード選択
+// Firebase モード変更受信
+onValue(modeRef, (snap) => {
+  const data = snap.val();
+  if (!data?.mode) return;
+  selectedMode = data.mode;
+  document.querySelectorAll('.mode-btn').forEach(b => {
+    b.classList.toggle('selected', b.dataset.mode === selectedMode);
+  });
+  updateModeUI();
+});
+
+// Firebase 感度同期
+onValue(ref(db, 'timing/settings/sensitivity'), (snap) => {
+  const val = snap.val();
+  if (val !== null) { sensitivityEl.value = val; sensVal.textContent = val; }
+});
+
+// ========== キュー保存 ==========
+
+function saveQueue() {
+  const map = {};
+  queue.forEach((item, i) => { map[`item_${i}`] = item; });
+  set(queueRef, queue.length > 0 ? map : null);
+  const waitingCount = queue.filter(q => q.status === 'waiting').length;
+  set(ref(db, 'timing/waitingCount'), waitingCount);
+}
+
+// ========== メンバー読み込み ==========
+
+function loadMembers() {
+  memberListEl.innerHTML = '<div class="member-loading">読み込み中...</div>';
+  const script = document.createElement('script');
+  script.src = `${GAS_URL}?action=getMembers&callback=onMembersLoaded&_t=${Date.now()}`;
+  document.head.appendChild(script);
+  setTimeout(() => {
+    if (!members.length) memberListEl.innerHTML = '<div class="member-loading">読み込み失敗。再試行してください。</div>';
+  }, 8000);
+}
+
+window.onMembersLoaded = function(data) {
+  const tsPattern = /^\d{14}$/;
+  members = (data.members || []).filter(m => {
+    const uid = m.nfcUid || m.nfcId || '';
+    return uid && !tsPattern.test(uid);
+  });
+  renderMemberList();
+};
+
+function renderMemberList() {
+  const search = memberSearch.value.trim();
+  const filtered = search
+    ? members.filter(m => m.name.includes(search) || (m.furigana || '').includes(search))
+    : members;
+
+  if (!filtered.length) {
+    memberListEl.innerHTML = `<div class="member-loading">${members.length ? '該当なし' : '読み込み中...'}</div>`;
+    return;
+  }
+
+  const inQueueIds = new Set(queue.map(q => q.athleteId));
+  memberListEl.innerHTML = filtered.map(m => {
+    const inQueue = inQueueIds.has(m.id || m.nfcId);
+    return `
+      <div class="member-item ${inQueue ? 'in-queue' : ''}" data-id="${m.id || ''}" data-name="${m.name}" data-grade="${m.grade || ''}" data-nfc="${(m.nfcUid || m.nfcId || '').toUpperCase()}">
+        <div>
+          <div class="member-name">${m.name}</div>
+          <div class="member-meta">${m.grade || ''} ${m.course || ''}</div>
+        </div>
+        <button class="member-add-btn">${inQueue ? '追加済' : '追加'}</button>
+      </div>
+    `;
+  }).join('');
+
+  // タップで追加
+  memberListEl.querySelectorAll('.member-item:not(.in-queue)').forEach(el => {
+    el.addEventListener('click', () => {
+      if (queue.length >= 10) { alert('キューが満員です（最大10人）'); return; }
+      addToQueue({
+        athleteId:   el.dataset.id,
+        athleteName: el.dataset.name,
+        grade:       el.dataset.grade,
+        nfcUid:      el.dataset.nfc
+      });
+    });
+  });
+}
+
+memberSearch.addEventListener('input', renderMemberList);
+
+// ========== キュー操作 ==========
+
+function addToQueue(athlete) {
+  const entry = {
+    id:          `${athlete.athleteId || 'noone'}_${Date.now()}`,
+    athleteId:   athlete.athleteId || '',
+    athleteName: athlete.athleteName,
+    nfcUid:      athlete.nfcUid || '',
+    event:       selectedEvent,
+    status:      'waiting',
+    startTime:   0
+  };
+  queue.push(entry);
+  saveQueue();
+  renderQueue();
+  updateCounts();
+  updateStartBtn();
+  renderMemberList();
+}
+
+function renderQueue() {
+  if (!queue.length) {
+    queueListEl.innerHTML = '<div style="color:var(--text-dim);font-size:0.8rem;padding:4px 0;">待機中... 選手を選択してください</div>';
+    btnCancelAll.style.display = 'none';
+    return;
+  }
+  queueListEl.innerHTML = queue.map((q, i) => `
+    <div class="queue-item ${q.status === 'started' ? 'started' : ''}">
+      <span class="queue-num">${i+1}</span>
+      <div style="flex:1;">
+        <div class="queue-name">${q.athleteName}</div>
+        <div class="queue-status">${q.event} · ${q.status.toUpperCase()}</div>
+      </div>
+      <button class="queue-remove" onclick="removeFromQueue(${i})">✕</button>
+    </div>
+  `).join('');
+  btnCancelAll.style.display = 'inline-block';
+}
+
+window.removeFromQueue = function(idx) {
+  queue.splice(idx, 1);
+  saveQueue();
+  renderQueue();
+  updateCounts();
+  updateStartBtn();
+  renderMemberList();
+};
+
+function updateCounts() {
+  const waiting = queue.filter(q => q.status === 'waiting').length;
+  const running = queue.filter(q => q.status === 'started').length;
+  waitingCountEl.textContent = waiting;
+  runningCountEl.textContent = running;
+}
+
+// ========== モード ==========
+
 document.querySelectorAll('.mode-btn').forEach(btn => {
   btn.addEventListener('click', () => {
     document.querySelectorAll('.mode-btn').forEach(b => b.classList.remove('selected'));
@@ -416,218 +582,153 @@ document.querySelectorAll('.mode-btn').forEach(btn => {
 });
 
 function updateModeUI() {
-  const isAuto   = selectedMode === 'auto';
-  const isCamera = ['camera','camera_fallback','both'].includes(selectedMode);
-  const isSound  = ['sound','camera_fallback','both','auto'].includes(selectedMode);
+  const isCamera = ['camera','both','auto_camera','auto_camera_only'].includes(selectedMode);
+  const isAuto   = selectedMode.startsWith('auto');
 
-  intervalWrap.style.display    = isAuto ? 'flex' : 'none';
   cameraSection.style.display   = isCamera ? 'block' : 'none';
   sensitivityWrap.style.display = isCamera ? 'flex' : 'none';
-  btnCall.disabled               = isAuto || queue.length === 0;
+  btnCamera.style.display       = isCamera ? 'inline-block' : 'none';
+  intervalWrap.style.display    = isAuto ? 'block' : 'none';
 
-  if (isAuto) {
-    startAutoMode();
-  } else {
-    stopAutoMode();
-  }
+  if (!isMeasuring) autoCountdown.classList.remove('visible');
+  if (!isAuto) stopAutoMode();
+  updateStartBtn();
 }
 
-// コントローラーからのモード変更を受信
-onValue(modeRef, (snapshot) => {
-  const data = snapshot.val();
-  if (!data?.mode) return;
-  selectedMode = data.mode;
-  document.querySelectorAll('.mode-btn').forEach(b => {
-    b.classList.toggle('selected', b.dataset.mode === selectedMode);
-  });
-  updateModeUI();
-});
+// ========== インターバル ==========
 
-// 種目選択
-document.querySelectorAll('.event-btn').forEach(btn => {
-  btn.addEventListener('click', () => {
-    document.querySelectorAll('.event-btn').forEach(b => b.classList.remove('selected'));
-    btn.classList.add('selected');
-    if (btn.dataset.event === '__other__') {
-      otherInput.style.display = 'block';
-      otherInput.focus();
-      selectedEvent = otherInput.value.trim() || 'その他';
-    } else {
-      otherInput.style.display = 'none';
-      selectedEvent = btn.dataset.event;
-    }
-  });
-});
-otherInput.addEventListener('input', () => {
-  selectedEvent = otherInput.value.trim() || 'その他';
-});
-
-// インターバル設定
 intervalSlider.addEventListener('input', () => {
   intervalSec = parseInt(intervalSlider.value);
-  intervalValEl.textContent = intervalSec;
+  intervalValEl.textContent = intervalSec >= 60
+    ? (intervalSec % 60 === 0 ? `${Math.floor(intervalSec/60)}分` : `${Math.floor(intervalSec/60)}分${intervalSec%60}秒`)
+    : `${intervalSec}秒`;
 });
 
-// NFC読み取り
-async function startNFCScan() {
-  if (!('NDEFReader' in window)) {
-    showManualInput();
-    return;
+// ========== 計測スタート/停止 ==========
+
+function updateStartBtn() {
+  const hasWaiting = queue.some(q => q.status === 'waiting');
+  btnStart.disabled = isMeasuring || !hasWaiting;
+  btnStop.disabled  = !isMeasuring;
+  btnStart.className = 'btn-start' + (isMeasuring ? ' measuring' : '');
+}
+
+btnStart.addEventListener('click', () => {
+  if (isMeasuring) return;
+  // AudioContext を起動（ユーザー操作が必要）
+  if (audioCtx && audioCtx.state === 'suspended') audioCtx.resume();
+  isMeasuring = true;
+  updateStartBtn();
+  setStatus('running');
+  autoCountdown.classList.add('visible');
+  countdownNum.textContent = '--';
+
+  if (selectedMode === 'camera') {
+    if (!cameraReady) btnCamera.click();
+    setTimeout(() => startCameraOnlyMode(), 500);
+  } else if (selectedMode === 'sound') {
+    countdownNum.textContent = '▶';
+    triggerCall();
+  } else if (selectedMode === 'both') {
+    countdownNum.textContent = '▶';
+    triggerCall();
+  } else if (selectedMode.startsWith('auto')) {
+    if (selectedMode === 'auto_camera_only' && !cameraReady) btnCamera.click();
+    startAutoMode();
   }
-  try {
-    const ndef = new NDEFReader();
-    await ndef.scan();
-    nfcArea.classList.add('active');
-    nfcInstruction.textContent = 'カードをかざして選手登録';
-    ndef.addEventListener('reading', ({ serialNumber }) => {
-      if (queue.length >= 4) {
-        showError('キューが満員です（最大4人）');
-        return;
-      }
-      lookupAthleteByNFC(serialNumber.toUpperCase().replace(/:/g,''));
-    });
-  } catch(e) {
-    showManualInput();
-  }
-}
-
-function lookupAthleteByNFC(nfcUID) {
-  nfcInstruction.textContent = '選手情報取得中...';
-  window._pendingNfcUID = nfcUID;
-  const script = document.createElement('script');
-  script.src = `${MONJUNI_GAS}?action=getMembers&callback=onMembersForNFC`;
-  document.head.appendChild(script);
-  setTimeout(() => { if (!currentAthlete) { showError('タイムアウト'); resetNFCArea(); } }, 8000);
-}
-
-window.onMembersForNFC = function(data) {
-  const members = data.members || [];
-  const uid = (window._pendingNfcUID || '').toUpperCase();
-  const found = members.find(m => m.nfcId && m.nfcId.toUpperCase() === uid);
-  if (!found) { showError('登録されていないカードです'); resetNFCArea(); return; }
-  currentAthlete = { id: found.nfcId, name: found.name, grade: found.grade, nfcId: found.nfcId };
-  showAthleteConfirm(currentAthlete);
-};
-
-function showManualInput() {
-  nfcInstruction.textContent = '選手を選択してください';
-  const script = document.createElement('script');
-  script.src = `${MONJUNI_GAS}?action=getMembers&callback=onMembersLoaded`;
-  document.head.appendChild(script);
-}
-
-window.onMembersLoaded = function(data) {
-  const members = data.members || [];
-  if (!members.length) return;
-  const select = document.createElement('select');
-  select.style.cssText = 'width:100%;padding:8px;margin-top:8px;background:var(--surface);color:var(--text);border:1px solid var(--border);border-radius:8px;font-family:var(--body-font);font-size:0.9rem;';
-  select.innerHTML = '<option value="">-- 選手を選択 --</option>' +
-    members.map(m => `<option value="${m.nfcId||m.id}">${m.name}（${m.grade||''}）</option>`).join('');
-  select.addEventListener('change', () => {
-    const found = members.find(m => (m.nfcId||m.id) === select.value);
-    if (found) {
-      currentAthlete = { id: found.nfcId||found.id, name: found.name, grade: found.grade, nfcId: found.nfcId };
-      showAthleteConfirm(currentAthlete);
-    }
-  });
-  nfcArea.appendChild(select);
-};
-
-function showAthleteConfirm(athlete) {
-  athleteNameEl.textContent = athlete.name || '—';
-  athleteMetaEl.textContent = `${athlete.grade||''}　${selectedEvent}`;
-  athleteCard.classList.add('visible');
-  nfcArea.classList.add('confirmed');
-  showError(false);
-}
-
-// キューに追加
-btnOk.addEventListener('click', () => {
-  if (!currentAthlete || queue.length >= 4) return;
-  addToQueue(currentAthlete);
-  athleteCard.classList.remove('visible');
-  nfcArea.classList.remove('confirmed','active');
-  currentAthlete = null;
-  nfcInstruction.textContent = 'カードをかざして選手登録';
-  showError(false);
 });
 
-btnNg.addEventListener('click', () => {
-  athleteCard.classList.remove('visible');
-  nfcArea.classList.remove('confirmed','active');
-  currentAthlete = null;
-  nfcInstruction.textContent = 'カードをかざして選手登録';
-  showError(false);
+btnStop.addEventListener('click', () => {
+  stopMeasuring();
 });
 
-// nooneで追加
-btnNoone.addEventListener('click', () => {
-  if (queue.length >= 4) { showError('キューが満員です（最大4人）'); return; }
-  addToQueue({ id: 'noone_' + Date.now(), name: 'noone', grade: '', nfcId: '' });
-});
-
-function addToQueue(athlete) {
-  const entry = {
-    laneId:      queue.length,
-    athleteId:   athlete.id || '',
-    athleteName: athlete.name,
-    grade:       athlete.grade || '',
-    nfcId:       athlete.nfcId || '',
-    event:       selectedEvent,
-    status:      'waiting', // waiting / started / finished
-    startTime:   null,
-    addedAt:     Date.now()
-  };
-  queue.push(entry);
-  saveQueue();
-  btnCall.disabled = false;
-  updateUI();
+function stopMeasuring() {
+  isMeasuring = false;
+  cameraOnlyRunning = false;
+  stopAutoMode();
+  stopCameraDetection();
+  isPlaying = false;
+  setStatus(queue.some(q => q.status === 'waiting') ? 'ready' : 'stop');
+  autoCountdown.classList.remove('visible');
+  updateStartBtn();
 }
 
-function saveQueue() {
-  set(queueRef, queue.length > 0 ? queue : null);
+// ========== カメラのみモード ==========
+
+function startCameraOnlyMode() {
+  cameraOnlyRunning = true;
+  if (cameraReady) triggerNextCameraStart();
+  else setTimeout(() => { if (cameraReady) triggerNextCameraStart(); }, 1500);
 }
 
-// コール音ボタン
-btnCall.addEventListener('click', () => {
-  triggerCall();
-});
+function triggerNextCameraStart() {
+  if (!isMeasuring) return;
+  const nextIdx = queue.findIndex(q => q.status === 'waiting');
+  if (nextIdx === -1) { stopMeasuring(); return; }
+  startCameraDetectionForStart(nextIdx);
+}
+
+// ========== triggerCall ★修正済み ==========
 
 function triggerCall() {
-  if (queue.length === 0) return;
-  
-  // 次のwaitingの選手を探す
+  if (!queue.length) { if (isMeasuring) stopMeasuring(); return; }
   const nextIdx = queue.findIndex(q => q.status === 'waiting');
-  if (nextIdx === -1) return;
+  if (nextIdx === -1) { if (isMeasuring) stopMeasuring(); return; }
 
-  playCallSound(() => {
-    // スタート処理
-    startAthlete(nextIdx);
-  });
+  if (selectedMode === 'auto_camera_only') {
+    // カメラのみ自動：音再生 + 5〜9958ms でカメラ検知
+    playCallSound(() => {});
+    setTimeout(() => { if (isMeasuring) startCameraOnlyDetection(nextIdx); }, CAMERA_DETECT_START_MS);
+    setTimeout(() => stopCameraDetection(), CAMERA_DETECT_END_MS);
 
-  // コール中の表示
-  btnCall.textContent = '🔔 コール中...';
-  btnCall.disabled = true;
-  setTimeout(() => {
-    btnCall.textContent = '🔔 コール音を鳴らす';
-    btnCall.disabled = false;
-  }, START_TIME_SEC * 1000 + 500);
+  } else {
+    // 音+カメラモード：カメラタイマーを音開始と同時にセット ★
+    if (['both','auto_camera'].includes(selectedMode)) {
+      if (!cameraReady) btnCamera.click();
+      setTimeout(() => { if (isMeasuring) startCameraOnlyDetection(nextIdx); }, CAMERA_DETECT_START_MS);
+      setTimeout(() => stopCameraDetection(), CAMERA_DETECT_END_MS);
+    }
+
+    // 音再生（9900ms後にstartAthlete）
+    playCallSound(() => {
+      startAthlete(nextIdx);
+      if (['sound','both'].includes(selectedMode)) {
+        const remaining = queue.filter(q => q.status === 'waiting').length;
+        if (remaining === 0 && isMeasuring) stopMeasuring();
+      }
+    });
+  }
 }
+
+// ========== startAthlete ==========
 
 function startAthlete(idx) {
   if (!queue[idx]) return;
+
+  // カメラが先に検知済みの場合は音スタートをスキップ
+  if (queue[idx].status === 'started' && queue[idx].startTime > 0) {
+    if (['sound','both'].includes(selectedMode)) {
+      isMeasuring = false;
+      updateStartBtn();
+    }
+    return;
+  }
+
   queue[idx].status    = 'started';
-  queue[idx].startTime = Date.now();
+  queue[idx].startTime = serverNow();
   saveQueue();
   renderQueue();
+  updateCounts();
 
-  // カメラ検知開始（camera/camera_fallback/bothモード）
-  if (['camera','camera_fallback','both'].includes(selectedMode) && cameraReady) {
-    startCameraDetection(idx);
+  if (['sound','both'].includes(selectedMode)) {
+    isMeasuring = false;
+    updateStartBtn();
+    setStatus(queue.some(q => q.status === 'waiting') ? 'ready' : 'stop');
   }
 }
 
-// カメラ起動
+// ========== カメラ起動 ==========
+
 btnCamera.addEventListener('click', async () => {
   try {
     const stream = await navigator.mediaDevices.getUserMedia({
@@ -635,41 +736,134 @@ btnCamera.addEventListener('click', async () => {
     });
     video.srcObject = stream;
     video.onloadedmetadata = () => {
-      canvas.width = video.videoWidth;
+      canvas.width  = video.videoWidth;
       canvas.height = video.videoHeight;
       cameraReady = true;
       cameraOverlay.classList.add('hidden');
       detectLine.style.display = 'block';
     };
     btnCamera.style.display = 'none';
-  } catch(e) { showError('カメラエラー: ' + e.message); }
+  } catch(e) { alert('カメラエラー: ' + e.message); }
 });
 
-// カメラ検知
-function startCameraDetection(laneIdx) {
+// ========== カメラ検知（カメラのみモード専用） ==========
+
+function startCameraDetectionForStart(laneIdx) {
+  stopCameraDetection();
   prevPixels = null;
+  consecutiveTriggerCount = 0;
   detectInterval = setInterval(() => {
+    if (!isMeasuring || !cameraReady) return;
     ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
     const cx = Math.floor(canvas.width / 2);
-    const pixels = ctx.getImageData(cx, 0, 1, canvas.height).data;
-    if (prevPixels) {
-      let diff = 0;
-      for (let i = 0; i < pixels.length; i += 4) diff += Math.abs(pixels[i] - prevPixels[i]);
-      const avgDiff = diff / (canvas.height * 255);
-      if (avgDiff > parseInt(sensitivity.value) / 1000) {
-        clearInterval(detectInterval);
-        startAthlete(laneIdx);
+    const sw = 20;
+    const sx = Math.max(0, cx - Math.floor(sw/2));
+    const data = ctx.getImageData(sx, 0, sw, canvas.height).data;
+    const pixels = data;
+
+    if (prevPixels && prevPixels.length === pixels.length) {
+      let diff = 0, sig = 0;
+      for (let i = 0; i < pixels.length; i += 4) {
+        const pd = (Math.abs(pixels[i]-prevPixels[i]) + Math.abs(pixels[i+1]-prevPixels[i+1]) + Math.abs(pixels[i+2]-prevPixels[i+2])) / 3;
+        diff += pd;
+        if (pd > 30) sig++;
+      }
+      const total = pixels.length / 4;
+      const avgDiff = diff / (total * 255);
+      const sigRatio = sig / total;
+      if (avgDiff > parseInt(sensitivityEl.value) / 1000 || sigRatio > 0.10) {
+        consecutiveTriggerCount++;
+        if (consecutiveTriggerCount >= REQUIRED_CONSECUTIVE) {
+          stopCameraDetection();
+          if (laneIdx < queue.length) {
+            queue[laneIdx].status    = 'started';
+            queue[laneIdx].startTime = serverNow();
+            saveQueue();
+            renderQueue();
+            updateCounts();
+            playDetectSound();
+            if (selectedMode === 'camera' && isMeasuring) {
+              setTimeout(() => triggerNextCameraStart(), 1000);
+            }
+          }
+        }
+      } else {
+        consecutiveTriggerCount = 0;
       }
     }
     prevPixels = new Uint8ClampedArray(pixels);
   }, 33);
 }
 
-// 自動インターバルモード
+// ========== カメラ検知（音+カメラモード専用） ==========
+
+function startCameraOnlyDetection(laneIdx) {
+  stopCameraDetection();
+  prevPixels = null;
+  consecutiveTriggerCount = 0;
+  detectInterval = setInterval(() => {
+    if (!isMeasuring || !cameraReady) return;
+    ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+    const cx = Math.floor(canvas.width / 2);
+    const sw = 20;
+    const sx = Math.max(0, cx - Math.floor(sw/2));
+    const pixels = ctx.getImageData(sx, 0, sw, canvas.height).data;
+
+    if (prevPixels && prevPixels.length === pixels.length) {
+      let diff = 0, sig = 0;
+      for (let i = 0; i < pixels.length; i += 4) {
+        const pd = (Math.abs(pixels[i]-prevPixels[i]) + Math.abs(pixels[i+1]-prevPixels[i+1]) + Math.abs(pixels[i+2]-prevPixels[i+2])) / 3;
+        diff += pd;
+        if (pd > 30) sig++;
+      }
+      const total = pixels.length / 4;
+      const avgDiff = diff / (total * 255);
+      const sigRatio = sig / total;
+      if (avgDiff > parseInt(sensitivityEl.value) / 1000 || sigRatio > 0.10) {
+        consecutiveTriggerCount++;
+        if (consecutiveTriggerCount >= REQUIRED_CONSECUTIVE) {
+          stopCameraDetection();
+          const cameraTime = serverNow();
+          const target = queue[laneIdx];
+          if (target) {
+            if (!target.startTime || target.startTime === 0 || target.status === 'waiting') {
+              // カメラが先：カメラ時刻をstartTimeに
+              target.status    = 'started';
+              target.startTime = cameraTime;
+            } else if (target.startTime > cameraTime) {
+              // カメラが音より早い → 更新
+              target.startTime = cameraTime;
+            }
+            // カメラが音より遅い場合は維持
+            saveQueue();
+            renderQueue();
+            updateCounts();
+          }
+          playDetectSound();
+          if (selectedMode === 'both') {
+            isMeasuring = false;
+            updateStartBtn();
+            setStatus(queue.some(q => q.status === 'waiting') ? 'ready' : 'stop');
+          }
+        }
+      } else {
+        consecutiveTriggerCount = 0;
+      }
+    }
+    prevPixels = new Uint8ClampedArray(pixels);
+  }, 33);
+}
+
+function stopCameraDetection() {
+  if (detectInterval) { clearInterval(detectInterval); detectInterval = null; }
+  prevPixels = null;
+}
+
+// ========== 自動インターバルモード ==========
+
 function startAutoMode() {
   stopAutoMode();
   autoCountdown.classList.add('visible');
-  btnCancelAll.style.display = 'inline-block';
   runAutoInterval();
 }
 
@@ -677,105 +871,75 @@ function runAutoInterval() {
   let remaining = intervalSec;
   countdownNum.textContent = remaining;
   autoCountTimer = setInterval(() => {
+    if (!isMeasuring) { clearInterval(autoCountTimer); return; }
     remaining--;
     countdownNum.textContent = remaining;
     if (remaining <= 0) {
       clearInterval(autoCountTimer);
-      // nooneとしてキューに追加してコール
-      if (queue.length < 4) {
-        addToQueue({ id:'noone_'+Date.now(), name:'noone', grade:'', nfcId:'' });
-      }
       triggerCall();
-      setTimeout(() => runAutoInterval(), START_TIME_SEC * 1000 + 500);
+      setTimeout(() => { if (isMeasuring) runAutoInterval(); }, START_TIME_MS + 500);
     }
   }, 1000);
 }
 
 function stopAutoMode() {
-  clearInterval(autoTimer);
-  clearInterval(autoCountTimer);
+  if (autoCountTimer) { clearInterval(autoCountTimer); autoCountTimer = null; }
   autoCountdown.classList.remove('visible');
 }
 
-// 全リセット
-btnCancelAll.addEventListener('click', () => {
-  queue = [];
-  saveQueue();
-  stopAutoMode();
-  renderQueue();
-  updateUI();
-  set(ref(db, 'timing/callSignal'), { play: false });
+// ========== UI ==========
+
+function setStatus(s) {
+  const labels = { stop:'STOP', ready:'READY', running:'RUNNING' };
+  statusBadge.textContent = labels[s] || s.toUpperCase();
+  statusBadge.className = `status-badge ${s}`;
+}
+
+// ========== その他ボタン ==========
+
+btnNoone.addEventListener('click', () => {
+  if (queue.length >= 10) return;
+  addToQueue({ athleteId:'noone_'+Date.now(), athleteName:'noone', nfcUid:'' });
 });
 
-// キュー描画
-function renderQueue() {
-  if (!queue.length) {
-    queueList.innerHTML = '<div style="color:var(--text-dim);font-size:0.8rem;padding:4px;">待機中...</div>';
-    return;
-  }
-  queueList.innerHTML = queue.map((q, i) => {
-    const elapsed = q.status === 'started' && q.startTime
-      ? formatTime((Date.now() - q.startTime) / 1000)
-      : q.status === 'finished' ? formatTime(q.elapsedSec || 0) : '—';
-    return `
-      <div class="queue-item ${q.status}">
-        <span class="queue-num">${i+1}</span>
-        <div style="flex:1;">
-          <div class="queue-name">${q.athleteName}</div>
-          <div class="queue-status">${q.event} · ${q.status.toUpperCase()}</div>
-        </div>
-        <span class="queue-timer">${elapsed}</span>
-        <button onclick="removeFromQueue(${i})" style="background:transparent;border:none;color:var(--accent2);cursor:pointer;font-size:0.8rem;padding:4px;">✕</button>
-      </div>
-    `;
-  }).join('');
-}
-
-window.removeFromQueue = function(idx) {
-  queue.splice(idx, 1);
+btnCancelAll.addEventListener('click', () => {
+  const running = queue.filter(q => q.status === 'started');
+  queue = running;
   saveQueue();
+  stopAutoMode();
+  set(callRef, { play: false });
   renderQueue();
-};
+  updateCounts();
+  updateStartBtn();
+  renderMemberList();
+});
 
-// UI更新
-function updateUI() {
-  const runningCount = queue.filter(q => q.status === 'started').length;
-  const waitingCount = queue.filter(q => q.status === 'waiting').length;
+// ========== 種目 ==========
 
-  if (runningCount > 0) setStatus('running');
-  else if (waitingCount > 0) setStatus('ready');
-  else setStatus('waiting');
+eventInput.addEventListener('input', () => { selectedEvent = eventInput.value.trim() || '種目未設定'; });
 
-  btnCall.disabled = queue.filter(q => q.status === 'waiting').length === 0 || selectedMode === 'auto';
-  btnCancelAll.style.display = queue.length > 0 ? 'inline-block' : 'none';
+// ========== 感度 ==========
 
-  // タイマー更新
-  renderQueue();
-}
+sensitivityEl.addEventListener('change', () => {
+  sensVal.textContent = sensitivityEl.value;
+  set(ref(db, 'timing/settings/sensitivity'), parseInt(sensitivityEl.value));
+});
 
-// ゴール完了をFirebaseから受け取る
-const finishedRef = ref(db, 'timing/lastFinished');
-onValue(finishedRef, (snapshot) => {
-  const data = snapshot.val();
-  if (!data || !data.athleteName) return;
+// ========== ゴール完了受信 ==========
+
+onValue(ref(db, 'timing/lastFinished'), (snap) => {
+  const data = snap.val();
+  if (!data?.athleteName) return;
   showFinishToast(`🏁 ${data.athleteName}  ${formatTime(data.elapsedSec)}`);
-
-  // キューから該当者をfinishedに
   const idx = queue.findIndex(q => q.athleteId === data.athleteId && q.status === 'started');
   if (idx !== -1) {
-    queue[idx].status     = 'finished';
-    queue[idx].elapsedSec = data.elapsedSec;
+    queue.splice(idx, 1);
     saveQueue();
     renderQueue();
+    updateCounts();
+    updateStartBtn();
+    renderMemberList();
   }
-
-  // 3秒後にfinishedをキューから除去
-  setTimeout(() => {
-    queue = queue.filter(q => q.status !== 'finished');
-    saveQueue();
-    renderQueue();
-    updateUI();
-  }, 3000);
 });
 
 function showFinishToast(msg) {
@@ -784,49 +948,18 @@ function showFinishToast(msg) {
   setTimeout(() => finishToast.classList.remove('show'), 4000);
 }
 
-function resetNFCArea() {
-  nfcArea.classList.remove('active','confirmed');
-  nfcInstruction.textContent = 'カードをかざして選手登録';
-}
-
-function setStatus(s) {
-  const labels = { waiting:'WAITING', ready:'READY', running:'RUNNING', error:'ERROR' };
-  statusBadge.textContent = labels[s] || s.toUpperCase();
-  statusBadge.className = `status-badge ${s}`;
-}
-
-function showError(show, msg='') {
-  errorMsg.textContent = msg;
-  errorMsg.classList.toggle('visible', !!show);
-}
-
 function formatTime(sec) {
   if (!sec) return '00.00';
-  const s = Math.floor(sec);
+  const s  = Math.floor(sec);
   const ms = Math.floor((sec - s) * 100);
   return `${String(s).padStart(2,'0')}.${String(ms).padStart(2,'0')}`;
 }
 
-sensitivity.addEventListener('input', () => {
-  sensVal.textContent = sensitivity.value;
-  // Firebase に感度を同期
-  set(ref(db, 'timing/settings/sensitivity'), parseInt(sensitivity.value));
-});
+// ========== 初期化 ==========
 
-// Firebase から感度を読み込み（初期化時）
-onValue(ref(db, 'timing/settings/sensitivity'), (snapshot) => {
-  const val = snapshot.val();
-  if (val !== null) {
-    sensitivity.value = val;
-    sensVal.textContent = val;
-  }
-});
+updateModeUI();
+loadMembers();
 
-// キュータイマー更新
-setInterval(() => { if (queue.some(q => q.status === 'started')) renderQueue(); }, 100);
-
-startNFCScan();
-setStatus('waiting');
 </script>
 </body>
 </html>
