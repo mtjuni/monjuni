@@ -17,56 +17,100 @@
   body::before{content:'';position:fixed;inset:0;pointer-events:none;
     background-image:linear-gradient(rgba(0,170,255,0.03) 1px,transparent 1px),linear-gradient(90deg,rgba(0,170,255,0.03) 1px,transparent 1px);
     background-size:40px 40px;}
+
   .header{display:flex;align-items:center;justify-content:space-between;padding:10px 16px;
     border-bottom:1px solid var(--border);background:var(--surface);position:sticky;top:0;z-index:10;}
   .header-title{font-family:var(--timer-font);font-size:1.3rem;letter-spacing:4px;color:var(--info);}
   .conn-wrap{display:flex;align-items:center;gap:6px;font-size:0.7rem;color:var(--text-dim);}
   .conn-dot{width:7px;height:7px;border-radius:50%;background:var(--text-dim);}
   .conn-dot.ok{background:var(--accent);box-shadow:0 0 5px var(--accent);}
-  .main{display:flex;flex-direction:column;align-items:center;padding:12px;gap:12px;}
+  .conn-dot.err{background:var(--accent2);}
 
-  /* 状態パネル */
-  .state-panel{width:100%;max-width:440px;background:var(--surface);
-    border:1px solid var(--border);border-radius:10px;padding:12px 16px;}
-  .section-label{font-size:0.6rem;letter-spacing:3px;color:var(--text-dim);text-transform:uppercase;margin-bottom:8px;}
+  .main{display:flex;flex-direction:column;align-items:center;padding:12px;gap:10px;}
 
-  /* ランナー状態 */
+  /* パネル共通 */
+  .panel{width:100%;max-width:480px;background:var(--surface);
+    border:1px solid var(--border);border-radius:10px;padding:14px 16px;}
+  .panel-title{font-size:0.6rem;letter-spacing:3px;color:var(--text-dim);
+    text-transform:uppercase;margin-bottom:10px;}
+
+  /* 待機/計測中カウント */
+  .count-bar{width:100%;max-width:480px;display:flex;gap:8px;}
+  .count-card{flex:1;background:var(--surface);border:1px solid var(--border);
+    border-radius:10px;padding:10px 14px;text-align:center;}
+  .count-card.running-card{border-color:var(--warn);}
+  .count-num{font-family:var(--timer-font);font-size:2rem;color:var(--warn);line-height:1;}
+  .count-card.waiting-card .count-num{color:var(--text-dim);}
+  .count-label{font-size:0.6rem;color:var(--text-dim);letter-spacing:2px;margin-top:2px;}
+
+  /* 走者リスト */
   .runner-list{display:flex;flex-direction:column;gap:6px;}
   .runner-item{display:flex;align-items:center;gap:10px;padding:8px 12px;
     background:var(--bg);border:1px solid var(--border);border-radius:8px;}
-  .runner-item.started{border-color:var(--warn);}
-  .runner-item.finished{border-color:var(--accent);opacity:0.6;}
+  .runner-item.started{border-color:var(--warn);background:rgba(255,170,0,0.04);}
   .runner-num{font-family:var(--timer-font);font-size:1.1rem;color:var(--text-dim);width:18px;}
   .runner-name{flex:1;font-weight:700;font-size:0.85rem;}
   .runner-timer{font-family:var(--timer-font);font-size:1rem;color:var(--warn);}
-  .runner-status{font-size:0.6rem;color:var(--text-dim);letter-spacing:1px;text-transform:uppercase;}
+  .runner-status{font-size:0.6rem;color:var(--text-dim);letter-spacing:1px;}
+
+  /* 計測スタート/停止（App操作） */
+  .measure-row{width:100%;max-width:480px;display:flex;gap:8px;}
+  .btn-measure-start{flex:2;padding:16px;border-radius:10px;border:none;
+    font-family:var(--timer-font);font-size:1.4rem;letter-spacing:3px;
+    background:var(--accent);color:#000;cursor:pointer;transition:all 0.2s;}
+  .btn-measure-start:disabled{opacity:0.3;cursor:not-allowed;}
+  .btn-measure-stop{flex:1;padding:16px;border-radius:10px;border:none;
+    font-family:var(--timer-font);font-size:1.1rem;letter-spacing:2px;
+    background:var(--accent2);color:#fff;cursor:pointer;transition:all 0.2s;}
+  .btn-measure-stop:disabled{opacity:0.3;cursor:not-allowed;}
 
   /* コールボタン */
-  .call-wrap{width:100%;max-width:440px;}
-  .btn-call{width:100%;padding:20px;border-radius:10px;border:none;
-    font-family:var(--timer-font);font-size:1.8rem;letter-spacing:5px;
+  .btn-call{width:100%;padding:18px;border-radius:10px;border:none;
+    font-family:var(--timer-font);font-size:1.6rem;letter-spacing:5px;
     background:var(--warn);color:#000;cursor:pointer;transition:all 0.2s;
     box-shadow:0 0 15px rgba(255,170,0,0.2);}
-  .btn-call:hover{filter:brightness(1.1);}
-  .btn-call:active{transform:scale(0.97);}
   .btn-call:disabled{opacity:0.3;cursor:not-allowed;}
 
+  /* モードボタン */
+  .mode-grid{display:grid;grid-template-columns:1fr 1fr 1fr;gap:6px;}
+  .mode-btn{padding:8px 6px;border-radius:8px;border:1px solid var(--border);
+    background:var(--bg);color:var(--text-dim);font-size:0.72rem;cursor:pointer;
+    transition:all 0.2s;font-family:var(--body-font);line-height:1.4;text-align:center;}
+  .mode-btn.selected{border-color:var(--info);color:var(--info);background:rgba(0,170,255,0.08);}
+
+  /* インターバル */
+  .interval-row{display:flex;align-items:center;gap:10px;margin-top:8px;}
+  .interval-row input[type=range]{flex:1;accent-color:var(--warn);}
+  .interval-val{font-family:var(--timer-font);font-size:1.2rem;color:var(--warn);min-width:52px;text-align:right;}
+
+  /* 選手追加 */
+  .member-search{width:100%;padding:8px 10px;background:var(--bg);color:var(--text);
+    border:1px solid var(--border);border-radius:8px;font-family:var(--body-font);
+    font-size:0.85rem;outline:none;margin-bottom:8px;}
+  .member-search:focus{border-color:var(--info);}
+  .member-list{display:flex;flex-direction:column;gap:4px;max-height:200px;overflow-y:auto;}
+  .member-item{display:flex;align-items:center;justify-content:space-between;
+    padding:8px 12px;background:var(--bg);border:1px solid var(--border);
+    border-radius:8px;cursor:pointer;transition:all 0.15s;}
+  .member-item:active{border-color:var(--info);background:rgba(0,170,255,0.05);}
+  .member-item.in-queue{opacity:0.35;pointer-events:none;}
+  .member-name{font-weight:700;font-size:0.85rem;}
+  .member-meta{font-size:0.7rem;color:var(--text-dim);}
+  .member-add-btn{background:var(--info);color:#000;border:none;border-radius:6px;
+    padding:5px 12px;font-size:0.75rem;font-weight:700;cursor:pointer;white-space:nowrap;}
+  .member-loading{color:var(--text-dim);font-size:0.8rem;padding:12px;text-align:center;}
+
   /* サブボタン */
-  .sub-btns{display:flex;gap:8px;width:100%;max-width:440px;flex-wrap:wrap;}
-  .btn-sub{flex:1;padding:11px;border-radius:8px;border:1px solid var(--border);
+  .sub-btns{display:flex;gap:8px;width:100%;max-width:480px;flex-wrap:wrap;}
+  .btn-sub{flex:1;padding:10px;border-radius:8px;border:1px solid var(--border);
     background:var(--surface);color:var(--text-dim);font-family:var(--body-font);
     font-size:0.8rem;font-weight:700;cursor:pointer;transition:all 0.2s;min-width:80px;}
-  .btn-sub:hover{border-color:var(--text-dim);color:var(--text);}
-  .btn-sub.warn{color:var(--warn);border-color:var(--warn);}
-  .btn-sub.warn:hover{background:rgba(255,170,0,0.1);}
   .btn-sub.danger{color:var(--accent2);border-color:var(--accent2);}
-  .btn-sub.danger:hover{background:rgba(255,51,102,0.1);}
 
   /* 記録 */
-  .records-panel{width:100%;max-width:440px;}
   .records-list{display:flex;flex-direction:column;gap:4px;max-height:200px;overflow-y:auto;}
   .record-item{display:flex;align-items:center;justify-content:space-between;
-    background:var(--surface);border:1px solid var(--border);border-radius:8px;
+    background:var(--bg);border:1px solid var(--border);border-radius:8px;
     padding:8px 12px;animation:slide-in 0.3s ease;}
   @keyframes slide-in{from{opacity:0;transform:translateX(-8px);}to{opacity:1;transform:translateX(0);}}
   .r-name{font-weight:700;font-size:0.85rem;}
@@ -76,30 +120,12 @@
   .record-item.invalid .r-time{color:var(--accent2);text-decoration:line-through;}
 
   /* ログ */
-  .log-panel{width:100%;max-width:440px;}
   .log-list{display:flex;flex-direction:column;gap:2px;max-height:100px;overflow-y:auto;}
   .log-item{font-size:0.7rem;color:var(--text-dim);padding:2px 0;border-bottom:1px solid var(--border);}
   .log-item.ok{color:var(--accent);}
   .log-item.err{color:var(--accent2);}
   .log-item.warn{color:var(--warn);}
-  /* モード選択 */
-  .mode-btns{display:flex;gap:5px;flex-wrap:wrap;}
-  .mode-btn{padding:6px 10px;border-radius:8px;border:1px solid var(--border);
-    background:var(--surface);color:var(--text-dim);font-size:0.7rem;cursor:pointer;
-    transition:all 0.2s;font-family:var(--body-font);}
-  .mode-btn.selected{border-color:var(--info);color:var(--info);background:rgba(0,170,255,0.08);}
-
-  /* 選手選択 */
-  .athlete-select{width:100%;padding:8px 10px;background:var(--surface);color:var(--text);
-    border:1px solid var(--border);border-radius:8px;font-family:var(--body-font);font-size:0.85rem;outline:none;}
-  .btn-add{width:100%;padding:10px;border-radius:8px;border:none;margin-top:6px;
-    background:var(--info);color:#000;font-family:var(--body-font);font-size:0.85rem;
-    font-weight:700;cursor:pointer;}
-  .btn-add:disabled{opacity:0.3;cursor:not-allowed;}
-  .btn-noone{width:100%;padding:8px;border-radius:8px;border:1px solid var(--border);
-    background:transparent;color:var(--text-dim);font-family:var(--body-font);
-    font-size:0.8rem;cursor:pointer;margin-top:4px;}
-
+  .log-item.info{color:var(--info);}
 </style>
 </head>
 <body>
@@ -114,59 +140,85 @@
 
 <div class="main">
 
+  <!-- 待機/計測中カウント -->
+  <div class="count-bar">
+    <div class="count-card waiting-card">
+      <div class="count-num" id="waiting-count">0</div>
+      <div class="count-label">待機</div>
+    </div>
+    <div class="count-card running-card">
+      <div class="count-num" id="running-count">0</div>
+      <div class="count-label">計測中</div>
+    </div>
+  </div>
+
   <!-- 走者状態 -->
-  <div class="state-panel">
-    <div class="section-label">走者状態</div>
+  <div class="panel">
+    <div class="panel-title">走者状態</div>
     <div class="runner-list" id="runner-list">
       <div style="color:var(--text-dim);font-size:0.8rem;padding:4px;">走者なし</div>
     </div>
   </div>
 
-  <!-- モード選択 -->
-  <div class="state-panel">
-    <div class="section-label">スタートモード</div>
-    <div class="mode-btns" id="mode-btns">
-      <button class="mode-btn selected" data-mode="camera">📷 カメラ</button>
+  <!-- 計測スタート/停止（App操作） -->
+  <div class="measure-row">
+    <button class="btn-measure-start" id="btn-measure-start">▶ 計測スタート</button>
+    <button class="btn-measure-stop" id="btn-measure-stop">⏹ 停止</button>
+  </div>
+
+  <!-- コール音 -->
+  <div style="width:100%;max-width:480px;">
+    <button class="btn-call" id="btn-call">🔔 コール音を鳴らす</button>
+  </div>
+
+  <!-- スタートモード -->
+  <div class="panel">
+    <div class="panel-title">スタートモード</div>
+    <div class="mode-grid">
+      <button class="mode-btn selected" data-mode="camera">📷 カメラのみ</button>
       <button class="mode-btn" data-mode="sound">🔔 音のみ</button>
-      <button class="mode-btn" data-mode="camera_fallback">📷+🔔</button>
-      <button class="mode-btn" data-mode="both">⚡ どちらでも</button>
-      <button class="mode-btn" data-mode="auto">🤖 自動</button>
+      <button class="mode-btn" data-mode="both">📷+🔔 両方</button>
+      <button class="mode-btn" data-mode="auto_camera_only">🤖 自動<br>(カメラのみ)</button>
+      <button class="mode-btn" data-mode="auto_sound">🤖 自動<br>(音のみ)</button>
+      <button class="mode-btn" data-mode="auto_camera">🤖 自動<br>(音+カメラ)</button>
+    </div>
+    <!-- インターバル（自動モード時のみ） -->
+    <div id="interval-wrap" style="display:none;">
+      <div style="font-size:0.6rem;color:var(--text-dim);letter-spacing:2px;margin-top:12px;">コール音の間隔</div>
+      <div class="interval-row">
+        <input type="range" id="interval-slider" min="3" max="60" value="10">
+        <div class="interval-val"><span id="interval-val">10</span>秒</div>
+      </div>
     </div>
   </div>
 
-  <!-- 選手追加 -->
-  <div class="state-panel">
-    <div class="section-label">選手をキューに追加</div>
-    <select class="athlete-select" id="athlete-select">
-      <option value="">読み込み中...</option>
-    </select>
-    <button class="btn-add" id="btn-add-athlete">▶ キューに追加</button>
-    <button class="btn-noone" id="btn-add-noone">👤 nooneで追加</button>
-  </div>
-
-  <!-- コールボタン -->
-  <div class="call-wrap">
-    <button class="btn-call" id="btn-call">🔔 コール音を鳴らす</button>
+  <!-- 選手をキューに追加 -->
+  <div class="panel">
+    <div class="panel-title">選手をキューに追加</div>
+    <input type="text" class="member-search" id="member-search" placeholder="名前で検索...">
+    <div class="member-list" id="member-list">
+      <div class="member-loading">読み込み中...</div>
+    </div>
+    <button class="btn-sub" id="btn-add-noone" style="width:100%;margin-top:8px;">👤 nooneで追加</button>
   </div>
 
   <!-- サブボタン -->
   <div class="sub-btns">
-    <button class="btn-sub warn" id="btn-reset">🔄 リセット</button>
-    <button class="btn-sub danger" id="btn-cancel">❌ キャンセル</button>
+    <button class="btn-sub danger" id="btn-reset">❌ 全リセット</button>
     <button class="btn-sub" id="btn-log-clear">ログ消去</button>
   </div>
 
   <!-- 記録 -->
-  <div class="records-panel">
-    <div class="section-label">本日の記録</div>
+  <div class="panel">
+    <div class="panel-title">本日の記録</div>
     <div class="records-list" id="records-list">
       <div style="color:var(--text-dim);font-size:0.8rem;padding:6px;">まだ記録がありません</div>
     </div>
   </div>
 
   <!-- ログ -->
-  <div class="log-panel">
-    <div class="section-label">操作ログ</div>
+  <div class="panel">
+    <div class="panel-title">操作ログ</div>
     <div class="log-list" id="log-list"></div>
   </div>
 
@@ -186,59 +238,59 @@ const firebaseConfig = {
   appId:"1:705263409750:web:cc8e7ee0700887680cb9f7"
 };
 
+const GAS_URL = "https://script.google.com/macros/s/AKfycbyVH4yXtC0PsG4gwbWITAnsMFUdwvMSij2hNsZ9z4bfRTRS0RxHzqvZZeaN3AVIEOte/exec";
+
 const app = initializeApp(firebaseConfig);
 const db  = getDatabase(app);
-const queueRef   = ref(db, 'timing/queue');
-const callRef    = ref(db, 'timing/callSignal');
-const finishedRef= ref(db, 'timing/lastFinished');
+const queueRef      = ref(db, 'timing/queue');
+const callRef       = ref(db, 'timing/callSignal');
+const modeRef       = ref(db, 'timing/mode');
+const controlRef    = ref(db, 'timing/controlSignal');
+const finishedRef   = ref(db, 'timing/lastFinished');
 
-const connDot     = document.getElementById('conn-dot');
-const connLabel   = document.getElementById('conn-label');
-const runnerList  = document.getElementById('runner-list');
-const recordsList = document.getElementById('records-list');
-const logList     = document.getElementById('log-list');
-const btnCall     = document.getElementById('btn-call');
-const btnReset    = document.getElementById('btn-reset');
-const btnCancel   = document.getElementById('btn-cancel');
-const btnLogClear = document.getElementById('btn-log-clear');
+// DOM
+const connDot          = document.getElementById('conn-dot');
+const connLabel        = document.getElementById('conn-label');
+const waitingCountEl   = document.getElementById('waiting-count');
+const runningCountEl   = document.getElementById('running-count');
+const runnerList       = document.getElementById('runner-list');
+const btnMeasureStart  = document.getElementById('btn-measure-start');
+const btnMeasureStop   = document.getElementById('btn-measure-stop');
+const btnCall          = document.getElementById('btn-call');
+const btnReset         = document.getElementById('btn-reset');
+const btnLogClear      = document.getElementById('btn-log-clear');
+const btnAddNoone      = document.getElementById('btn-add-noone');
+const memberSearch     = document.getElementById('member-search');
+const memberListEl     = document.getElementById('member-list');
+const recordsList      = document.getElementById('records-list');
+const logList          = document.getElementById('log-list');
+const intervalWrap     = document.getElementById('interval-wrap');
+const intervalSlider   = document.getElementById('interval-slider');
+const intervalValEl    = document.getElementById('interval-val');
 
 let queue        = [];
+let members      = [];
 let todayRecords = [];
-let timerInterval= null;
 
-// キュー監視
+// ========== Firebase接続状態 ==========
+
+onValue(ref(db, '.info/connected'), (snap) => {
+  const ok = snap.val();
+  connDot.className = 'conn-dot ' + (ok ? 'ok' : 'err');
+  connLabel.textContent = ok ? '接続済' : '未接続';
+});
+
+// ========== キュー監視 ==========
+
 onValue(queueRef, (snapshot) => {
-  connDot.classList.add('ok');
-  connDot.classList.remove('err');
-  connLabel.textContent = '接続済';
   const data = snapshot.val();
-  queue = data ? (Array.isArray(data) ? data : Object.values(data)) : [];
+  queue = data
+    ? (Array.isArray(data) ? data.filter(Boolean) : Object.values(data).filter(Boolean))
+    : [];
   renderRunners();
-}, () => {
-  connDot.classList.remove('ok');
-  connLabel.textContent = '接続エラー';
+  updateCounts();
 });
 
-// ゴール完了監視
-onValue(finishedRef, (snapshot) => {
-  const data = snapshot.val();
-  if (!data || !data.athleteName || !data.ts) return;
-  const existing = todayRecords.find(r => r.ts === data.ts);
-  if (existing) return;
-  todayRecords.unshift({
-    uid:         Date.now(),
-    ts:          data.ts,
-    athleteName: data.athleteName,
-    event:       data.event,
-    elapsedSec:  data.elapsedSec,
-    time:        new Date().toLocaleTimeString('ja-JP'),
-    invalid:     false
-  });
-  renderRecords();
-  addLog(`✅ ${data.athleteName}  ${formatTime(data.elapsedSec)}`, 'ok');
-});
-
-// ランナー描画
 function renderRunners() {
   if (!queue.length) {
     runnerList.innerHTML = '<div style="color:var(--text-dim);font-size:0.8rem;padding:4px;">走者なし</div>';
@@ -247,9 +299,9 @@ function renderRunners() {
   runnerList.innerHTML = queue.map((q, i) => {
     const elapsed = q.status === 'started' && q.startTime
       ? formatTime((Date.now() - q.startTime) / 1000)
-      : q.status === 'finished' ? formatTime(q.elapsedSec || 0) : '待機中';
+      : '待機中';
     return `
-      <div class="runner-item ${q.status}">
+      <div class="runner-item ${q.status === 'started' ? 'started' : ''}">
         <span class="runner-num">${i+1}</span>
         <div style="flex:1;">
           <div class="runner-name">${q.athleteName}</div>
@@ -262,11 +314,33 @@ function renderRunners() {
 }
 
 // タイマー更新
-timerInterval = setInterval(() => {
+setInterval(() => {
   if (queue.some(q => q.status === 'started')) renderRunners();
 }, 100);
 
-// コールボタン → スタート側に指示
+function updateCounts() {
+  waitingCountEl.textContent = queue.filter(q => q.status === 'waiting').length;
+  runningCountEl.textContent = queue.filter(q => q.status === 'started').length;
+}
+
+// ========== 計測スタート/停止（App操作） ==========
+
+btnMeasureStart.addEventListener('click', () => {
+  set(ref(db, 'timing/controlSignal/startMeasuring'), true);
+  addLog('▶ 計測スタート指示 → App', 'ok');
+  btnMeasureStart.disabled = true;
+  setTimeout(() => { btnMeasureStart.disabled = false; }, 2000);
+});
+
+btnMeasureStop.addEventListener('click', () => {
+  set(ref(db, 'timing/controlSignal/stopMeasuring'), true);
+  addLog('⏹ 計測停止指示 → App', 'warn');
+  btnMeasureStop.disabled = true;
+  setTimeout(() => { btnMeasureStop.disabled = false; }, 2000);
+});
+
+// ========== コールボタン ==========
+
 btnCall.addEventListener('click', () => {
   set(callRef, { play: true, ts: Date.now() });
   addLog('🔔 コール音指示', 'warn');
@@ -278,31 +352,154 @@ btnCall.addEventListener('click', () => {
   }, 11000);
 });
 
-// リセット
+// ========== モード選択 ==========
+
+document.querySelectorAll('.mode-btn').forEach(btn => {
+  btn.addEventListener('click', () => {
+    document.querySelectorAll('.mode-btn').forEach(b => b.classList.remove('selected'));
+    btn.classList.add('selected');
+    const mode = btn.dataset.mode;
+    set(modeRef, { mode });
+    intervalWrap.style.display = mode.startsWith('auto') ? 'block' : 'none';
+    addLog(`モード変更: ${mode}`, 'info');
+  });
+});
+
+// モード監視（Start/Appが変更したら同期）
+onValue(modeRef, (snapshot) => {
+  const data = snapshot.val();
+  if (!data?.mode) return;
+  document.querySelectorAll('.mode-btn').forEach(b => {
+    b.classList.toggle('selected', b.dataset.mode === data.mode);
+  });
+  intervalWrap.style.display = data.mode.startsWith('auto') ? 'block' : 'none';
+});
+
+// インターバル設定（Firebase経由でStart/Appに同期）
+intervalSlider.addEventListener('input', () => {
+  const sec = parseInt(intervalSlider.value);
+  intervalValEl.textContent = sec >= 60
+    ? (sec % 60 === 0 ? `${Math.floor(sec/60)}分` : `${Math.floor(sec/60)}分${sec%60}秒`)
+    : `${sec}秒`;
+  set(ref(db, 'timing/intervalSec'), sec);
+});
+
+// ========== 選手追加 ==========
+
+function loadMembers() {
+  memberListEl.innerHTML = '<div class="member-loading">読み込み中...</div>';
+  const script = document.createElement('script');
+  script.src = `${GAS_URL}?action=getMembers&callback=onCtrlMembersLoaded&_t=${Date.now()}`;
+  document.head.appendChild(script);
+}
+
+window.onCtrlMembersLoaded = function(data) {
+  const tsPattern = /^\d{14}$/;
+  members = (data.members || []).filter(m => {
+    const uid = m.nfcUid || m.nfcId || '';
+    return uid && !tsPattern.test(uid);
+  });
+  renderMemberList();
+};
+
+function renderMemberList() {
+  const search = memberSearch.value.trim();
+  const filtered = search
+    ? members.filter(m => m.name.includes(search) || (m.furigana||'').includes(search))
+    : members;
+
+  if (!filtered.length) {
+    memberListEl.innerHTML = `<div class="member-loading">${members.length ? '該当なし' : '読み込み中...'}</div>`;
+    return;
+  }
+
+  const inQueueIds = new Set(queue.map(q => q.athleteId));
+  memberListEl.innerHTML = filtered.map(m => {
+    const inQueue = inQueueIds.has(m.id || m.nfcId);
+    return `
+      <div class="member-item ${inQueue ? 'in-queue' : ''}"
+        data-id="${m.id||''}" data-name="${m.name}"
+        data-grade="${m.grade||''}" data-nfc="${(m.nfcUid||m.nfcId||'').toUpperCase()}">
+        <div>
+          <div class="member-name">${m.name}</div>
+          <div class="member-meta">${m.grade||''} ${m.course||''}</div>
+        </div>
+        <button class="member-add-btn">${inQueue ? '追加済' : '追加'}</button>
+      </div>
+    `;
+  }).join('');
+
+  memberListEl.querySelectorAll('.member-item:not(.in-queue)').forEach(el => {
+    el.addEventListener('click', () => {
+      if (queue.length >= 10) { alert('キューが満員です（最大10人）'); return; }
+      addToQueue({
+        athleteId:   el.dataset.id,
+        athleteName: el.dataset.name,
+        nfcUid:      el.dataset.nfc
+      });
+    });
+  });
+}
+
+memberSearch.addEventListener('input', renderMemberList);
+
+function addToQueue(athlete) {
+  const entry = {
+    id:          `${athlete.athleteId || 'noone'}_${Date.now()}`,
+    athleteId:   athlete.athleteId || '',
+    athleteName: athlete.athleteName,
+    nfcUid:      athlete.nfcUid || '',
+    event:       '50m走',
+    status:      'waiting',
+    startTime:   0
+  };
+  const newQueue = [...queue, entry];
+  const map = {};
+  newQueue.forEach((item, i) => { map[`item_${i}`] = item; });
+  set(queueRef, map);
+  set(ref(db, 'timing/waitingCount'), newQueue.filter(q => q.status === 'waiting').length);
+  addLog(`➕ 追加: ${athlete.athleteName}`, 'ok');
+}
+
+btnAddNoone.addEventListener('click', () => {
+  if (queue.length >= 10) return;
+  addToQueue({ athleteId: 'noone_'+Date.now(), athleteName: 'noone', nfcUid: '' });
+});
+
+// ========== 全リセット ==========
+
 btnReset.addEventListener('click', () => {
   if (!confirm('キューをリセットしますか？')) return;
   set(queueRef, null);
   set(callRef, { play: false });
-  addLog('🔄 リセット', 'warn');
+  set(ref(db, 'timing/waitingCount'), 0);
+  addLog('❌ 全リセット', 'err');
 });
 
-// キャンセル
-btnCancel.addEventListener('click', () => {
-  set(callRef, { play: false });
-  addLog('❌ キャンセル', 'err');
+// ========== ゴール完了受信 ==========
+
+onValue(finishedRef, (snapshot) => {
+  const data = snapshot.val();
+  if (!data?.athleteName || !data?.ts) return;
+  if (todayRecords.find(r => r.ts === data.ts)) return;
+  todayRecords.unshift({
+    ts:          data.ts,
+    athleteName: data.athleteName,
+    event:       data.event,
+    elapsedSec:  data.elapsedSec,
+    time:        new Date().toLocaleTimeString('ja-JP')
+  });
+  renderRecords();
+  addLog(`✅ ${data.athleteName}  ${formatTime(data.elapsedSec)}`, 'ok');
 });
 
-// ログ消去
-btnLogClear.addEventListener('click', () => { logList.innerHTML = ''; });
-
-// 記録描画
 function renderRecords() {
   if (!todayRecords.length) {
     recordsList.innerHTML = '<div style="color:var(--text-dim);font-size:0.8rem;padding:6px;">まだ記録がありません</div>';
     return;
   }
   recordsList.innerHTML = todayRecords.map(r => `
-    <div class="record-item ${r.invalid ? 'invalid' : ''}">
+    <div class="record-item">
       <div>
         <div class="r-name">${r.athleteName}</div>
         <div class="r-meta">${r.event||''} · ${r.time}</div>
@@ -312,73 +509,9 @@ function renderRecords() {
   `).join('');
 }
 
-// モード選択
-document.querySelectorAll('.mode-btn').forEach(btn => {
-  btn.addEventListener('click', () => {
-    document.querySelectorAll('.mode-btn').forEach(b => b.classList.remove('selected'));
-    btn.classList.add('selected');
-    set(ref(db, 'timing/mode'), { mode: btn.dataset.mode });
-    addLog(`モード変更: ${btn.dataset.mode}`, 'warn');
-  });
-});
+// ========== ログ ==========
 
-// モード監視（スタート側が変更したら同期）
-onValue(ref(db, 'timing/mode'), (snapshot) => {
-  const data = snapshot.val();
-  if (!data?.mode) return;
-  document.querySelectorAll('.mode-btn').forEach(b => {
-    b.classList.toggle('selected', b.dataset.mode === data.mode);
-  });
-});
-
-// 選手リスト読み込み
-const MONJUNI_GAS = "https://script.google.com/macros/s/AKfycbyVH4yXtC0PsG4gwbWITAnsMFUdwvMSij2hNsZ9z4bfRTRS0RxHzqvZZeaN3AVIEOte/exec";
-let membersList = [];
-
-function loadMembers() {
-  const script = document.createElement('script');
-  script.src = `${MONJUNI_GAS}?action=getMembers&callback=onCtrlMembersLoaded`;
-  document.head.appendChild(script);
-}
-
-window.onCtrlMembersLoaded = function(data) {
-  membersList = data.members || [];
-  const select = document.getElementById('athlete-select');
-  select.innerHTML = '<option value="">-- 選手を選択 --</option>' +
-    membersList.map(m => `<option value="${m.nfcId||m.id}">${m.name}（${m.grade||''}）</option>`).join('');
-};
-
-// 選手追加ボタン
-document.getElementById('btn-add-athlete').addEventListener('click', () => {
-  const select = document.getElementById('athlete-select');
-  const found  = membersList.find(m => (m.nfcId||m.id) === select.value);
-  if (!found) return;
-  addToCtrlQueue({ id: found.nfcId||found.id, name: found.name, grade: found.grade||'', nfcId: found.nfcId||'' });
-});
-
-document.getElementById('btn-add-noone').addEventListener('click', () => {
-  addToCtrlQueue({ id: 'noone_'+Date.now(), name: 'noone', grade: '', nfcId: '' });
-});
-
-function addToCtrlQueue(athlete) {
-  // 現在のキューを取得して追加
-  const entry = {
-    laneId:      queue.length,
-    athleteId:   athlete.id || '',
-    athleteName: athlete.name,
-    grade:       athlete.grade || '',
-    nfcId:       athlete.nfcId || '',
-    event:       '50m走',
-    status:      'waiting',
-    startTime:   null,
-    addedAt:     Date.now()
-  };
-  const newQueue = [...queue, entry];
-  set(queueRef, newQueue);
-  addLog(`➕ 追加: ${athlete.name}`, 'ok');
-}
-
-loadMembers();
+btnLogClear.addEventListener('click', () => { logList.innerHTML = ''; });
 
 function addLog(msg, type='') {
   const time = new Date().toLocaleTimeString('ja-JP');
@@ -386,7 +519,7 @@ function addLog(msg, type='') {
   div.className = `log-item ${type}`;
   div.textContent = `${time}  ${msg}`;
   logList.prepend(div);
-  if (logList.children.length > 20) logList.removeChild(logList.lastChild);
+  if (logList.children.length > 30) logList.removeChild(logList.lastChild);
 }
 
 function formatTime(sec) {
@@ -395,6 +528,9 @@ function formatTime(sec) {
   const ms = Math.floor((sec - s) * 100);
   return `${String(s).padStart(2,'0')}.${String(ms).padStart(2,'0')}`;
 }
+
+// ========== 初期化 ==========
+loadMembers();
 </script>
 </body>
 </html>
